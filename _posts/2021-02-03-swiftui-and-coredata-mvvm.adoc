@@ -1,0 +1,194 @@
+= SwiftUI and CoreData: The MVVM Way
+
+When I first started using SwiftUI for some small projects, I immediately
+appreciated its ease of use and expressiveness. However, it was not all rosy.
+
+As soon as I began to work on some bigger apps — especially the ones that
+required Core Data — it became clear to me that I would have to give a different
+structure to the project itself. Otherwise, I would soon get entangled in a very
+serious maintainability and testing problem.
+
+== The Bad, Easy Way 
+By going through Apple’s documentation and many other
+answers on Stack Overflow, what you will find is a lot of people placing the
+FetchRequest property wrapper variable inside a View struct that needs to fetch
+some data from the Core Data model.
+
+This might be tempting if you’re just starting out, but as you dig a little
+further into the logic involved with the fetched entities, you will soon realise
+that not only is it very hard — if not impossible — to test those
+functions/variables, but you are also no longer following the MVVM pattern. At
+that point, the View struct knows a lot about the entities and the
+functions/properties that you defined inside them. Let me show you an example
+that is easily replicable with other entities:
+
+```swift
+struct SimpleList: View {
+    @FetchRequest(
+        entity: Course.entity(),
+        sortDescriptors: []
+    ) var courses: FetchedResults<Course>
+
+    var overallGpa: Double {
+        let numCourses = courses.count
+        let gradeSum = courses.map { $0.score }.reduce(0, +)
+        return gradeSum / numCourses
+    }
+
+    var body: some View {
+        ...
+    }
+}
+```
+
+In this case, I’m fetching all my Course entities that are stored in Core Data
+and introducing some logic that I will show later in my view. How are we going
+to test that computed variable? You might make an ad hoc function that you can
+test later, but that is not a clean way to do it. Plus, you don’t want data
+logic in any view.
+
+== A Clean Alternative 
+I tend to have a single `ViewModel` per `View` so that I
+can test each component individually and use just what I need in each one of
+them instead of having a big giant `ViewModel` to pass around in views.
+
+With SwiftUI 2.0, you will find out that the initial project passes a
+`managedObjectContext` as an `environmentObject` property. We do not want that.
+It is not clean to take that context every time in each View that needs to fetch
+data from the database, and I don’t want my views to know about that either.
+
+What I came up with is a more MVVM way of doing this that involves our
+easy-to-use publishers and subscribers.
+
+Basically, you are going to create a singleton instance that watches over a
+single entity in the database (in this case, the `Course` entity) and sends all
+the courses to each subscriber that subscribes to it. This way, you can easily
+instantiate multiple **ViewModels** that subscribe to the storage publisher and
+operate some logic on those entities in a more dedicated and testable space.
+Let’s see an example of what `CourseStorage` would look like:
+
+```swift
+class CourseStorage: NSObject, ObservableObject {
+    var courses = CurrentValueSubject<[Course], Never>([])
+    private let courseFetchController: NSFetchedResultsController<Course>
+
+    private override init() {
+        courseFetchController = NSFetchedResultsController(
+            fetchRequest: Course.Request.all.rawValue,
+                managedObjectContext: PersistenceController.shared.container.viewContext,
+                sectionNameKeyPath: nil, cacheName: nil
+        )
+
+        super.init()
+
+        courseFetchController.delegate = self
+
+        do {
+            try courseFetchController.performFetch()
+            courses.value = courseFetchController.fetchedObjects ?? []
+        } catch {
+            NSLog("Error: could not fetch objects")
+        }
+    }
+
+    func add() {
+        ...
+    }
+
+    func update() {
+        ...
+    }
+
+    func delete(id: UUID) {
+        ...
+    }
+}
+
+extension CourseStorage: NSFetchedResultsControllerDelegate {
+    public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        guard let courses = controller.fetchedObjects as? [Course] else { return }
+        logger.log("Context has changed, reloading courses")
+        self.courses.value = courses
+    }
+}
+```
+
+As you can see in the code, I am creating a singleton `ObservableObject` that
+exposes a course publisher. It is going to emit a new value when the
+`managedObjectContext` entities change. You might have also noticed that I
+placed the `PersistenceController` in the class itself. This way, we can forget
+about passing it around to views, as I’ve explained before. In this class, I am
+also handling everything that concerns the Core Data operations, such as saving,
+adding, and deleting entities from the store. As such, I am separating database
+logic from the app’s business logic.
+
+Here is an example of how the `ViewModel` can be structured with these changes:
+
+```swift
+class CourseViewViewModel: ObservableObject {
+    @Published var activeCourses: [Course] = []
+    @Published var overallGpa: Double = []
+    @Published var courses: [Course] = [] {
+        willSet {
+            activeCourses = newValue.filter { $0.mark == 0 }
+            let scoreSum = newValue.map { $0.score }.filter { $0 != 0 }
+            let passedCourses = newValue.filter { $0.mark != 0 }
+            overallGpa = scoreSum / passedCourses
+        }
+    }
+
+    private var cancellable: AnyCancellable?
+
+    init(coursePublisher: AnyPublisher<[Course], Never> = CourseStorage.shared.courses.eraseToAnyPublisher()) {
+        cancellable = coursePublisher.sink { [unowned self] courses in
+            self.courses = courses
+        }
+    }
+}
+```
+
+The `ViewModel` now encapsulates all the data and logic that it is supposed to
+handle. The code is pretty much self-explanatory: The `CourseViewModel`
+subscribes to the CourseStorage publisher and receives up-to-date course values
+from it.
+
+You might be wondering why I am initialising the `ViewModel` with an
+`AnyPublisher` value. Remember the testing advantage? It is precisely for this
+situation. If I now want to test `CourseViewModel` and its logic, I can just
+create a sample test array that contains a bunch of courses, pass that as an
+array publisher to the `ViewModel`, and make all the asserts necessary for the
+test.
+
+```swift
+class TestVM: XCTest {
+    func simpleTest() {
+        let courses = [[Course(), Course(), ...]].publisher
+        let vm = CourseViewModel(coursePublisher: courses)
+        ...
+    }
+}
+```
+
+== Final Result 
+Now, I am going to show you how simple and clean the View struct
+looks with these changes:
+
+```swift
+struct SimpleList: View {
+    @StateObject private var viewModel = CourseViewModel()
+
+    var body: some View {
+        ...
+    }
+}
+```
+
+No more `managedObjectContext` passed around views. There is logic separation.
+It is MVVM-compliant, easily testable, and _clean_.
+
+== Conclusion 
+I have to say that I am pretty satisfied with the results. My
+components are now all structured this way and I have not found a single issue
+with the implementation. This is why I encourage you to try this out so that you
+can organise big projects (and smaller ones) in a well-structured, maintainable,
+and more elegant way.

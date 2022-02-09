@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="preload" href="/css/JetBrainsMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+  <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="description"
+    content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+  <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{{ " /css/style.css" | prepend: site.baseurl }}">
+</head>
+<body class="mx-auto max-width">
+  <header class="site-header">
+    <nav>
+      <a class="-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+      {% for my_page in site.pages %}
+      {% if my_page.title %}
+      <a href="{{ my_page.url | prepend: site.baseurl }}">{{ my_page.title }}</a>
+      {% endif %}
+      {% endfor %}
+    </nav>
+  </header>
+
+  <main>
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      <a href="{{ " /feed.xml" | prepend: site.baseurl }}">
+        <i class="fa fa-rss"></i> rss
+      </a>
+
+      <a href="https://github.com/mattrighetti">
+        <i class="fa fa-github"></i> mattrighetti
+      </a>
+    </p>
+  </footer>
+  
+</body>
+</html>

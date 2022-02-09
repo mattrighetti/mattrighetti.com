@@ -1,0 +1,17 @@
+= About
+:layout: default
+:page-permalink: /about/
+
+== Hello!
+
+image:https://images.unsplash.com/photo-1610016302534-6f67f1c968d8?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1868&q=80#center[role=avatar,width=300]
+I am Mattia Righetti and I'm a software engineer based in Milan, IT. My main
+interests are distributes systems, performance optimization, databases and
+microservices but I also enjoy going on the frontend side of software sometimes.
+
+I'm currenlty working on https://www.hyperledger.org/use/fabric[Hyperledger
+Fabric] and model driven development for my MSc thesis.
+
+You can find me on https://github.com/mattrighetti[GitHub].
+
+Code samples on this blog are dual licensed under MIT OR Apache-2.0.

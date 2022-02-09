@@ -1,0 +1,102 @@
+= Let's Hack HTTP
+
+In this article I’m going to show you why you absolutely want to ditch
+https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol[HTTP] websites by
+impersonating an attacker that has targeted you.
+
+**This article is for educational purposes only. Do not try this with people
+that didn’t explicitly give you permission to do so.**
+
+== What you will learn 
+This article should give you a better understanding of
+why HTTP is bad and why you should avoid it. Also you’ll learn a few different
+tools that are common in the IT world.
+
+== Tools 
+We’re going to use some well known pen-testing tools to make this
+happen:
+
+- nmap
+- ettercap
+- WireShark
+
+== Initial Phase 
+Our attack is useless if we don’t have anyone to hack, so what
+an attacker would do first is actually FIND you in the network. That’s what
+**nmap** is famous for. What **nmap** will do is scan the entire network and
+look for connected hosts which we can potentially attack.
+
+I’m going to scan my home network with **nmap** but before that I need my local
+IP address
+
+image::https://miro.medium.com/max/1400/1*624dbYbYnjAKpdcnSjDtrA.png[[align="center"]
+
+Great, now I know that my local IP is **192.168.1.151** and the subnet mask is
+**255.255.255.0**, that’s all I need to performa a network exploration with
+**nmap**
+
+image::https://miro.medium.com/max/1400/1*0jUZSMofWAsMZbNHuZrZYQ.png[[align="center"]
+
+As you can see I provided nmap with the IPs to scan in the network, which in
+this case are all the addresses that go from **192.168.1.1** to
+**192.168.1.254**, the flag -sn will make nmap try to determine whether the
+specified hosts are up and what are their names.
+
+My target is going to be my iMac that’s sitting next to me, its IP address is
+**192.168.1.195**.
+
+== Packet Sniffing 
+Now that we have our target we need to sniff his/her HTTP
+packets. Since we’re all connected to a router at the moment, we’re going to see
+nothing useful in WireShark because my iMac’s packets are not sent directly to
+me, the router will just send those packets to my iMac.
+
+How are we going to make those packets come to us then if the router will just
+send them to my iMac? This can be performed with a well known attack called
+https://en.wikipedia.org/wiki/Man-in-the-middle_attack[MITM] (Man In The Middle)
+that will make all those packets pass through us before reaching his intended
+destination.
+
+image::https://miro.medium.com/max/1400/1*YGsEp-aWVhkUe2JAIq-3Lw.png[[align="center"]
+
+You might be wondering what **ettercap** is doing here, let me explain.
+
+Every router relies heavily on https://en.wikipedia.org/wiki/Address_Resolution_Protocol[ARP],
+(Address Resolution Protocol), to know where devices are on the
+network. It basically links every MAC address (which never changes) to its
+device IP address. What **ettercap** here is basically doing is called 
+https://en.wikipedia.org/wiki/ARP_spoofing[ARP poisoning], 
+which I’m using to make the router think that I am the victim’s
+computer so that it will send all the packets intended for my iMac to me, and
+I’m also telling the iMac that I am the router so it should send all the packets
+to me. Starting to see the bigger picture? 🙃
+
+image::https://miro.medium.com/max/1400/1*-gwmGLi8rn__ZlYKWAIgUw.png[[align="center"]
+
+These are all the packets that are going through my iMac to the router and from
+the router to the iMac. Luckily this will mostly be encrypted stuff, but guess
+what, HTTP is not. Let’s move to WireShark so we can capture and filter all the
+packets that we need. While ettercap is still going, I’m going to capture
+packets with WireShark and at the same moment I’m going to use my iMac to
+navigate to an http://www.bio.acousti.ca/[unsecured website] which is just a
+dummy site that uses HTTP.
+
+image::https://miro.medium.com/max/1400/1*PlyWovxZ3PnvQrUQXSdlrQ.png[[align="center"]
+
+I also did filter packets by IP and HTTP protocol to have a better understanding
+of what I captured. Now WireShark will help me put those pieces together, if I
+right click on one of those HTTP packets and select **Follow > HTTP stream**
+I’ll get everything of what the victim browsed in cleartext.
+
+image::https://miro.medium.com/max/1400/1*zVyWd7VriRIN9YUcUFWMIQ.png[[align="center"]
+
+image::https://miro.medium.com/max/1400/1*RjUQgaCyOi1EFg32vZ5p0A.png[[align="center"]
+
+From here I can see everything the victim did on that site, I could grab his
+login credentials when he/she tries to log in and every other possible bad thing
+that pops to my mind.
+
+== Conclusion 
+Now you know that when you are browsing on an insecure website,
+even worse on a public network, keep in mind that you are not safe and bad guys
+could be watching every step that you make.

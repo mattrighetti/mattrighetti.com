@@ -1,0 +1,124 @@
+= Data Caching with NSCache
+
+image::https://miro.medium.com/max/1400/1*zVw56-JToWySViotHWqtMA.png[[align="center"]
+
+I recently open-sourced my
+https://github.com/mattrighetti/HNReaderApp[HackerNews reader for macOS] that
+is entirely written in SwiftUI for macOS. Analysing my scenario can help to
+explain data caching and data waste avoidance. If you want to get a more
+detailed idea of the code, you can follow along in the project’s GitHub
+repository.
+
+== Scenario
+
+Hacker News is a well-known website that stores news reported by users on the
+platform. Each individual story is going to be represented by an Item struct, as
+the HN API’s documentation specifies. We want to fetch available items for the
+user to read in the most data-efficient way.
+
+== Initial Implementation With No Cache Usage
+
+The application has an ItemCell view that takes an ItemId from the parent view,
+and as soon as it appears on screen, it will automatically fetch the item and
+display it for me. This approach makes the data usage very low and removes a lot
+of pressure on the backend because only displayed items will actually be
+fetched.
+
+image::https://miro.medium.com/max/1400/1*-0KWAWmDnu2p_MdFVzfDuA.png[[align="center"]
+
+The application’s sidebar lets the user navigate between the five different
+categories of stories. As you can imagine, some news can potentially belong to
+multiple categories, so when the user switches back and forth between
+categories, they are basically asking for the same items that have previously
+been fetched.
+
+This kind of approach without some background logic can drastically increase
+your data usage, decrease the overall app performance, and also put a lot of
+pressure on the HackerNews backend that will unnecessarily give us the same
+information multiple times.
+
+== Caching Data
+
+What we could actually do to solve the problem is cache downloaded items by
+their IDs. This way, items will be fetched just once and the application won’t
+waste data with useless repeated requests to the backend.
+
+image::https://miro.medium.com/max/1400/1*dGewxEQNZvEdXv1q986s6A.png[[align="center"]
+
+== Implementation
+
+We know that each item is uniquely identified by an `ItemId`, which is an
+integer variable. Therefore, we could use that datum to store and retrieve the
+item from the cache.
+
+At the time of writing, the
+https://developer.apple.com/documentation/foundation/nscache[`NSCache`]
+implementation only accepts class types, so we need to create a simple class
+wrapper for the Item struct if we want to store it in the cache object. In this
+scenario, we don’t need to wrap our key (`ItemId`) because there is a shorter
+way to do that: casting it to a `String`.
+
+```swift
+class StructWrapper<T>: NSObject {
+    let value: T
+
+    init(_ _struct: T) {
+        value = _struct
+    }
+}
+```
+
+Storing and retrieving objects is pretty straightforward now. We need a cache
+object with two functions: one to cache the object and the other to get objects
+back if they are found. I did also implement the common singleton design pattern
+to make sure that I am always using the same cache object.
+
+```swift
+class ItemCache: NSCache<NSString, StructWrapper<Item>> {
+    static let shared = ItemCache()
+
+    func cache(_ item: Item, for key: Int) {
+        let keyString = NSString(format: "%d", key)
+        let itemWrapper = StructWrapper(item)
+        self.setObject(itemWrapper, forKey: keyString)
+    }
+
+    func getItem(for key: Int) -> Item? {
+        let keyString = NSString(format: "%d", key)
+        let itemWrapper = self.object(forKey: keyString)
+        return itemWrapper?.value
+    }
+}
+```
+
+Now we have everything that we need to cache elements and check if one exists in
+memory before fetching it. The fetching function will check for a cache hit/miss
+before actually fetching the data. The fetching will only happen if we get a
+cache miss for the requested object, and when the item is correctly fetched, we
+only have to save it in the cache. The next time we try to fetch that item, it
+will be immediately taken from the cache without any additional fetch.
+
+```swift
+private func fetchItem() {
+    let cacheKey = itemId
+    if let cachedItem = ItemCache.shared.getItem(for: cacheKey) {
+        self.item = cachedItem
+    } else {
+        itemDownloader.downloadItem(completion: { item in
+            guard let item = item else { return }
+            ItemCache.shared.cache(item, for: cacheKey)
+            DispatchQueue.main.async {
+                self.item = item
+            }
+        })
+    }
+}
+```
+
+== Conclusion
+
+Optimisation is something that you must always be looking for — both for your
+users and other third-party services that you might use in your application.
+With a very simple object, we have actually made some pretty big improvements.
+Now a fetched item will be cached and ready to be retrieved with a cost of
+**_O(1)_** the next time you need it.

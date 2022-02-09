@@ -1,0 +1,41 @@
+= Resume
+:layout: default
+:page-permalink: /resume/
+
+Welcome to my resume! Also available in
+https://mattrighetti.github.io/resume.pdf[.pdf]
+
+=== Personal Details
+
+[horizontal]
+Name:: Mattia Righetti
+Contacts::
+- icon:github[] https://github.com/mattrighetti
+- icon:link[] http://mattrighetti.github.io
+- icon:envelope[] See GitHub profile
+
+=== Education
+- 2019-2022, MSc in Computer Science, _Politecnico di Milano_
+- 2015-2019, BSc in Computer Science, _Politecnico di Milano_
+
+=== Professional Experience
+
+==== Department of Civil and Environmental Engineering 
+icon:calendar[title="Period"] Jun 2018 to Sep 2021 +
+icon:link[] https://www.dica.polimi.it/?lang=en
+
+At D.I.C.A. I've worked as a Fullstack SWE and I bootstrapped
+an entire system composed of SPA and database that enabled
+professors and other research assistants to query a
+collection of flood models online from a browser.
+
+=== Publications
+
+==== Model-Driven Development of Distributed Ledger Applications
+icon:users[title="Authors"] Piero Fraternali, S. L. Herrera Gonzalez, Matteo Frigerio, Mattia Righetti +
+icon:link[] coming soon
+
+=== Skills
+- Python, Bash, Java, Rust, Go, Swift
+- PostreSQL, MySQL, Docker, NGINX
+- AWS EC2, AWS S3, AWS Lambda

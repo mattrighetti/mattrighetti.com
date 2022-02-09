@@ -1,0 +1,23 @@
+title: mattrighetti
+description: >
+  Just another programming blog
+baseurl: ""
+url: "https://mattrighetti.github.io"
+github_username:  mattrighetti
+
+author: Mattia Righetti
+
+plugins:
+  - jekyll-asciidoc
+  - jekyll-redirect-from
+  - jekyll-feed
+
+asciidoctor:
+  attributes:
+    - icons=font
+    - source-highlighter=rouge
+    - source-linenums-option=_
+    - sectanchors=_
+    - experimental=_
+    - rouge-style=github
+    - stylesdir=css
