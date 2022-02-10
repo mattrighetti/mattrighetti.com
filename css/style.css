@@ -360,6 +360,11 @@ pre.rouge .w {
   color: #bbbbbb;
 }
 
+blockquote > div {
+    padding-left: 7px;
+    border-left: 3px solid rgba(0, 0, 0, 0.5);
+}
+
 img, object, svg, video {
     display: inline-block;
     vertical-align: middle;
