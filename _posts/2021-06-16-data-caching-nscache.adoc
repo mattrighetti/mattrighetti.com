@@ -1,6 +1,6 @@
 = Data Caching with NSCache
 
-image::https://miro.medium.com/max/1400/1*zVw56-JToWySViotHWqtMA.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*zVw56-JToWySViotHWqtMA.png[align="center"]
 
 I recently open-sourced my
 https://github.com/mattrighetti/HNReaderApp[HackerNews reader for macOS] that
@@ -24,7 +24,7 @@ display it for me. This approach makes the data usage very low and removes a lot
 of pressure on the backend because only displayed items will actually be
 fetched.
 
-image::https://miro.medium.com/max/1400/1*-0KWAWmDnu2p_MdFVzfDuA.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*-0KWAWmDnu2p_MdFVzfDuA.png[align="center"]
 
 The application’s sidebar lets the user navigate between the five different
 categories of stories. As you can imagine, some news can potentially belong to
@@ -43,7 +43,7 @@ What we could actually do to solve the problem is cache downloaded items by
 their IDs. This way, items will be fetched just once and the application won’t
 waste data with useless repeated requests to the backend.
 
-image::https://miro.medium.com/max/1400/1*dGewxEQNZvEdXv1q986s6A.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*dGewxEQNZvEdXv1q986s6A.png[align="center"]
 
 == Implementation
 

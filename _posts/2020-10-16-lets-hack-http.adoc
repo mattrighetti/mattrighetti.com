@@ -29,13 +29,13 @@ look for connected hosts which we can potentially attack.
 I’m going to scan my home network with **nmap** but before that I need my local
 IP address
 
-image::https://miro.medium.com/max/1400/1*624dbYbYnjAKpdcnSjDtrA.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*624dbYbYnjAKpdcnSjDtrA.png[align="center"]
 
 Great, now I know that my local IP is **192.168.1.151** and the subnet mask is
 **255.255.255.0**, that’s all I need to performa a network exploration with
 **nmap**
 
-image::https://miro.medium.com/max/1400/1*0jUZSMofWAsMZbNHuZrZYQ.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*0jUZSMofWAsMZbNHuZrZYQ.png[align="center"]
 
 As you can see I provided nmap with the IPs to scan in the network, which in
 this case are all the addresses that go from **192.168.1.1** to
@@ -57,7 +57,7 @@ https://en.wikipedia.org/wiki/Man-in-the-middle_attack[MITM] (Man In The Middle)
 that will make all those packets pass through us before reaching his intended
 destination.
 
-image::https://miro.medium.com/max/1400/1*YGsEp-aWVhkUe2JAIq-3Lw.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*YGsEp-aWVhkUe2JAIq-3Lw.png[align="center"]
 
 You might be wondering what **ettercap** is doing here, let me explain.
 
@@ -71,7 +71,7 @@ computer so that it will send all the packets intended for my iMac to me, and
 I’m also telling the iMac that I am the router so it should send all the packets
 to me. Starting to see the bigger picture? 🙃
 
-image::https://miro.medium.com/max/1400/1*-gwmGLi8rn__ZlYKWAIgUw.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*-gwmGLi8rn__ZlYKWAIgUw.png[align="center"]
 
 These are all the packets that are going through my iMac to the router and from
 the router to the iMac. Luckily this will mostly be encrypted stuff, but guess
@@ -81,16 +81,16 @@ packets with WireShark and at the same moment I’m going to use my iMac to
 navigate to an http://www.bio.acousti.ca/[unsecured website] which is just a
 dummy site that uses HTTP.
 
-image::https://miro.medium.com/max/1400/1*PlyWovxZ3PnvQrUQXSdlrQ.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*PlyWovxZ3PnvQrUQXSdlrQ.png[align="center"]
 
 I also did filter packets by IP and HTTP protocol to have a better understanding
 of what I captured. Now WireShark will help me put those pieces together, if I
 right click on one of those HTTP packets and select **Follow > HTTP stream**
 I’ll get everything of what the victim browsed in cleartext.
 
-image::https://miro.medium.com/max/1400/1*zVyWd7VriRIN9YUcUFWMIQ.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*zVyWd7VriRIN9YUcUFWMIQ.png[align="center"]
 
-image::https://miro.medium.com/max/1400/1*RjUQgaCyOi1EFg32vZ5p0A.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*RjUQgaCyOi1EFg32vZ5p0A.png[align="center"]
 
 From here I can see everything the victim did on that site, I could grab his
 login credentials when he/she tries to log in and every other possible bad thing

@@ -3,7 +3,7 @@
 == Introduction
 I’m going to explain the little steps that are needed to achieve a good looking flat design in an iOS application that displays a list. Here’s the example I’m going to build.
 
-image::https://miro.medium.com/max/1400/1*v1YvTDvRHNK36evNP_WwNg.png[[align="center",height=400]
+image::https://miro.medium.com/max/1400/1*v1YvTDvRHNK36evNP_WwNg.png[height=400, align="center"]
 
 == Changing Your List’s Background and Hiding Its Separators
 The first thing we need to do is change the list’s background and hide its separators.
@@ -40,7 +40,7 @@ When that’s done, we’re going to see a list with our predefined background c
 == Row-Card Decomposition
 I’ve created this small infographic to give you a better idea of how the card itself can be created in SwiftUI.
 
-image::https://miro.medium.com/max/1400/1*WRuNfOUh8cK3CzNxQyf--Q.jpeg[[align="center"]
+image::https://miro.medium.com/max/1400/1*WRuNfOUh8cK3CzNxQyf--Q.jpeg[align="center"]
 
 As you can see we can divide the row card into four different components:
 
@@ -155,7 +155,7 @@ As you could have imagined, we’re dealing with a simple text element with a ba
 
 == Final result
 
-image::https://miro.medium.com/max/1400/1*sb3R3bvEAp_9-6AAne5COw.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*sb3R3bvEAp_9-6AAne5COw.png[align="center"]
 
 == Conclusion
 I hope you enjoyed this tutorial and learned how simple it can be to design great UIs with the help of a declarative language like SwiftUI. We’re all looking forward to seeing how much better it can get with version 2.0, which is coming at WWDC20.

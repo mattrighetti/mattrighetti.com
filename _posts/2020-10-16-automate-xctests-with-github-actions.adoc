@@ -111,7 +111,7 @@ Right now, if you’ve replicated all the steps correctly, you should see
 something in the Actions panel as soon as you push/pull request stuff to your
 master branch:
 
-image::https://miro.medium.com/max/1400/1*rm0DkyON3dOROrRRjlypkg.png[[align="center"]
+image::https://miro.medium.com/max/1400/1*rm0DkyON3dOROrRRjlypkg.png[align="center"]
 
 If your run is successful, you should see a checkmark next to all the steps.
 What’s really useful is that, in case your run fails, GitHub Actions will
