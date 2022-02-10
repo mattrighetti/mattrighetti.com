@@ -1,9 +1,9 @@
 = Flat List Design in SwiftUI
 
-image::https://miro.medium.com/max/1400/1*v1YvTDvRHNK36evNP_WwNg.png[[align="center"]
-
 == Introduction
 I’m going to explain the little steps that are needed to achieve a good looking flat design in an iOS application that displays a list. Here’s the example I’m going to build.
+
+image::https://miro.medium.com/max/1400/1*v1YvTDvRHNK36evNP_WwNg.png[[align="center",height=400]
 
 == Changing Your List’s Background and Hiding Its Separators
 The first thing we need to do is change the list’s background and hide its separators.
