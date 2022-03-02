@@ -1,0 +1,252 @@
+= SQLite on iOS: The MVVM Way
+
+image:https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fdownload.logo.wine%2Flogo%2FSQLite%2FSQLite-Logo.wine.png&f=1&nofb=1[align="center"]
+
+Last week I was studying 
+https://github.com/Ranchero-Software/NetNewsWire[NetNewsWire] 
+to see if I could find something interesting
+to implement in my projects.
+
+A cool thing that I've found is that the project does not use
+CoreData, instead it makes use of SQLite.
+The project's author explained on the Sundell podcast episode #95
+that CoreData does not give you the power that SQLite gives you.
+
+Sometimes you may want something more from your data storage, you want 
+more control, or you just want to work with tables and SQL lite statements.
+
+I wanted to try this because I don't have a good relationship with CoreData
+and CloudKit integration, I HATE GUIs and also because I work a lot on backend
+services so I prefer to work with the data layer and optimize indexing and queryies 
+myself and having them written down.
+
+== Introducing FMDB
+https://github.com/ccgus/fmdb[FMDB] is an Objective-C wrapper around SQLite, 
+it's open source and it's really easy to setup and it happens to be the only
+good library that lets you do that (I may be wrong here, if you know other
+good libraries please let me know, I would love to try them out!)
+
+== Setup
+Let's create a new Xcode project, I'll call mine SQLiteIntro.
+
+This app is not going to be really complex as I just want to give a 
+little introduction to the topic, just the right amount to give you an idea 
+on how working with SQL looks like in a swift project.
+
+== DataWrapper
+It's good practice to separate logic in its dedicated class/struct. In this case,
+since we're working with an SQL database I want to create a class that will abstract 
+a bit of data layer logic so that code will be a lot cleaner going forward.
+
+```swift
+final class DataWrapper: ObservableObject {
+    private let db: FMDatabase
+    
+    init(fileName: String = "test") {
+        // 1 - Get filePath of the SQLite file
+        let fileURL = try! FileManager.default
+            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("\(fileName).sqlite")
+        
+        // 2 - Create FMDatabase from filePath
+        let db = FMDatabase(url: fileURL)
+        
+        // 3 - Open connection to database
+        guard db.open() else {
+            fatalError("Unable to open database")
+        }
+        
+        // 4 - Initial table creation
+        do {
+            try db.executeUpdate("create table if not exists users(username varchar(255) primary key, age integer)", values: nil)
+        } catch {
+            fatalError("cannot execute query")
+        }
+        
+        self.db = db
+    }
+}
+```
+This is all you need to start, simple right?
+
+The code is straightforward: when the DataWrapper class 
+is initially created it will look for the database file, if the file is not
+present FMDB will create a database for you with that path.
+Finally it opens a connection to the database and creates the `user` table.
+
+== Model
+To work with the database records I want to create a `User` struct, 
+in my example I'm going to include some other JSON related stuff because 
+I'm going to use it later to create users with random name using some web APIs.
+
+```swift
+struct User: Hashable, Decodable {
+    let username: String
+    let age: Int
+    
+    init(username: String, age: Int) {
+        self.username = username
+        self.age = age
+    }
+    
+    init?(from result: FMResultSet) {
+        if let username = result.string(forColumn: "username") {
+            self.username = username
+            self.age = Int(result.int(forColumn: "age"))
+        } else {
+            return nil
+        }
+    }
+    
+    private enum CodingKeys : String, CodingKey {
+        case username = "first_name"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        username = try container.decode(String.self, forKey: .username)
+        age = Int.random(in: 1..<100)
+    }
+}
+```
+
+`FMResultSet` is what you will always get when you execute a query from the database,
+even if you expect a single record, or an empty result, that's why it's useful to have
+a dedicated init function to handle all the setup logic in this case.
+
+== Combine and MVVM
+Since I'm using SwiftUI I'd like the `DataWrapper` to be reactive and notify
+the view of possible changes in the database. 
+Going back to the implementation of `DataWrapper`, 
+I'm adding a `@Published` array of users so that I can display
+them in a `List`.
+
+```swift
+final class DataWrapper: ObservableObject {
+    private let db: FMDatabase
+
+    @Published var users = [User]()
+
+    ...
+}
+```
+
+To fetch users from the database and publish them as soon as the database is opend
+we need to create a method to query all users and set them to DataWrapper's users 
+variable after the database initialization.
+
+```swift
+func getAllUsers() -> [User] {
+    var users = [User]()
+    do {
+        let result = try db.executeQuery("select username, age from users", values: nil)
+        while result.next() {
+            if let user = User(from: result) {
+                users.append(user)
+            }
+        }
+        return users
+    } catch {
+        return users
+    }
+}
+```
+
+and place this call at the bottom of the `init` method of `DataWrapper`
+
+```swift
+users = getAllUsers()
+```
+
+Now when you first fire `DataWrapper` it will automatically
+fetch all the users and they will be ready to be used in SwiftUI.
+
+I'll create an `insert` function that I'm going to use later
+
+```swift
+func insert(_ user: User) {
+    do {
+        try db.executeUpdate(
+            """
+            insert into users (username, age)
+            values (?, ?)
+            """,
+            values: [user.username, user.age]
+        )
+        users.append(user)
+    } catch {
+        fatalError("cannot insert user: \(error)")
+    }
+}
+```
+
+== A Quick SwiftUI View
+I want to create a `List` that displays all the users that the database contains
+and also create a simple function that queries a web API to get a random username
+and inserts a new user into the database.
+
+```swift
+struct ContentView: View {
+    @EnvironmentObject var db: DataWrapper
+    
+    var body: some View {
+        NavigationView {
+            List(db.users, id: \.self) { user in
+                HStack {
+                    Text(user.username)
+                    Spacer()
+                    Text("\(user.age)")
+                }
+            }
+            
+            .navigationTitle("Users")
+            .toolbar {
+                ToolbarItem(id: "plus", placement: .navigationBarTrailing, showsByDefault: true) {
+                    Button(action: {
+                        createRandomUser()
+                    }, label: {
+                        Image(systemName: "plus")
+                    })
+                }
+            }
+        }
+    }
+    
+    private func createRandomUser() {
+        let url = URL(string: "https://random-data-api.com/api/name/random_name")!
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data else {
+                fatalError("No data")
+            }
+            
+            DispatchQueue.main.async {
+                let user = try! JSONDecoder().decode(User.self, from: data)
+                db.insert(user)
+            }
+        }
+        task.resume()
+    }
+}
+```
+
+If you run your app now, you will be presented with an empty
+list, but if you press the plus button you will start to 
+insert stuff in the database and names will begin to appear
+reactively in your list.
+
+image:https://media.giphy.com/media/bBV1Sbs5soDaEuqQh0/giphy.gif[align="center"]
+
+== Conclusion
+This was a very simple scenario that might now show a huge
+boot in performance with respect to the CoreData version, but
+it's a different way to store data in a more familiar SQLite database.
+
+If you want more control over your data, SQLite and the power of SQL 
+will certainly not let you down. SQLite could improve
+performance in applications that need fine grained control
+and aimed query optimizations. It's also easier to sync data 
+with CloudKit since now you just have to sync the sqlite file 
+without dealing with all the CoreData tables and different versions.
+
+I'm working on an article that talks about migration strategies with SQLite,
+so if you want to know more stay tuned!
