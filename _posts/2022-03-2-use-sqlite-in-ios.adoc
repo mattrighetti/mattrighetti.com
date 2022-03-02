@@ -7,10 +7,10 @@ https://github.com/Ranchero-Software/NetNewsWire[NetNewsWire]
 to see if I could find something interesting
 to implement in my projects.
 
-A cool thing that I've found is that the project does not use
-CoreData, instead it makes use of SQLite.
-The project's author explained on the Sundell podcast episode #95
-that CoreData does not give you the power that SQLite gives you.
+A cool thing that I’ve found is that the project does not use CoreData, 
+instead it makes use of SQLite. The project’s author explained on the 
+Sundell podcast episode #95 some good points on why adopting SQLite has 
+improved performance greatly.
 
 Sometimes you may want something more from your data storage, you want 
 more control, or you just want to work with tables and SQL lite statements.
