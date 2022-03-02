@@ -1,6 +1,6 @@
 = Projects
-
-= Projects
+:layout: default
+:exclude: false
 
 == Ulry
 icon:calendar[title="Period"] Jan 2022 +

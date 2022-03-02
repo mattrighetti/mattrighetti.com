@@ -1,6 +1,6 @@
 = Resume
 :layout: default
-:page-permalink: /resume/
+:exclude: false
 
 Welcome to my resume! Also available in
 https://mattrighetti.github.io/resume.pdf[.pdf]

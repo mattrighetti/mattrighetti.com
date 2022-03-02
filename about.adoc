@@ -1,6 +1,6 @@
 = About
 :layout: default
-:page-permalink: /about/
+:exclude: false
 
 == Hello!
 
