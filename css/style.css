@@ -1,9 +1,3 @@
-*,
-*:after,
-*:before {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
   height: 100%;
@@ -39,7 +33,6 @@ body {
 
 .site-header {
   width: 100%;
-  max-width: 80ch;
   margin-bottom: 1.5rem;
   margin-top: 1ch;
 }
@@ -51,6 +44,7 @@ body {
 }
 .site-header .-title {
   flex-grow: 2;
+  font-weight: 700;
 }
 .site-header a {
   font-style: normal;
@@ -180,4 +174,26 @@ pre code {
     font-weight: bold;
     border-radius: 0 0 8px 0;
     float: left;
+}
+
+.tip {
+    background-color: aquamarine;
+    padding: 1em;
+    border-radius: 0.5em;
+    border: 0.1em solid antiquewhite;
+    margin-bottom: 0.1em;
+}
+
+.openblock.note {
+    background-color: #ffd1ac6c;;
+    border-radius: 0.4em;
+    border: 2px solid #ffd1ac;
+    padding: 0 0.7em;
+}
+
+.openblock.warn {
+    background-color: #fdfb723a;;
+    border-radius: 0.4em;
+    border: 2px solid #fdfa72;
+    padding: 0 0.7em;
 }

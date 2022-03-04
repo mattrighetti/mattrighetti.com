@@ -97,12 +97,12 @@ steps that will test my code on five different iOS devices.
 
 The core command here is:
 
-----
+```Shell session
 $ xcodebuild test \
     -workspace TestApp.xcodeproj/project.xcworkspace \
     -scheme TestApp \
     -destination 'platform=iOS Simulator, name=iPad Air (3rd generation),OS=13.7'
-----
+```
 
 This command is going to test all the code contained in my test suite on an iPad
 Air simulator.

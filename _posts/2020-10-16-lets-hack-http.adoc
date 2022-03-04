@@ -6,8 +6,11 @@ In this article I’m going to show you why you absolutely want to ditch
 https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol[HTTP] websites by
 impersonating an attacker that has targeted you.
 
+[warn]
+--
 **This article is for educational purposes only. Do not try this with people
 that didn’t explicitly give you permission to do so.**
+--
 
 == What you will learn 
 This article should give you a better understanding of
@@ -18,9 +21,9 @@ tools that are common in the IT world.
 We’re going to use some well known pen-testing tools to make this
 happen:
 
-- nmap
-- ettercap
-- WireShark
+- *nmap*
+- *ettercap*
+- *WireShark*
 
 == Initial Phase 
 Our attack is useless if we don’t have anyone to hack, so what

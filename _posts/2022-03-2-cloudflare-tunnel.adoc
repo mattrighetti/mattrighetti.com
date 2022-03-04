@@ -1,7 +1,18 @@
+---
+published: false
+---
 :source-highlighter: rouge
-:published: false
 
 = Cloudflare Tunnel
+
+this is another file 
+
+[note]
+--
+this is a pro tip
+--
+
+and here we star again
 
 image:https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2672&q=80[align="center"]
 

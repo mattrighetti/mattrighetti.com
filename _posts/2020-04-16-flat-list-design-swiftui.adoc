@@ -5,7 +5,7 @@
 == Introduction
 I’m going to explain the little steps that are needed to achieve a good looking flat design in an iOS application that displays a list. Here’s the example I’m going to build.
 
-image::https://miro.medium.com/max/1400/1*v1YvTDvRHNK36evNP_WwNg.png[height=400, align="center"]
+image::https://miro.medium.com/max/1400/1*v1YvTDvRHNK36evNP_WwNg.png[width=300, align="center"]
 
 == Changing Your List’s Background and Hiding Its Separators
 The first thing we need to do is change the list’s background and hide its separators.
@@ -157,7 +157,7 @@ As you could have imagined, we’re dealing with a simple text element with a ba
 
 == Final result
 
-image::https://miro.medium.com/max/1400/1*sb3R3bvEAp_9-6AAne5COw.png[align="center"]
+image::https://miro.medium.com/max/1400/1*sb3R3bvEAp_9-6AAne5COw.png[width=300,align="center"]
 
 == Conclusion
 I hope you enjoyed this tutorial and learned how simple it can be to design great UIs with the help of a declarative language like SwiftUI. We’re all looking forward to seeing how much better it can get with version 2.0, which is coming at WWDC20.
