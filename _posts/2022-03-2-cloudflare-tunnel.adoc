@@ -1,6 +1,5 @@
----
-published: false
----
+:source-highlighter: rouge
+:published: false
 
 = Cloudflare Tunnel
 

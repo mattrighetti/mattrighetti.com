@@ -1,3 +1,5 @@
+:source-highlighter: rouge
+
 = SwiftUI and CoreData: The MVVM Way
 
 When I first started using SwiftUI for some small projects, I immediately

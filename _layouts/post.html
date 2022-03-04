@@ -6,3 +6,21 @@ layout: default
   <div class="post-meta sect1">{{ page.date | date: "%b %-d, %Y" }}</div>
   {{ content }}
 </article>
+<script>
+    function renderCodeTags() {
+        const collection = document.getElementsByClassName("rouge highlight");
+
+        for (let i = 0; i < collection.length; i++) {
+        let cNode = collection[i].firstChild;
+        let lang = cNode.getAttribute("data-lang");
+        
+        let newNode = document.createElement("div");
+        newNode.className = "lang-tag";
+        newNode.innerHTML += lang;
+        
+        collection[i].insertBefore(newNode, cNode);
+        }
+    }
+
+    renderCodeTags()
+</script>

@@ -1,3 +1,5 @@
+:source-highlighter: rouge
+
 = Flat List Design in SwiftUI
 
 == Introduction

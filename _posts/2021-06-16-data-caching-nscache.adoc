@@ -1,3 +1,5 @@
+:source-highlighter: rouge
+
 = Data Caching with NSCache
 
 image::https://miro.medium.com/max/1400/1*zVw56-JToWySViotHWqtMA.png[align="center"]

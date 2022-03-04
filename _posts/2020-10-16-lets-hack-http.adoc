@@ -1,3 +1,5 @@
+:source-highlighter: rouge
+
 = Let's Hack HTTP
 
 In this article I’m going to show you why you absolutely want to ditch

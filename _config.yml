@@ -12,12 +12,8 @@ plugins:
   - jekyll-redirect-from
   - jekyll-feed
 
+highlighter: rouge
+
 asciidoctor:
   attributes:
     - icons=font
-    - source-highlighter=rouge
-    - source-linenums-option=_
-    - sectanchors=_
-    - experimental=_
-    - rouge-style=github
-    - stylesdir=css

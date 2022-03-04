@@ -1,3 +1,5 @@
+:source-highlighter: rouge
+
 = SQLite on iOS: The MVVM Way
 
 image:https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fdownload.logo.wine%2Flogo%2FSQLite%2FSQLite-Logo.wine.png&f=1&nofb=1[align="center"]
@@ -67,6 +69,7 @@ final class DataWrapper: ObservableObject {
     }
 }
 ```
+
 This is all you need to start, simple right?
 
 The code is straightforward: when the DataWrapper class 
