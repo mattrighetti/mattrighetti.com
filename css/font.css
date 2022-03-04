@@ -1,0 +1,48 @@
+@font-face {
+    font-family: 'GT Pressura Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: local('GT Pressura Mono'), url('/fonts/GT\ Pressura\ Mono\ Regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'GT Pressura Mono';
+    font-style: italic;
+    font-weight: 400;
+    src: local('GT Pressura Mono'), url('/fonts/GT\ Pressura\ Mono\ Regular\ Italic.woff') format('woff');
+}
+@font-face {
+    font-family: 'GT Pressura Mono';
+    font-style: normal;
+    font-weight: 300;
+    src: local('GT Pressura Mono'), url('/fonts/GT\ Pressura\ Mono\ Light.woff') format('woff');
+}
+@font-face {
+    font-family: 'GT Pressura Mono';
+    font-style: italic;
+    font-weight: 300;
+    src: local('GT Pressura Mono'), url('/fonts/GT\ Pressura\ Mono\ Light\ Italic.woff') format('woff');
+}
+@font-face {
+    font-family: 'GT Pressura Mono';
+    font-style: normal;
+    font-weight: 700;
+    src: local('GT Pressura Mono'), url('/fonts/GT\ Pressura\ Mono\ Bold.woff') format('woff');
+}
+@font-face {
+    font-family: 'GT Pressura Mono';
+    font-style: italic;
+    font-weight: 700;
+    src: local('GT Pressura Mono'), url('/fonts/GT\ Pressura\ Mono\ Bold\ Italic.woff') format('woff');
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: local('JetBrains Mono'), url('/fonts/JetBrains\ Mono\ Regular.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 700;
+    src: local('JetBrains Mono'), url('/fonts/JetBrains\ Mono\ Bold.woff2') format('woff2');
+}
