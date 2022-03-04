@@ -11,10 +11,10 @@ body {
   background-color: #fff;
   color: #383838;
   font-display: swap;
-  font-weight: 400;
-  font-size: 14px;
-  font-family: "JetBrains Mono", monospace;
-  line-height: 1.725;
+  font-weight: 300;
+  font-size: 1em;
+  font-family: 'GT Pressura Mono', sans-serif;
+  line-height: 1.5;
   text-rendering: geometricPrecision;
   flex: 1;
   -moz-osx-font-smoothing: grayscale;
@@ -43,18 +43,15 @@ body {
   margin-bottom: 1.5rem;
   margin-top: 1ch;
 }
-
 .site-header > nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
 }
-
 .site-header .-title {
   flex-grow: 2;
 }
-
 .site-header a {
   font-style: normal;
   margin-left: 1ch;
@@ -63,12 +60,10 @@ body {
   color: rgba(0, 0, 0, 0.8);
   text-decoration: none;
 }
-
 .site-header a:hover {
   color: rgba(0, 0, 0, 0.8);
   text-decoration: underline;
 }
-
 .site-header a.-title {
   font-size: 1.25em;
 }
@@ -147,6 +142,20 @@ img, object, svg, video {
 }
 
 /* Code Blocks */
+code {
+    font-weight: 300;
+    font-size: 0.8em;
+    font-family: 'JetBrainsMono', monospace;
+}
+
+p code {
+    font-weight: 100;
+    padding: 0.2em;
+    background-color: #f8f8f8;
+    border-radius: 0.2em;
+    border: 1px solid #eeeeee;
+}
+
 pre {
     overflow-x: auto;
     border-radius: 0.5em;
@@ -163,6 +172,7 @@ pre code {
 }
 
 .lang-tag  {
+    text-transform: capitalize;
     background: #ffd1ac;
     display: block;
     color: #a04100;
