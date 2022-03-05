@@ -4,7 +4,8 @@
 
 == Ulry
 icon:calendar[title="Period"] Jan 2022 +
-icon:apple[] beta: https://testflight.apple.com/join/dXaHf7gZ
+icon:apple[] beta: https://testflight.apple.com/join/dXaHf7gZ +
+website: https://mattrighetti.com/ulry.html
 
 I didn't like what others read-it later apps out there offered
 so I created one that fit my needs, it's currenlty in beta testing though!
