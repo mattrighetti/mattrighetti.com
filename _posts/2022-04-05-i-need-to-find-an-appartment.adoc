@@ -32,7 +32,7 @@ the thing so that I can look at it later for comparisons.
 
 This quickly becomes hard to do. Some agencies will publish part of the
 monthly price, some of them will post the actual monthly price. Each 
-agency fee is diffeernt and it's not immediately visible. The map
+agency fee is different and it's not immediately visible. The map
 on the website is just awful and it won't let me compare positions with other
 apartments. Needless to say that it is pretty much impossible to choose
 the right one with this messy data.
@@ -56,11 +56,11 @@ is a *HUGE* json object with a lot of data in it at the bottom of the page,
 
 image::/assets/images/initstate.png[]
 
-let's see if we can find something interesing in it.
+Let's see if we can find something interesting in it.
 
 image::/assets/images/initstate_console.png[]
 
-Cool, it seems like a big object to setup the entire page. If we look at
+Cool, it seems like a big object to set up the entire page. If we look at
 each sub-object of `__INITIAL_STATE__` we find `detail` which 
 seems to be our lucky card.
 
@@ -104,7 +104,7 @@ async function scrape_json_data(browser, link) {
         var obj = await scrape_json_data(browser, links[i]);
 
         if (obj.found) {
-            // Remove all the superflous data from detail obj
+            // Remove all the superfluous data from detail obj
             obj = clean_obj(obj);
             // Add link to the obj, somehow it's not included in detail obj :/
             obj.link = links[i];
@@ -122,11 +122,11 @@ async function scrape_json_data(browser, link) {
 
 The code above will open a headless instance of chrome, go to each
 apartment link that is saved in the file at `LINKS_PATH` and
-spit an array of all the apartments data in a file at `JSON_OUT`.
+spit an array of all the apartment data in a file at `JSON_OUT`.
 
 We were lucky this time, we didn't have to go through scraping html, 
 and this would have probably been the most boring part of the entire process. 
-The next steps will be about storing data in a database and visualize it, 
+The next steps will be about storing data in a database and visualizing it, 
 but first let's write a https://github.com/casey/just[justfile] 
 (alternative to a Makefile) that will make our life easier when we
 need to execute commands.
@@ -291,7 +291,7 @@ formulae I could also sort them by distance from the city centre or any
 other map coordinates.
 
 I won't stop here though. I have some interesting little vars in
-each aparment data: `lat`, `lon`. I don't want to waste geo data!
+each apartment data: `lat`, `lon`. I don't want to waste geo data!
 It's nice and fun to just look at tabular data, but I think I could
 get an easier idea of the location just by plotting stuff on a map.
 
@@ -320,7 +320,7 @@ folium.Circle(location=interesting_coords, radius=20000, color='red', opacity=0.
 This will show a map centered on Lux, with a cool red pin on my point of interest
 and to get a better idea of the distance, I also added some circles with a radius of
 5km, 10km, 15km and 20km. This is extremely useful because I can discard immediately
-by looking at the map the apartments that are too far from my point of interest.
+by looking at the map of apartments that are too far from my point of interest.
 
 image::/assets/images/poi.png[]
 
@@ -357,16 +357,16 @@ def addApartment(map_, a):
 
 
 db = sqlite3.connect(os.environ["DB_PATH"])
-apartmens = getApartments(db)
-for a in apartmens:
+apartments = getApartments(db)
+for a in apartments:
     addApartment(map_, a)
 map_
 ```
 
 image::/assets/images/poi_apartments.png[]
 
-And here we have it! Definetly a much better experience 
-than going back and forth on the website and draw on a map 
+And here we have it! Definitely a much better experience 
+than going back and forth on the website and drawing on a map 
 all the apartments one by one, right?
 
 In the code above you can see that I've used a custom popup for each
