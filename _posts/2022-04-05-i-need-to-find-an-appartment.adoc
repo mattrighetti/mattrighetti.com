@@ -1,0 +1,468 @@
+:source-highlighter: rouge
+
+Long story short: I've taken a new position in Luxembourg and I have to 
+find an apartment, in a different country, in a reasonably short time.
+
+[note]
+--
+*TL;DR:* I hate apartment hunting, I've tried to make it as interesting
+as possible by creating a pipeline with different tools and languages 
+to _scrape_ data from a website with the use of Puppeteer, load data into
+a SQLite database using Go and visualizing all the data with Python and Folium.
+--
+
+If you want to look at the final code or follow along with me
+you can checkout the project repo on 
+https://github.com/mattrighetti/athome-scraper[GitHub].
+
+I initially sketched what I was looking for by priority
+
+image::/assets/images/sketch.svg[Embedded,500,opts=inline]
+
+After that it was time for the boring stuff: looking for an apartment
+that best fits my requirements.
+
+I have a couple of friends in Lux and they all told me to look on the infamous
+website https://athome.lu[AtHome.lu] to get an idea on the available 
+apartments that there are in Lux, so I did.
+
+I don't like doing this, so I try to make things easier by just
+looking at the pictures and if the price looks ok I'll just bookmark
+the thing so that I can look at it later for comparisons.
+
+This quickly becomes hard to do. Some agencies will publish part of the
+monthly price, some of them will post the actual monthly price. Each 
+agency fee is diffeernt and it's not immediately visible. The map
+on the website is just awful and it won't let me compare positions with other
+apartments. Needless to say that it is pretty much impossible to choose
+the right one with this messy data.
+
+What I'd like to have is a big map with all the apartments that I like on
+it and maybe a database to query apartments to show by different parameters.
+
+Let's see if we can scrape some data off of athome.lu!
+
+After giving a quick look at the website I've found out that by selecting
+the renting apartments in the Luxembourg area, links start with this URL path 
+`www.athome.lu/en/rent/apartment/luxembourg`, each apartment
+has a unique id and the complete address for an apartment looks like this
+`www.athome.lu/en/rent/apartment/luxembourg/id-642398588.html`.
+
+This is a good start, it means that I can pretty much navigate to a specific apartment
+page just by knowing its id.
+
+If I inspect the html source of a single page, I immediately notice that there
+is a *HUGE* json object with a lot of data in it at the bottom of the page,
+
+image::/assets/images/initstate.png[]
+
+let's see if we can find something interesing in it.
+
+image::/assets/images/initstate_console.png[]
+
+Cool, it seems like a big object to setup the entire page. If we look at
+each sub-object of `__INITIAL_STATE__` we find `detail` which 
+seems to be our lucky card.
+
+image::/assets/images/detail_console.png[]
+
+Great! We don't even have to scrape data from html, we have all the data of the
+apartment in this `__INITIAL_STATE__.detail` object!
+
+How can I access that variable through code though? I don't have a great experience with it
+and I don't write a lot of JS, but I heard that https://developers.google.com/web/tools/puppeteer/[Puppeteer] 
+is the right tool for the job. Let me try something out
+
+```javascript
+const puppeteer = require('puppeteer');
+const fs = require('fs').promises;
+
+async function scrape_json_data(browser, link) {
+    const page = await browser.newPage();
+    await page.goto(link);
+    const obj = await page.evaluate(() => {
+        var { detail } = __INITIAL_STATE__;
+        return detail;
+    });
+    return obj;
+}
+
+(async () => {
+    const browser = await puppeteer.launch({ headless: true });
+    // File where I'll save all my preferred apartments' links
+    const data = await fs.readFile(process.env.LINKS_PATH, "utf-8");
+    // Read line by line
+    const links = data.split(/\r?\n/);
+    
+    var objs = [];
+    for (var i in links) {
+        let id_pattern = /id-(\d+)/;
+        // Take id from final part of each link
+        let id = links[i].match(id_pattern)[1];
+
+        console.log("scraping: " + id);
+        var obj = await scrape_json_data(browser, links[i]);
+
+        if (obj.found) {
+            // Remove all the superflous data from detail obj
+            obj = clean_obj(obj);
+            // Add link to the obj, somehow it's not included in detail obj :/
+            obj.link = links[i];
+            objs.push(obj);
+        } else { 
+            objs.push({ found: false, listingId: parseInt(id) });
+        }
+    }
+    
+    // Save obj data to json file
+    fs.writeFile(process.env.JSON_OUT, JSON.stringify(objs));
+    await browser.close()
+})();
+```
+
+The code above will open a headless instance of chrome, go to each
+apartment link that is saved in the file at `LINKS_PATH` and
+spit an array of all the apartments data in a file at `JSON_OUT`.
+
+We were lucky this time, we didn't have to go through scraping html, 
+and this would have probably been the most boring part of the entire process. 
+The next steps will be about storing data in a database and visualize it, 
+but first let's write a https://github.com/casey/just[justfile] 
+(alternative to a Makefile) that will make our life easier when we
+need to execute commands.
+
+```justfile
+base     := justfile_directory()
+json_out := "/tmp/res.json"
+links    := base + "/homes.txt"
+
+scrape:
+    LINKS_PATH={{links}} \
+    JSON_OUT={{json_out}} \
+    node scraper/main.js
+```
+
+I can now scrape data by just typing
+
+```Shell session
+$ just scrape
+```
+
+I want to save all the data to a sqlite database
+so that I can conveniently check, query and get
+apartments info whenever I want and however I want.
+
+Let's move away from js and switch to a compiled language,
+Go will fit perfectly for this, it's fast and easy to use.
+
+The binary will parse the entire json file that the scraper created
+and load each apartment to the `apartment` table in sqlite.
+
+I didn't show it before, but this is my final, cleaned-from-useless-stuff
+`Apartment` struct with some tag annotations to read from json and load into
+sqlite by using https://github.com/jmoiron/sqlx[sqlx].
+
+```go
+type Apartment struct {
+	Found                  bool      `json:"found,omitempty" db:"found,omitempty"`
+	ListingId              uint32    `json:"listingId,omitempty" db:"listingId,omitempty"`
+	ListingAgencyReference string    `json:"listingAgencyReference,omitempty" db:"listingAgencyReference,omitempty"`
+	IsSoldProperty         bool      `json:"isSoldProperty,omitempty" db:"isSoldProperty,omitempty"`
+	Region                 string    `json:"region,omitempty" db:"region,omitempty"`
+	CityName               string    `json:"cityName,omitempty" db:"cityName,omitempty"`
+	Lon                    float64   `json:"lon,omitempty" db:"lon,omitempty"`
+	Lat                    float64   `json:"lat,omitempty" db:"lat,omitempty"`
+	Price                  int       `json:"price,omitempty" db:"price,omitempty"`
+	ChargesPrice           int       `json:"chargesPrice,omitempty" db:"chargesPrice,omitempty"`
+	Caution                float32   `json:"caution,omitempty" db:"caution,omitempty"`
+	AgencyFee              string    `json:"agency_fee,omitempty" db:"agency_fee,omitempty"`
+	PropertySubType        string    `json:"propertySubType,omitempty" db:"propertySubType,omitempty"`
+	PublisherId            int       `json:"publisher_id,omitempty" db:"publisher_id,omitempty"`
+	PublisherRemoteVisit   bool      `json:"publisher_remote_visit,omitempty" db:"publisher_remote_visit,omitempty"`
+	PublisherPhone         string    `json:"publisher_phone,omitempty" db:"publisher_phone,omitempty"`
+	PublisherName          string    `json:"publisher_name,omitempty" db:"publisher_name,omitempty"`
+	PublisherAthomeId      string    `json:"publisher_athome_id,omitempty" db:"publisher_athome_id,omitempty"`
+	PropertySurface        float64   `json:"propertySurface,omitempty" db:"propertySurface,omitempty"`
+	BuildingYear           string    `json:"buildingYear,omitempty" db:"buildingYear,omitempty"`
+	FloorNumber            string    `json:"floorNumber,omitempty" db:"floorNumber,omitempty"`
+	BathroomsCount         int       `json:"bathroomsCount,omitempty" db:"bathroomsCount,omitempty"`
+	BedroomsCount          int       `json:"bedroomsCount,omitempty" db:"bedroomsCount,omitempty"`
+	BalconiesCount         int       `json:"balconiesCount,omitempty" db:"balconiesCount,omitempty"`
+	CarparkCount           int       `json:"carparkCount,omitempty" db:"carparkCount,omitempty"`
+	GaragesCount           int       `json:"garagesCount,omitempty" db:"garagesCount,omitempty"`
+	HasLivingRoom          bool      `json:"hasLivingRoom,omitempty" db:"hasLivingRoom,omitempty"`
+	HasKitchen             bool      `json:"hasKitchen,omitempty" db:"hasKitchen,omitempty"`
+	Availability           string    `json:"availability,omitempty" db:"availability,omitempty"`
+	Media                  *[]string `json:"media,omitempty" db:"media,omitempty"`
+	Description            string    `json:"description,omitempty" db:"description,omitempty"`
+	Link                   string    `json:"link,omitempty" db:"link,omitempty"`
+	CreatedAt              string    `json:"createdAt,omitempty" db:"createdAt,omitempty"`
+	UpdatedAt              string    `json:"updatedAt,omitempty" db:"updatedAt,omitempty"`
+}
+```
+
+I might change my mind later down the road on the data that I want to keep
+in each `Apartment` struct, so I might want to make changes to the database structure,
+and therefore the queries to insert and update the database too. To make this a bit more
+flexible I will use a yaml file to save any database migration and insert/update
+queries to the database.
+
+```yaml
+migrations: |
+  CREATE TABLE IF NOT EXISTS apartment(
+      found BOOL,
+      listingId INTEGER PRIMARY KEY,
+      ...
+      description TEXT,
+      link TEXT,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  
+
+insertQuery: |
+    INSERT INTO apartment(found,listingId,listingAgencyReference,isSoldProperty,region,cityName,
+                          lon,lat,price,chargesPrice,caution,agency_fee,propertySubType,publisher_id,
+                          publisher_remote_visit,publisher_phone,publisher_name,publisher_athome_id,
+                          propertySurface,buildingYear,floorNumber,bathroomsCount,bedroomsCount,balconiesCount,
+                          garagesCount,carparkCount,hasLivingRoom,hasKitchen,availability,media,description,link)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+
+
+updateQuery: |
+    UPDATE apartment
+    SET found = ?, listingId = ?, listingAgencyReference = ?, isSoldProperty = ?, region = ?, cityName = ?, lon = ?, lat = ?, price = ?,
+        chargesPrice = ?, caution = ?, agency_fee = ?, propertySubType = ?, publisher_id = ?, publisher_remote_visit = ?, publisher_phone = ?, 
+        publisher_name = ?, publisher_athome_id = ?, propertySurface = ?, buildingYear = ?, floorNumber = ?, bathroomsCount = ?, 
+        bedroomsCount = ?, balconiesCount = ?, garagesCount = ?, carparkCount = ?, hasLivingRoom = ?, hasKitchen = ?,
+        availability = ?, media = ?, description = ?, link = ?, updatedAt = CURRENT_TIMESTAMP
+    WHERE listingId = ?
+```
+
+After setting up these basic features and with a little more code
+I can compile the program and run it so that it will load the previous 
+json file into my sqlite `apartment` table. 
+
+Let's add some more commands to the justfile that we've 
+created previously.
+
+```justfile
+db_path  := base + "/db.sqlite"
+
+gobuild:
+    cd {{base}}/loader; go build cmd/main.go
+
+load: gobuild
+    CONFIG_PATH={{base}}/loader/config.yaml \
+    JSON_OUT={{json_out}} \
+    DB_PATH={{db_path}} \
+    {{base}}/loader/main
+
+fetch: scrape load
+```
+
+Let's load the data into database
+
+```Shell session
+$ just load
+> OR
+$ just fetch
+> which will first scrape data and then load it in the database
+> justfiles are cool!
+```
+
+Just to get some specs, this runs fast. Take a look
+
+```Shell session
+$ cat home.txt | wc
+  65      66    4469
+$ time just load
+just load  0.38s user 0.52s system 220% cpu 0.408 total
+```
+
+I now have all the data that I scraped in my nice and super fast
+database, ready to be queried with the craziest query that comes
+to my mind, I can think of some.
+
+We're at a going point at the moment, I have a lot of parameters
+with which I can query apartments that I like. I can select them by
+non-decreasing price, by area and if I add some more complex Haversine
+formulae I could also sort them by distance from the city centre or any
+other map coordinates.
+
+I won't stop here though. I have some interesting little vars in
+each aparment data: `lat`, `lon`. I don't want to waste geo data!
+It's nice and fun to just look at tabular data, but I think I could
+get an easier idea of the location just by plotting stuff on a map.
+
+I want to code something quick with the smallest amount of code, so I'll
+go with Python and Jupyter notebook in conjunction with 
+https://python-visualization.github.io/folium/[Folium] which is
+a library that generates https://leafletjs.com/[Leaflet] maps.
+
+Let's setup the map with my point of interest
+
+```python
+import folium
+
+lux_coords = [49.611622, 6.131935]
+map_ = folium.Map(location = lux_coords, zoom_start = 10)
+
+interesting_coords = [49.630033, 6.168936]
+folium.Marker(location=interesting_coords, popup="Point of interest", icon=folium.Icon(color='red')).add_to(map_)
+
+folium.Circle(location=interesting_coords, radius=5000, color='green', opacity=0.5, weight=2).add_to(map_)
+folium.Circle(location=interesting_coords, radius=10000, color='yellow', opacity=0.5, weight=2).add_to(map_)
+folium.Circle(location=interesting_coords, radius=15000, color='orange', opacity=0.5, weight=2).add_to(map_)
+folium.Circle(location=interesting_coords, radius=20000, color='red', opacity=0.5, weight=2).add_to(map_)
+```
+
+This will show a map centered on Lux, with a cool red pin on my point of interest
+and to get a better idea of the distance, I also added some circles with a radius of
+5km, 10km, 15km and 20km. This is extremely useful because I can discard immediately
+by looking at the map the apartments that are too far from my point of interest.
+
+image::/assets/images/poi.png[]
+
+Before going crazy with SQL I need to add my scraped apartments
+to the map and for the sake of simplicity I will query them all here
+
+```python
+import os
+import sqlite3
+
+
+def getApartments(db):
+    cur = db.cursor()
+    cur.execute(
+        """
+        SELECT * 
+        FROM apartment 
+        WHERE 
+            found = TRUE
+        """
+    )
+
+    return [Apartment(row) for row in cur.fetchall()]
+
+
+def addApartment(map_, a):
+    popup = folium.Popup(a._popup_(), max_width=450)
+    folium.Marker(
+        location=[a.lat, a.lon], 
+        popup=popup,
+        # I can use fontawesome to change the pin icon
+        icon=folium.Icon(color=a._get_color(), icon=a._get_icon(), prefix="fa")
+    ).add_to(map_)
+
+
+db = sqlite3.connect(os.environ["DB_PATH"])
+apartmens = getApartments(db)
+for a in apartmens:
+    addApartment(map_, a)
+map_
+```
+
+image::/assets/images/poi_apartments.png[]
+
+And here we have it! Definetly a much better experience 
+than going back and forth on the website and draw on a map 
+all the apartments one by one, right?
+
+In the code above you can see that I've used a custom popup for each
+apartment. With Folium we can use HTML to customize the pin's popup
+with the most important information I want to see (i.e. monthly total price, initial fee,
+caution etc.)
+
+
+```python
+def _popup_(self):
+    return f"""
+    <h4>Info</h4>
+    <b>ID: </b>{self.listingId}<br>
+    <b>Monthly Price: </b>{self.price}<br>
+    <b>Monthly Charge: </b>{self.chargesPrice}<br>
+    <b>Caution: </b>{self.caution}<br>
+    <b>Agency Fee: </b>{self.agencyFee}
+    <br>
+    <h4>Total</h4>
+    <b>Monthly: </b>{self.price + self.chargesPrice}<br>
+    <b>Initial: </b>{self.caution + self.agencyFee}<br><br>
+    <a href="{self.link}" target="_blank">Page</a><br>
+    <a href="{self.galleryLink}" target="_blank">Gallery</a><br>
+    """
+```
+
+image::/assets/images/popup.png[]
+
+That's just what I wanted, I can now see on the map which are the best
+located apartments in Lux and immediately get to see the info that I'm
+interested in the most!
+
+Why would I save the data on a database if I don't use SQL at all?
+Let's say that I have a base budget of 1000€ and I want to show only
+the apartments on which I would have to spend an incremental amount of 200€,
+I could simply change the SQL query to
+
+```sql
+SELECT * 
+FROM apartment 
+WHERE 
+    found = TRUE AND
+    listingId IN (
+        SELECT listingId
+        FROM apartment
+        WHERE
+            found = TRUE AND
+            price + chargesPrice < 1000 + 200
+    )
+```
+
+Phewww, if you're still here reading all this you deserve a bonus point.
+
+Imagine I saw a very cool apartment that looks like a very good deal but
+it's a bit out of the city, what's the best way to know how much it is going
+to take me to get from that apartment to my point of interest with public transportation?
+
+If you paid close attention to the image above you might already know the answer,
+Google Maps of course! Google Maps is very cool, you can get directions from
+position x to position y by visiting `www.google.com/maps/dir/x.lat,x.lon/y.lat,y.lon`.
+
+All I need to do is add `<a href="{self.mapsDir}" target="_blank">Maps Directions</a>` 
+to the popup dialog I pasted above and I will have a very handy link that
+will open Google Maps on a new tab with the time travel from position x to y.
+
+This will save me so much time, you have no idea!
+
+Why don't we finish this by completing our justfile? In the end I
+want to type a single command and be shown the map with all the apartments
+that I saved on my file.
+
+```justfile
+open:
+    DB_PATH={{db_path}} \
+    jupyter notebook \
+    {{base}}/analyzer/apartments.ipynb
+
+show: fetch open
+```
+
+That is so convenient, I can finally only look at pictures of cool
+apartments, save the link on my file and at the end of the day type
+
+```Shell session
+$ just show
+```
+
+Life is good now, at least I made the process funnier and more efficient
+than before!
+
+The only thing that is _very slow_ at the moment is the first js snippet, 
+it takes ~1s to get a single apartment, multiply
+that for 100 apartments and you will have to wait for a couple of minutes before
+seeing all the pins on the map. The immediate solution would be to make multiple
+page requests at a time but I'm not much of an expert with `Promise`s so I think
+I'll stick with this solution until I'm not bored again to wait
+for the tool to scrape each link.
+
+I now need to get back to hunting that apartment, wish me luck!
