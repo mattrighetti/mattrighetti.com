@@ -1,3 +1,6 @@
+---
+title: I Need to Find an Apartment
+---
 :source-highlighter: rouge
 
 Long story short: I've taken a new position in Luxembourg and I have to 
