@@ -8,7 +8,7 @@ body {
   font-display: swap;
   font-weight: 300;
   font-size: 1em;
-  font-family: "GT Pressura Mono", sans-serif;
+  font-family: 'Fira Sans', sans-serif;
   line-height: 1.5;
   text-rendering: geometricPrecision;
   flex: 1;
