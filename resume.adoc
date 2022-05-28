@@ -20,6 +20,9 @@ Contacts::
 
 === Professional Experience
 
+==== SDE Intern @ Amazon
+icon:calendar[title="Period"] Jun 2022 - Current
+
 ==== Department of Civil and Environmental Engineering 
 icon:calendar[title="Period"] Jun 2018 to Sep 2021 +
 icon:link[] https://www.dica.polimi.it/?lang=en
