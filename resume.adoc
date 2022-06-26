@@ -20,7 +20,7 @@ Contacts::
 
 === Professional Experience
 
-==== SDE Intern @ Amazon
+==== SDE Intern, Amazon
 icon:calendar[title="Period"] Jun 2022 - Current
 
 ==== Department of Civil and Environmental Engineering 
