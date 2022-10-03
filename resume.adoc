@@ -31,11 +31,11 @@ icon:calendar[title="Period"] Jun 2022 - Current
 ==== Department of Civil and Environmental Engineering 
 icon:calendar[title="Period"] Jun 2018 to Sep 2021 +
 icon:link[] https://www.dica.polimi.it/?lang=en
-
-At D.I.C.A. I've worked as a Fullstack SWE and I bootstrapped
-an entire system composed of SPA and database that enabled
-professors and other research assistants to query a
-collection of flood models online from a browser.
+- Designed and maintained MySQL database, implemented scheduled jobs to periodically backup data and upload it to dedicated S3 bucket
+- Developed webapp frontend with HTML and CSS, later moved to Vue
+- Developed backend REST APIs with Go and Node.js to feed models data to the frontend webapp
+- Setup NGINX daemon to serve frontend content and route APIs requests to internal Docker network
+- VPS administration and maintenance including domain registration and networking setup
 
 === Publications
 
