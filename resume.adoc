@@ -22,15 +22,17 @@ Contacts::
 
 ==== SDE Intern, Amazon
 icon:calendar[title="Period"] Jun 2022 - Current
+
 - Developed and optimized new backend APIs that impacted many different teams and automated most of the interactions that other teams had with our service, making it faster, more efficient, much more available and paved the way for new features and ideas sparkled from wider access to the service
 - Developed a web application interface using Go and server-side rendering to showcase our backend API to other teams and which also turned out to be extremely valuable to onboard people on our APIs
 - Deployed and maintained OSRM service on AWS EC2 instance that freed the team from other internal API limitations and also enabled a finer grained control of crucial parameters that improved the value delivered to our customers
 - Data pipelines management and data manipulation with Apache Airflow, AWS Glue and AWS ECR. Improved parallelisms of data transformation pipelines making them a lot more faster, cheaper and increased overall throughput of data
 - Setup multiple pipeline to manage CI/CD of services with the use of AWS CDK and AWS CloudFormation
 
-==== Department of Civil and Environmental Engineering 
+==== Fullstack Engineer, Politecnico di Milano 
 icon:calendar[title="Period"] Jun 2018 to Sep 2021 +
 icon:link[] https://www.dica.polimi.it/?lang=en
+
 - Designed and maintained MySQL database, implemented scheduled jobs to periodically backup data and upload it to dedicated S3 bucket
 - Developed webapp frontend with HTML and CSS, later moved to Vue
 - Developed backend REST APIs with Go and Node.js to feed models data to the frontend webapp
@@ -44,6 +46,6 @@ icon:users[title="Authors"] Piero Fraternali, S. L. Herrera Gonzalez, Matteo Fri
 icon:link[] coming soon
 
 === Skills
-- Python, Bash, Java, Rust, Go, Swift
-- PostreSQL, MySQL, Docker, NGINX
-- AWS EC2, AWS S3, AWS Lambda
+- Rust, Go, Python, C, Java, Javascript, Typescript, Bash, Swift, Protobuf
+- MySQL, Postgres, PostGIS, SQLite, DynamoDB, Aurora
+- Docker, NGINX, Redis, AWS EC2, AWS S3, AWS Glue, AWS CloudFormation, AWS ECR, AWS Fargate, AWS Lambda
