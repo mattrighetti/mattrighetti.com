@@ -23,13 +23,13 @@ Contacts::
 ==== SDE Intern, Amazon
 icon:calendar[title="Period"] Jun 2022 - Current
 
-- Developed and optimized new backend APIs that impacted many different teams and automated most of the interactions that other teams had with our service, making it faster, more efficient, much more available and paved the way for new features and ideas sparkled from wider access to the service
+- Developed and optimized new backend APIs that automated most of the interactions that other teams had with our service, making it faster, more efficient and more available.
 - Developed a web application interface using Go and server-side rendering to showcase our backend API to other teams and which also turned out to be extremely valuable to onboard people on our APIs
-- Deployed and maintained OSRM service on AWS EC2 instance that freed the team from other internal API limitations and also enabled a finer grained control of crucial parameters that improved the value delivered to our customers
-- Data pipelines management and data manipulation with Apache Airflow, AWS Glue and AWS ECR. Improved parallelisms of data transformation pipelines making them a lot more faster, cheaper and increased overall throughput of data
+- Deployed and maintained OSRM service on AWS EC2 instance that freed the team from other internal API limitations
+- Data pipelines management and data manipulation with Apache Airflow, AWS Glue and AWS ECR. Improved parallelisms of data transformation pipelines
 - Setup multiple pipeline to manage CI/CD of services with the use of AWS CDK and AWS CloudFormation
 
-==== Fullstack Engineer, Politecnico di Milano 
+==== Fullstack Engineer, Politecnico di Milano
 icon:calendar[title="Period"] Jun 2018 to Sep 2021 +
 icon:link[] https://www.dica.polimi.it/?lang=en
 

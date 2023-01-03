@@ -10,7 +10,7 @@ microservices but I also enjoy going on the frontend side sometimes.
 
 I'm an SDE Intern @ Amazon and I am finishing my MSc in software engineering,
 in particular I am working on https://www.hyperledger.org/use/fabric[Hyperledger
-Fabric] and model driven development for my thesis. 
+Fabric] and model driven development for my thesis.
 
 You can find me on https://github.com/mattrighetti[GitHub].
 
