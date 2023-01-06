@@ -19,7 +19,7 @@ Another very basic Telgram bot that will keep track of user activities in groups
 == Ulry
 icon:calendar[title="Period"] Jan 2022 +
 icon:apple[] beta: https://testflight.apple.com/join/dXaHf7gZ +
-icon:globe[] https://mattrighetti.com/ulry.html
+icon:globe[] https://ulry.app
 
 I didn't like what others read-it later apps out there offered
 so I created one that fit my needs, it's currenlty in beta testing though!
@@ -35,16 +35,16 @@ chmod permissions so...
 icon:calendar[title="Period"] Jun 2021 +
 icon:github[] https://github.com/mattrighetti/HNReaderApp
 
-I've developed HNReader to have a native macOS app to read my daily Hacker News. 
-I'm not a fan of the minimalist design of the original website and 
-therefore I went for a custom design, this also was my first attempt 
+I've developed HNReader to have a native macOS app to read my daily Hacker News.
+I'm not a fan of the minimalist design of the original website and
+therefore I went for a custom design, this also was my first attempt
 to develop a macOS application.
 
 == Lode for iOS
 icon:calendar[title="Period"] Mar 2021 +
 icon:github[] https://github.com/mattrighetti/Lode
 
-I developed this application to get rid of all the excel pages I had 
-to manage my university’s marks and assignments. It was developed using 
-Swift and it was released in 2020 to the app store and also 
+I developed this application to get rid of all the excel pages I had
+to manage my university’s marks and assignments. It was developed using
+Swift and it was released in 2020 to the app store and also
 made available as an open source project for others to see and learn.
