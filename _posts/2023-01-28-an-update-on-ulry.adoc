@@ -1,0 +1,70 @@
+---
+title: An Update on Ulry
+---
+:source-highlighter: rouge
+
+If you've been following me lately you know that I'm working on a **link
+archiver** application that I heavily use to save articles and links that I can't
+read when I see them. It's an iOS only (for the moment) application that you can
+find at https://ulry.app and it's currently available in beta test on
+TestFlight.
+
+The app has been in the works for about a year now and it's almost ready for
+v1.0 + App Store debut, but I must make some more changes to the database
+(:sigh:) and add some more features that I think are going to be useful for
+everyone that uses the app.
+
+I don't know how but I must have been drunk when I first created this database
+schema. And now it needs fixing... migrations... one thing out of place and all
+my fellow beta testers are going to write me agry emails saying that I messed up
+all their lovely links.
+
+Right now I have almost 300 invites for the beta test application but only ~100
+users are actively using it, which still is quite a lot of people enjoying my
+work and trusting that further updates are not going to cause any trouble, so I
+am taking my time.
+
+I'm currently done with the adjustment migration with better indexes and
+triggers that are going to automatically handle database operations on certain
+events. I almost deleted 50 lines of code a couple of days ago after these
+triggers were added, so I'm happy with the results.
+
+==== What's REALLY missing now
+
+- Full-text search
+- **iCloud sync**! (I can hear you screaming for it)
+
+I'm working on FTS at the very moment, it's not that difficult because sqlite
+has a virtual table plugin that I'm leveraging to implement this very feature.
+It's as simple as creating a new table
+
+```sql
+CREATE VIRTUAL TABLE search USING fts4 (id, url, title, description);
+INSERT INTO search SELECT id, url, ogTitle, ogDescription FROM link;
+```
+
+Maybe some caching logic would not hurt but for the moment performance is great,
+I can search everything I have directly from the app now and results are being
+returned in ms. I will try to test this out with a larger database but sqlite is
+too good to be slow when it's under load by a single user, there's no chance
+it's going to slow down even with thousands of records.
+
+---
+
+The hardest feature to implement is going to be iCloud sync, it's a totally
+new topic for me and I don't even know where to start to be honest. Indeed, if
+you're reading this and you have some cool ideas or you've done something
+similar in the past then email me straight away with some tips! To add more
+complexity, I have to create custom behaviours and logic because I'm not using
+CoreData, but a raw sqlite database. This means that I don't get to use the
+built-in CoreData-CloudKit integration (:sigh:). Either way, this feature is
+going to come sooner or later, but I would love to release the first version of
+the app without it and consider iCloud sync when there are plenty of users
+onboard that find it a must-have.
+
+I think I'll make a small series about implementing the iCloud part with the
+help of ChatGPT, just for fun. Along with that I plan to write some technical
+articles about the not-so-complex behind the scenes of how Ulry retrieves and
+stores your favorite links.
+
+Until then, see you on TestFlight and thanks for all the feedbacks!
