@@ -3,19 +3,19 @@ title: I Need to Find an Apartment
 ---
 :source-highlighter: rouge
 
-Long story short: I've taken a new position in Luxembourg and I have to 
+Long story short: I've taken a new position in Luxembourg and I have to
 find an apartment, in a different country, in a reasonably short time.
 
 [note]
 --
 *TL;DR:* I hate apartment hunting, I've tried to make it as interesting
-as possible by creating a pipeline with different tools and languages 
+as possible by creating a pipeline with different tools and languages
 to _scrape_ data from a website with the use of Puppeteer, load data into
 a SQLite database using Go and visualizing all the data with Python and Folium.
 --
 
 If you want to look at the final code or follow along with me
-you can checkout the project repo on 
+you can checkout the project repo on
 https://github.com/mattrighetti/athome-scraper[GitHub].
 
 I initially sketched what I was looking for by priority
@@ -26,7 +26,7 @@ After that it was time for the boring stuff: looking for an apartment
 that best fits my requirements.
 
 I have a couple of friends in Lux and they all told me to look on the infamous
-website https://athome.lu[AtHome.lu] to get an idea on the available 
+website https://athome.lu[AtHome.lu] to get an idea on the available
 apartments that there are in Lux, so I did.
 
 I don't like doing this, so I try to make things easier by just
@@ -34,7 +34,7 @@ looking at the pictures and if the price looks ok I'll just bookmark
 the thing so that I can look at it later for comparisons.
 
 This quickly becomes hard to do. Some agencies will publish part of the
-monthly price, some of them will post the actual monthly price. Each 
+monthly price, some of them will post the actual monthly price. Each
 agency fee is different and it's not immediately visible. The map
 on the website is just awful and it won't let me compare positions with other
 apartments. Needless to say that it is pretty much impossible to choose
@@ -46,7 +46,7 @@ it and maybe a database to query apartments to show by different parameters.
 Let's see if we can scrape some data off of athome.lu!
 
 After giving a quick look at the website I've found out that by selecting
-the renting apartments in the Luxembourg area, links start with this URL path 
+the renting apartments in the Luxembourg area, links start with this URL path
 `www.athome.lu/en/rent/apartment/luxembourg`, each apartment
 has a unique id and the complete address for an apartment looks like this
 `www.athome.lu/en/rent/apartment/luxembourg/id-642398588.html`.
@@ -64,7 +64,7 @@ Let's see if we can find something interesting in it.
 image::/assets/images/initstate_console.png[]
 
 Cool, it seems like a big object to set up the entire page. If we look at
-each sub-object of `__INITIAL_STATE__` we find `detail` which 
+each sub-object of `__INITIAL_STATE__` we find `detail` which
 seems to be our lucky card.
 
 image::/assets/images/detail_console.png[]
@@ -73,7 +73,7 @@ Great! We don't even have to scrape data from html, we have all the data of the
 apartment in this `__INITIAL_STATE__.detail` object!
 
 How can I access that variable through code though? I don't have a great experience with it
-and I don't write a lot of JS, but I heard that https://developers.google.com/web/tools/puppeteer/[Puppeteer] 
+and I don't write a lot of JS, but I heard that https://developers.google.com/web/tools/puppeteer/[Puppeteer]
 is the right tool for the job. Let me try something out
 
 ```javascript
@@ -96,7 +96,7 @@ async function scrape_json_data(browser, link) {
     const data = await fs.readFile(process.env.LINKS_PATH, "utf-8");
     // Read line by line
     const links = data.split(/\r?\n/);
-    
+
     var objs = [];
     for (var i in links) {
         let id_pattern = /id-(\d+)/;
@@ -112,11 +112,11 @@ async function scrape_json_data(browser, link) {
             // Add link to the obj, somehow it's not included in detail obj :/
             obj.link = links[i];
             objs.push(obj);
-        } else { 
+        } else {
             objs.push({ found: false, listingId: parseInt(id) });
         }
     }
-    
+
     // Save obj data to json file
     fs.writeFile(process.env.JSON_OUT, JSON.stringify(objs));
     await browser.close()
@@ -127,10 +127,10 @@ The code above will open a headless instance of chrome, go to each
 apartment link that is saved in the file at `LINKS_PATH` and
 spit an array of all the apartment data in a file at `JSON_OUT`.
 
-We were lucky this time, we didn't have to go through scraping html, 
-and this would have probably been the most boring part of the entire process. 
-The next steps will be about storing data in a database and visualizing it, 
-but first let's write a https://github.com/casey/just[justfile] 
+We were lucky this time, we didn't have to go through scraping html,
+and this would have probably been the most boring part of the entire process.
+The next steps will be about storing data in a database and visualizing it,
+but first let's write a https://github.com/casey/just[justfile]
 (alternative to a Makefile) that will make our life easier when we
 need to execute commands.
 
@@ -221,7 +221,7 @@ migrations: |
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
-  
+
 
 insertQuery: |
     INSERT INTO apartment(found,listingId,listingAgencyReference,isSoldProperty,region,cityName,
@@ -235,18 +235,18 @@ insertQuery: |
 updateQuery: |
     UPDATE apartment
     SET found = ?, listingId = ?, listingAgencyReference = ?, isSoldProperty = ?, region = ?, cityName = ?, lon = ?, lat = ?, price = ?,
-        chargesPrice = ?, caution = ?, agency_fee = ?, propertySubType = ?, publisher_id = ?, publisher_remote_visit = ?, publisher_phone = ?, 
-        publisher_name = ?, publisher_athome_id = ?, propertySurface = ?, buildingYear = ?, floorNumber = ?, bathroomsCount = ?, 
+        chargesPrice = ?, caution = ?, agency_fee = ?, propertySubType = ?, publisher_id = ?, publisher_remote_visit = ?, publisher_phone = ?,
+        publisher_name = ?, publisher_athome_id = ?, propertySurface = ?, buildingYear = ?, floorNumber = ?, bathroomsCount = ?,
         bedroomsCount = ?, balconiesCount = ?, garagesCount = ?, carparkCount = ?, hasLivingRoom = ?, hasKitchen = ?,
         availability = ?, media = ?, description = ?, link = ?, updatedAt = CURRENT_TIMESTAMP
     WHERE listingId = ?
 ```
 
 After setting up these basic features and with a little more code
-I can compile the program and run it so that it will load the previous 
-json file into my sqlite `apartment` table. 
+I can compile the program and run it so that it will load the previous
+json file into my sqlite `apartment` table.
 
-Let's add some more commands to the justfile that we've 
+Let's add some more commands to the justfile that we've
 created previously.
 
 ```justfile
@@ -299,7 +299,7 @@ It's nice and fun to just look at tabular data, but I think I could
 get an easier idea of the location just by plotting stuff on a map.
 
 I want to code something quick with the smallest amount of code, so I'll
-go with Python and Jupyter notebook in conjunction with 
+go with Python and Jupyter notebook in conjunction with
 https://python-visualization.github.io/folium/[Folium] which is
 a library that generates https://leafletjs.com/[Leaflet] maps.
 
@@ -339,9 +339,9 @@ def getApartments(db):
     cur = db.cursor()
     cur.execute(
         """
-        SELECT * 
-        FROM apartment 
-        WHERE 
+        SELECT *
+        FROM apartment
+        WHERE
             found = TRUE
         """
     )
@@ -352,7 +352,7 @@ def getApartments(db):
 def addApartment(map_, a):
     popup = folium.Popup(a._popup_(), max_width=450)
     folium.Marker(
-        location=[a.lat, a.lon], 
+        location=[a.lat, a.lon],
         popup=popup,
         # I can use fontawesome to change the pin icon
         icon=folium.Icon(color=a._get_color(), icon=a._get_icon(), prefix="fa")
@@ -368,8 +368,8 @@ map_
 
 image::/assets/images/poi_apartments.png[]
 
-And here we have it! Definitely a much better experience 
-than going back and forth on the website and drawing on a map 
+And here we have it! Definitely a much better experience
+than going back and forth on the website and drawing on a map
 all the apartments one by one, right?
 
 In the code above you can see that I've used a custom popup for each
@@ -408,9 +408,9 @@ the apartments on which I would have to spend an incremental amount of 200€,
 I could simply change the SQL query to
 
 ```sql
-SELECT * 
-FROM apartment 
-WHERE 
+SELECT *
+FROM apartment
+WHERE
     found = TRUE AND
     listingId IN (
         SELECT listingId
@@ -431,7 +431,7 @@ If you paid close attention to the image above you might already know the answer
 Google Maps of course! Google Maps is very cool, you can get directions from
 position x to position y by visiting `www.google.com/maps/dir/x.lat,x.lon/y.lat,y.lon`.
 
-All I need to do is add `<a href="{self.mapsDir}" target="_blank">Maps Directions</a>` 
+All I need to do is add `<a href="{self.mapsDir}" target="_blank">Maps Directions</a>`
 to the popup dialog I pasted above and I will have a very handy link that
 will open Google Maps on a new tab with the time travel from position x to y.
 
@@ -460,7 +460,7 @@ $ just show
 Life is good now, at least I made the process funnier and more efficient
 than before!
 
-The only thing that is _very slow_ at the moment is the first js snippet, 
+The only thing that is _very slow_ at the moment is the first js snippet,
 it takes ~1s to get a single apartment, multiply
 that for 100 apartments and you will have to wait for a couple of minutes before
 seeing all the pins on the map. The immediate solution would be to make multiple

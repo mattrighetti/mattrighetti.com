@@ -1,0 +1,7 @@
+---
+name: Libgen Telegram Bot
+started: Mar 2022
+github: https://github.com/mattrighetti/libgen-bot-rs
+---
+
+This is a very basic Telegram bot to interface with libgen

@@ -1,0 +1,10 @@
+---
+name: Lode for iOS
+started: Mar 2021
+github: https://github.com/mattrighetti/Lode
+---
+
+I developed this application to get rid of all the excel pages I had
+to manage my university’s marks and assignments. It was developed using
+Swift and it was released in 2020 to the app store and also
+made available as an open source project for others to see and learn.

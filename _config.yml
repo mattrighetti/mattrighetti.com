@@ -7,6 +7,16 @@ github_username:  mattrighetti
 
 author: Mattia Righetti
 
+collections:
+  projects:
+    order:
+      - ulry.adoc
+      - libgen-telegram-bot.adoc
+      - hn-reader-macos.adoc
+      - chmod-util.adoc
+      - group-activity-telegram-bot.adoc
+      - lode.adoc
+
 plugins:
   - jekyll-asciidoc
   - jekyll-redirect-from

@@ -1,62 +1,53 @@
 body {
-  margin: 0;
-  height: 100%;
-  padding: 0 0.5em;
-  display: block;
-  background-color: #fff;
-  color: #383838;
-  font-display: swap;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 1em;
-  font-family: 'Fira Sans', sans-serif;
-  line-height: 1.5;
+  font-family: 'Alegreya Sans', sans-serif;
+  line-height: 1.3;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
   text-rendering: geometricPrecision;
-  flex: 1;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
 }
 
-.mx-auto {
-  margin-left: auto;
-  margin-right: auto;
+main {
+    color: #383838;
 }
 
-.max-width {
-  max-width: 48rem;
+p {
+    font-family: 'Alegreya Sans';
+    font-size: 1.1em;
 }
 
-.site-header {
-  width: 100%;
-  margin-bottom: 1.5rem;
-  margin-top: 1ch;
-}
-.site-header > nav {
+nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
+  margin: 0 10px;
 }
-.site-header .-title {
+nav .-title {
   flex-grow: 2;
   font-weight: 700;
+  font-size: 1.2em;
 }
-.site-header a {
+nav a {
   font-style: normal;
-  margin-left: 1ch;
   margin-right: 1ch;
   line-height: 1.5rem;
   color: rgba(0, 0, 0, 0.8);
   text-decoration: none;
 }
-.site-header a:hover {
+nav a:hover {
   color: rgba(0, 0, 0, 0.8);
   text-decoration: underline;
 }
-.site-header a.-title {
+nav a.-title {
   font-size: 1.25em;
 }
 
-.site-footer {
+footer {
   display: flex;
   justify-content: center;
   align-items: baseline;
@@ -68,34 +59,37 @@ body {
   padding-left: 1ch;
   padding-right: 1ch;
 }
-.site-footer > p {
+footer > p {
   margin-bottom: 0;
 }
-.site-footer a {
+footer a {
   padding-left: 2ch;
   font-style: normal;
   text-decoration: none;
   white-space: nowrap;
   color: rgba(0, 0, 0, 0.8);
 }
-.site-footer .fa {
+footer .fa {
   vertical-align: middle;
   color: rgba(0, 0, 0, 0.8);
 }
 
-.paragraph {
-    text-align: justify;
+article {
+    font-family: 'Gentium Basic';
+    font-size: 1.1em;
+    padding: 0 10px;
+}
+
+article h1 {
+    margin: 25px 0 5px 0;
 }
 
 /* Home */
-
-ul {
-    padding: 0 10px;
-}
 .post-list {
   list-style: none;
+  padding: 0 10px;
 }
-.post-list > li {
+.post-list li {
   margin-top: 1em;
 }
 .post-list h2 {
@@ -104,17 +98,14 @@ ul {
 .post-list a {
   display: block;
   text-decoration: none;
-  color: #2bbc8a;
+  color: #66cc99;
 }
 .post-list a:hover {
-  color: #2bbc8a;
   text-decoration: underline;
 }
 
 .post-meta {
   color: #828282;
-  margin-top: -0.5em;
-  padding-bottom: 1.5em;
 }
 
 .avatar > img {
@@ -136,6 +127,11 @@ img, object, svg, video {
 }
 
 /* Code Blocks */
+
+code {
+    font-family: 'JetBrains Mono', monospace;
+}
+
 pre {
     overflow-x: auto;
     border-radius: 0.5em;
@@ -146,34 +142,31 @@ pre {
 }
 
 pre code {
+    font-weight: 100;
+    font-size: 0.8em;
     display: block;
     padding: 0.5em;
     clear: both;
 }
 
-code {
-    font-weight: 300;
-    font-size: 0.9em;
-    font-family: 'JetBrains Mono', monospace;
-}
-
 p code {
     font-weight: 100;
+    font-size: 0.7em;
     padding: 0.2em;
     background-color: #f8f8f8;
+    border: 1px solid #dbdada;
     border-radius: 0.2em;
-    border: 1px solid #eeeeee;
 }
 
 .lang-tag  {
-    text-transform: capitalize;
-    background: #ffd1ac;
-    display: block;
-    color: #a04100;
-    padding: 0.2em 0.5em;
-    font-weight: bold;
-    border-radius: 0 0 8px 0;
     float: left;
+    display: block;
+    font-weight: bold;
+    padding: 0.2em 0.5em;
+    text-transform: capitalize;
+    color: #a04100;
+    background: #ffd1ac;
+    border-radius: 0 0 8px 0;
 }
 
 .tip {
@@ -189,29 +182,36 @@ p code {
     padding: 0 0.7em;
 }
 
-.openblock.note {
+.openblock .note {
     background-color: #ffd1ac6c;;
     border: 2px solid #ffd1ac;
 }
 
-.openblock.warn {
+.openblock .warn {
     background-color: #fdfb723a;;
     border: 2px solid #fdfa72;
 }
 
-/* Large Screens */
 
-@media (min-width: 800px) {
-    body {
-        padding: 0;
-    }
+.sect1, .sect2, #preamble {
+    margin: 0 10px;
+}
 
-    ul.post-list {
-        padding: 0;
-    }
+/* PROJECT SECTION */
 
-    .post-list {
-        max-width: 70%;
-        list-style: none;
-    }
+.project {
+    padding: 0 10px;
+}
+
+.project h2 {
+    margin: 25px 0 0 0;
+}
+
+.project span {
+    margin-right: 5px;
+}
+
+.project p {
+    margin: 10px 0 0 0;
+    color: #828282;
 }

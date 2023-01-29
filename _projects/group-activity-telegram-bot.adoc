@@ -1,0 +1,7 @@
+---
+name: Group Activity Telegram Bot
+started: Nov 2021
+github: https://github.com/mattrighetti/group-activity-bot-rs
+---
+
+Another very basic Telgram bot that will keep track of user activities in groups

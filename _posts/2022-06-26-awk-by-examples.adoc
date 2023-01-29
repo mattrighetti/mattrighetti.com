@@ -1,0 +1,58 @@
+---
+title: Awk by Examples
+published: false
+---
+:source-highlighter: rouge
+
+In this short article I'm going to write as many examples
+as I can to get you started with `awk`
+
+I'm going to use a little piece of my `ps` dump, this is
+how it looks like
+```process dump
+USER               PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME
+matt              3202   7.3  0.8 37246212 264764   ??  S     1:19PM  29:11.21
+_windowserver      177   1.9  0.8 41482896 260044   ??  Ss   11:17AM  37:40.94
+matt             10293   0.6  0.0 34330928   6712 s001  Ss   11:48PM   0:19.07
+matt               871   0.2  1.1 37036692 383384   ??  S    11:46AM   7:17.36
+root               118   0.1  0.0 34031884   9936   ??  Ss   11:17AM   0:30.10
+root               339   0.1  0.9 35865032 289704   ??  Ss   11:17AM   8:27.51
+root               110   0.1  0.0 34007616  13132   ??  Ss   11:17AM   2:03.13
+matt               500   0.1  0.1 36513416  47108   ??  S    11:17AM   4:07.68
+matt               614   0.1  0.3 36478236 104468   ??  S    11:17AM   0:19.08
+root               105   0.1  0.1 34148192  50296   ??  Ss   11:17AM   1:22.77
+root               131   0.1  0.2 34479300  78160   ??  Ss   11:17AM   2:35.87
+```
+
+Let's start right off
+
+=== Print all lines
+```awk code
+awk '{ print }' data.csv
+```
+Which is the same of
+```awk code
+awk '{ print $0 }' data.csv
+```
+This will print out every line, in `awk` the value `$0` stores the entire line.
+
+=== Count number of processes
+```bash
+$ cat data.txt | wc -l
+```
+You can get the same result with
+```awk code
+END { print NR }
+```
+
+
+=== Select fields
+```awk code
+{ print NR, $0 }
+```
+
+> 0 line1
+> 1 line2
+> ...
+> 32 line33
+

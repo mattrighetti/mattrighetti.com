@@ -1,6 +1,7 @@
+---
+title: Automate XCTests with GitHub Actions
+---
 :source-highlighter: rouge
-
-= Automate XCTests with GitHub Actions
 
 Ever since GitHub introduced GitHub Actions in 2018, developers now have a
 powerful tool to create complex pipelines for CI/CD without the need to rely on

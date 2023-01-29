@@ -1,0 +1,17 @@
+---
+layout: default
+title: Projects
+---
+{% for project in site.projects %}
+    <div class="project">
+        <h2>{{ project.name }}</h2>
+        <span class="icon"><i class="fa fa-calendar" title="Started"></i></span>{{ project.started }}<br>
+        {% if project.github %}
+        <span class="icon"><i class="fa fa-github"></i></span><a href="{{ project.github }}" class="bare">GitHub Repository</a><br>
+        {% endif %}
+        {% if project.website %}
+        <span class="icon"><i class="fa fa-globe"></i></span><a href="{{ project.website }}" class="bare">Website</a><br>
+        {% endif %}
+        <p>{{ project.content | markdownify }}</p>
+    </div>
+{% endfor %}

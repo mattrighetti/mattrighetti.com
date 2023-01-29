@@ -1,11 +1,10 @@
 ---
+title: Cloudflare Tunnel
 published: false
 ---
 :source-highlighter: rouge
 
-= Cloudflare Tunnel
-
-this is another file 
+this is another file
 
 [note]
 --
@@ -16,12 +15,12 @@ and here we star again
 
 image:https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2672&q=80[align="center"]
 
-Lately I've been interested a lot in the self-hosting word, I don’t want
-to spend 100$ a month for an EC2 machine on AWS to play around with some hobby projects, 
-and self-hosting was my best bet to contain costs and have a powerful machine
-at the same time. This is what I initially thought at least!
+Lately I've been interested a lot in the self-hosting word, I don’t want to
+spend 100$ a month for an EC2 machine on AWS to play around with some hobby
+projects, and self-hosting was my best bet to contain costs and have a powerful
+machine at the same time. This is what I initially thought at least!
 
-Turns out that networking is super interesting, but networking stuff can easily become
-pricy. 
+Turns out that networking is super interesting, but networking stuff can easily
+become pricy.
 
 A good pfsense router costs around 200$, a switch almost double.

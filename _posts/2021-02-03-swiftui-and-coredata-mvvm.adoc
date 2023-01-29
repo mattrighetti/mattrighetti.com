@@ -1,6 +1,7 @@
+---
+title: "SwiftUI and CoreData: The MVVM Way"
+---
 :source-highlighter: rouge
-
-= SwiftUI and CoreData: The MVVM Way
 
 When I first started using SwiftUI for some small projects, I immediately
 appreciated its ease of use and expressiveness. However, it was not all rosy.
@@ -10,7 +11,7 @@ required Core Data — it became clear to me that I would have to give a differe
 structure to the project itself. Otherwise, I would soon get entangled in a very
 serious maintainability and testing problem.
 
-== The Bad, Easy Way 
+== The Bad, Easy Way
 By going through Apple’s documentation and many other
 answers on Stack Overflow, what you will find is a lot of people placing the
 FetchRequest property wrapper variable inside a View struct that needs to fetch
@@ -49,7 +50,7 @@ to test that computed variable? You might make an ad hoc function that you can
 test later, but that is not a clean way to do it. Plus, you don’t want data
 logic in any view.
 
-== A Clean Alternative 
+== A Clean Alternative
 I tend to have a single `ViewModel` per `View` so that I
 can test each component individually and use just what I need in each one of
 them instead of having a big giant `ViewModel` to pass around in views.
@@ -171,7 +172,7 @@ class TestVM: XCTest {
 }
 ```
 
-== Final Result 
+== Final Result
 Now, I am going to show you how simple and clean the View struct
 looks with these changes:
 
@@ -188,7 +189,7 @@ struct SimpleList: View {
 No more `managedObjectContext` passed around views. There is logic separation.
 It is MVVM-compliant, easily testable, and _clean_.
 
-== Conclusion 
+== Conclusion
 I have to say that I am pretty satisfied with the results. My
 components are now all structured this way and I have not found a single issue
 with the implementation. This is why I encourage you to try this out so that you

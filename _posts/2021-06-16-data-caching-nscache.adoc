@@ -1,15 +1,15 @@
+---
+title: Data Caching with NSCache
+---
 :source-highlighter: rouge
-
-= Data Caching with NSCache
 
 image::https://miro.medium.com/max/1400/1*zVw56-JToWySViotHWqtMA.png[align="center"]
 
 I recently open-sourced my
-https://github.com/mattrighetti/HNReaderApp[HackerNews reader for macOS] that
-is entirely written in SwiftUI for macOS. Analysing my scenario can help to
-explain data caching and data waste avoidance. If you want to get a more
-detailed idea of the code, you can follow along in the project’s GitHub
-repository.
+https://github.com/mattrighetti/HNReaderApp[HackerNews reader for macOS] that is
+entirely written in SwiftUI for macOS. Analysing my scenario can help to explain
+data caching and data waste avoidance. If you want to get a more detailed idea
+of the code, you can follow along in the project’s GitHub repository.
 
 == Scenario
 

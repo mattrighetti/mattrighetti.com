@@ -1,0 +1,10 @@
+---
+name: HNReader for macOS
+started: Jun 2021
+github: https://github.com/mattrighetti/HNReaderApp
+---
+
+I've developed HNReader to have a native macOS app to read my daily Hacker News.
+I'm not a fan of the minimalist design of the original website and
+therefore I went for a custom design, this also was my first attempt
+to develop a macOS application.
