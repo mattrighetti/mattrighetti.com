@@ -13,15 +13,12 @@ impersonating an attacker that has targeted you.
 that didn’t explicitly give you permission to do so.**
 --
 
-== What you will learn
 This article should give you a better understanding of
 why HTTP is bad and why you should avoid it. Also you’ll learn a few different
 tools that are common in the IT world.
 
-== Tools
 We’re going to use some well known pen-testing tools to make this
 happen:
-
 - *nmap*
 - *ettercap*
 - *WireShark*
@@ -52,10 +49,10 @@ My target is going to be my iMac that’s sitting next to me, its IP address is
 **192.168.1.195**.
 
 == Packet Sniffing
-Now that we have our target we need to sniff his/her HTTP
-packets. Since we’re all connected to a router at the moment, we’re going to see
-nothing useful in WireShark because my iMac’s packets are not sent directly to
-me, the router will just send those packets to my iMac.
+Now that we have our target we need to sniff his/her HTTP packets. Since we’re
+all connected to a router at the moment, we’re going to see nothing useful in
+WireShark because my iMac’s packets are not sent directly to me, the router will
+just send those packets to my iMac.
 
 How are we going to make those packets come to us then if the router will just
 send them to my iMac? This can be performed with a well known attack called
@@ -67,15 +64,16 @@ image::https://miro.medium.com/max/1400/1*YGsEp-aWVhkUe2JAIq-3Lw.png[align="cent
 
 You might be wondering what **ettercap** is doing here, let me explain.
 
-Every router relies heavily on https://en.wikipedia.org/wiki/Address_Resolution_Protocol[ARP],
-(Address Resolution Protocol), to know where devices are on the
-network. It basically links every MAC address (which never changes) to its
-device IP address. What **ettercap** here is basically doing is called
-https://en.wikipedia.org/wiki/ARP_spoofing[ARP poisoning],
-which I’m using to make the router think that I am the victim’s
-computer so that it will send all the packets intended for my iMac to me, and
-I’m also telling the iMac that I am the router so it should send all the packets
-to me. Starting to see the bigger picture? 🙃
+Every router relies heavily on
+https://en.wikipedia.org/wiki/Address_Resolution_Protocol[ARP], (Address
+Resolution Protocol), to know where devices are on the network. It basically
+links every MAC address (which never changes) to its device IP address. What
+**ettercap** here is basically doing is called
+https://en.wikipedia.org/wiki/ARP_spoofing[ARP poisoning], which I’m using to
+make the router think that I am the victim’s computer so that it will send all
+the packets intended for my iMac to me, and I’m also telling the iMac that I am
+the router so it should send all the packets to me. Starting to see the bigger
+picture? 🙃
 
 image::https://miro.medium.com/max/1400/1*-gwmGLi8rn__ZlYKWAIgUw.png[align="center"]
 

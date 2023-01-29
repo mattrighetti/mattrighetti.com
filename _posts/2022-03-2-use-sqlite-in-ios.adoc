@@ -24,12 +24,14 @@ services so I prefer to work with the data layer and optimize indexing and query
 myself and having them written down.
 
 == Introducing FMDB
+
 https://github.com/ccgus/fmdb[FMDB] is an Objective-C wrapper around SQLite,
 it's open source and it's really easy to setup and it happens to be the only
 good library that lets you do that (I may be wrong here, if you know other
 good libraries please let me know, I would love to try them out!)
 
 == Setup
+
 Let's create a new Xcode project, I'll call mine SQLiteIntro.
 
 This app is not going to be really complex as I just want to give a
@@ -37,6 +39,7 @@ little introduction to the topic, just the right amount to give you an idea
 on how working with SQL looks like in a swift project.
 
 == DataWrapper
+
 It's good practice to separate logic in its dedicated class/struct. In this case,
 since we're working with an SQL database I want to create a class that will abstract
 a bit of data layer logic so that code will be a lot cleaner going forward.
@@ -73,15 +76,16 @@ final class DataWrapper: ObservableObject {
 
 This is all you need to start, simple right?
 
-The code is straightforward: when the DataWrapper class
-is initially created it will look for the database file, if the file is not
-present FMDB will create a database for you with that path.
-Finally it opens a connection to the database and creates the `user` table.
+The code is straightforward: when the DataWrapper class is initially created it
+will look for the database file, if the file is not present FMDB will create a
+database for you with that path. Finally it opens a connection to the database
+and creates the `user` table.
 
 == Model
-To work with the database records I want to create a `User` struct,
-in my example I'm going to include some other JSON related stuff because
-I'm going to use it later to create users with random name using some web APIs.
+
+To work with the database records I want to create a `User` struct, in my
+example I'm going to include some other JSON related stuff because I'm going to
+use it later to create users with random name using some web APIs.
 
 ```swift
 struct User: Hashable, Decodable {
@@ -114,15 +118,16 @@ struct User: Hashable, Decodable {
 }
 ```
 
-`FMResultSet` is what you will always get when you execute a query from the database,
-even if you expect a single record, or an empty result, that's why it's useful to have
-a dedicated init function to handle all the setup logic in this case.
+`FMResultSet` is what you will always get when you execute a query from the
+database, even if you expect a single record, or an empty result, that's why
+it's useful to have a dedicated init function to handle all the setup logic in
+this case.
 
 == Combine and MVVM
-Since I'm using SwiftUI I'd like the `DataWrapper` to be reactive and notify
-the view of possible changes in the database.
-Going back to the implementation of `DataWrapper`,
-I'm adding a `@Published` array of users so that I can display
+
+Since I'm using SwiftUI I'd like the `DataWrapper` to be reactive and notify the
+view of possible changes in the database. Going back to the implementation of
+`DataWrapper`, I'm adding a `@Published` array of users so that I can display
 them in a `List`.
 
 ```swift
@@ -135,9 +140,9 @@ final class DataWrapper: ObservableObject {
 }
 ```
 
-To fetch users from the database and publish them as soon as the database is opend
-we need to create a method to query all users and set them to DataWrapper's users
-variable after the database initialization.
+To fetch users from the database and publish them as soon as the database is
+opend we need to create a method to query all users and set them to
+DataWrapper's users variable after the database initialization.
 
 ```swift
 func getAllUsers() -> [User] {
@@ -185,6 +190,7 @@ func insert(_ user: User) {
 ```
 
 == A Quick SwiftUI View
+
 I want to create a `List` that displays all the users that the database contains
 and also create a simple function that queries a web API to get a random username
 and inserts a new user into the database.
@@ -241,6 +247,7 @@ reactively in your list.
 image:https://media.giphy.com/media/bBV1Sbs5soDaEuqQh0/giphy.gif[align="center"]
 
 == Conclusion
+
 This was a very simple scenario that might now show a huge
 boot in performance with respect to the CoreData version, but
 it's a different way to store data in a more familiar SQLite database.

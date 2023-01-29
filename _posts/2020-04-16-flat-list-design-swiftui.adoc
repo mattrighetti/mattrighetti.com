@@ -48,7 +48,9 @@ white, depending on the `colorScheme` of the application. To make it the same
 color as the background, we just need to add this property to the row
 `.listRowBackground(Color.flatDarkBackground)`, and voilà.
 
-== Row-Card Decomposition I’ve created this small infographic to give you a
+== Row-Card Decomposition
+
+I’ve created this small infographic to give you a
 better idea of how the card itself can be created in SwiftUI.
 
 image::https://miro.medium.com/max/1400/1*WRuNfOUh8cK3CzNxQyf--Q.jpeg[align="center"]
@@ -180,7 +182,9 @@ background color and a corner radius.
 
 image::https://miro.medium.com/max/1400/1*sb3R3bvEAp_9-6AAne5COw.png[width=300,align="center"]
 
-== Conclusion I hope you enjoyed this tutorial and learned how simple it can be
+== Conclusion
+
+I hope you enjoyed this tutorial and learned how simple it can be
 to design great UIs with the help of a declarative language like SwiftUI. We’re
 all looking forward to seeing how much better it can get with version 2.0, which
 is coming at WWDC20.

@@ -49,8 +49,6 @@ returned in ms. I will try to test this out with a larger database but sqlite is
 too good to be slow when it's under load by a single user, there's no chance
 it's going to slow down even with thousands of records.
 
----
-
 The hardest feature to implement is going to be iCloud sync, it's a totally
 new topic for me and I don't even know where to start to be honest. Indeed, if
 you're reading this and you have some cool ideas or you've done something
