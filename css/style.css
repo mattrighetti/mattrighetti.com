@@ -77,7 +77,6 @@ footer .fa {
 article {
     font-family: 'Gentium Basic';
     font-size: 1.1em;
-    padding: 0 10px;
 }
 
 article h1 {
@@ -182,26 +181,21 @@ p code {
     padding: 0 0.7em;
 }
 
-.openblock .note {
-    background-color: #ffd1ac6c;;
+.note {
+    background-color: #ffd1ac6c;
     border: 2px solid #ffd1ac;
 }
 
-.openblock .warn {
-    background-color: #fdfb723a;;
+.warn {
+    background-color: #fdfb723a;
     border: 2px solid #fdfa72;
 }
 
-
-.sect1, .sect2, #preamble {
+main {
     margin: 0 10px;
 }
 
 /* PROJECT SECTION */
-
-.project {
-    padding: 0 10px;
-}
 
 .project h2 {
     margin: 25px 0 0 0;
@@ -214,4 +208,28 @@ p code {
 .project p {
     margin: 10px 0 0 0;
     color: #828282;
+}
+
+.position h3 {
+    margin: 25px 0 0 0;
+}
+
+.position h4 {
+    margin: 0 0 5px 0;
+    color: #555353;
+}
+
+.position span {
+    margin-right: 10px;
+}
+
+.position p {
+    color: #828282;
+    margin-top: 0;
+}
+
+.position ul {
+    margin: 0;
+    padding: 0 0 0 15px;
+    list-style:circle;
 }

@@ -8,6 +8,10 @@ github_username:  mattrighetti
 author: Mattia Righetti
 
 collections:
+  positions:
+    order:
+      - amazon-sde-intern.adoc
+      - fullstack-engineer-polimi.adoc
   projects:
     order:
       - ulry.adoc

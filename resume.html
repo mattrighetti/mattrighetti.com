@@ -1,0 +1,108 @@
+---
+layout: default
+title: Resume
+---
+<div id="preamble">
+    <div class="sectionbody">
+        <div class="paragraph">
+            <p>Welcome to my resume! Also available in
+                <a href="https://mattrighetti.github.io/resume.pdf">.pdf</a>
+            </p>
+        </div>
+    </div>
+</div>
+<div class="sect2">
+    <h3 id="personal-details">Personal Details</h3>
+    <div class="hdlist">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="hdlist1">
+                        Name
+                    </td>
+                    <td class="hdlist2">
+                        <p>Mattia Righetti</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="hdlist1">
+                        Contacts
+                    </td>
+                    <td class="hdlist2">
+                        <div class="ulist">
+                            <ul>
+                                <li>
+                                    <p><span class="icon"><i class="fa fa-github"></i></span> <a
+                                            href="https://github.com/mattrighetti"
+                                            class="bare">https://github.com/mattrighetti</a></p>
+                                </li>
+                                <li>
+                                    <p><span class="icon"><i class="fa fa-link"></i></span> <a
+                                            href="http://mattrighetti.com" class="bare">http://mattrighetti.com</a></p>
+                                </li>
+                                <li>
+                                    <p><span class="icon"><i class="fa fa-envelope"></i></span> <a
+                                            href="mailto:mattiarighetti@outlook.com">mattiarighetti@outlook.com</a></p>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<section>
+    <h2 id="education">Education</h2>
+    <div class="ulist">
+        <ul>
+            <li>
+                <p>2019-2023, MSc in Computer Science, <em>Politecnico di Milano</em></p>
+            </li>
+            <li>
+                <p>2015-2019, BSc in Computer Science, <em>Politecnico di Milano</em></p>
+            </li>
+        </ul>
+    </div>
+</section>
+<section class="position-list">
+    <h2>Professional Experience</h2>
+    {% for position in site.positions %}
+        <div class="position">
+            <h3>{{ position.name }}</h3>
+            <h4>{{ position.company }}</h4>
+            <span class="icon"><i class="fa fa-calendar" title="Started"></i></span>{{ position.start }}-{{ position.end }}<br>
+            <p>{{ position.content | markdownify }}</p>
+        </div>
+    {% endfor %}
+</section>
+<section>
+    <h2>Publications</h2>
+    <div class="sect3">
+        <h4 id="model-driven-development-of-distributed-ledger-applications">Model-Driven Development of Distributed
+            Ledger Applications</h4>
+        <div class="paragraph">
+            <p><span class="icon"><i class="fa fa-users" title="Authors"></i></span> Piero Fraternali, S. L. Herrera
+                Gonzalez, Matteo Frigerio, Mattia Righetti<br>
+                <span class="icon"><i class="fa fa-link"></i></span> coming soon
+            </p>
+        </div>
+    </div>
+</section>
+<section>
+    <h2>Skills</h2>
+    <div class="ulist">
+        <ul>
+            <li>
+                <p>Rust, Go, Python, C, Java, Javascript, Typescript, Bash, Swift, Protobuf</p>
+            </li>
+            <li>
+                <p>MySQL, Postgres, PostGIS, SQLite, DynamoDB, Aurora</p>
+            </li>
+            <li>
+                <p>Docker, NGINX, Redis, AWS EC2, AWS S3, AWS Glue, AWS CloudFormation, AWS ECR, AWS Fargate, AWS Lambda
+                </p>
+            </li>
+        </ul>
+    </div>
+</section>

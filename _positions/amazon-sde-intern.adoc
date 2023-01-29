@@ -1,0 +1,12 @@
+---
+name: SDE Intern
+company: Amazon
+start: Jun 2022
+end: Nov 2022
+---
+
+- Developed and optimized new backend APIs that automated most of the interactions that other teams had with our service, making it faster, more efficient and more available.
+- Developed a web application interface using Go and server-side rendering to showcase our backend API to other teams and which also turned out to be extremely valuable to onboard people on our APIs
+- Deployed and maintained OSRM service on AWS EC2 instance that freed the team from other internal API limitations
+- Data pipelines management and data manipulation with Apache Airflow, AWS Glue and AWS ECR. Improved parallelisms of data transformation pipelines
+- Setup multiple pipeline to manage CI/CD of services with the use of AWS CDK and AWS CloudFormation
