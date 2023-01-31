@@ -5,8 +5,10 @@ start: Jun 2018
 end: Sep 2021
 ---
 
-- Designed and maintained MySQL database, implemented scheduled jobs to periodically backup data and upload it to dedicated S3 bucket
-- Developed webapp frontend with HTML and CSS, later moved to Vue
-- Developed backend REST APIs with Go and Node.js to feed models data to the frontend webapp
-- Setup NGINX daemon to serve frontend content and route APIs requests to internal Docker network
-- VPS administration and maintenance including domain registration and networking setup
+- Designed and maintained database to support department required features.
+- Developed web application that made interaction with the database more
+  intuitive and quick for all the students of the department.
+- Developed backend REST APIs used by the web application to interact with the
+  database.
+- VPS administration and maintenance including domain registration and
+  networking setup.
