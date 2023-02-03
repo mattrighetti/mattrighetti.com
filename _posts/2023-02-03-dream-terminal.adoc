@@ -1,0 +1,246 @@
+---
+title: Dream Terminal
+---
+:source-highlighter: rouge
+
+I recently switched to the new M2 MacBook and as a common ritual, I have to set
+it up from scratch. My old MacBook that mounted an Intel i9 is in the corner
+crying at 80ºC but it will be fine.
+
+[note]
+--
+You can find all my https://github.com/mattrighetti/dotfiles.git[dotfiles] on my GitHub.
+--
+
+I spend 99% of my time in the terminal so as you can imagine I want it to feel
+fast and look good. The first thing that I usually setup is
+https://ohmyz.sh[**oh-my-zsh**], it's as easy as running this one-liner in the
+terminal
+
+```shell session
+$ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+This is going to give your terminal a clean look with just the bare minimum
+stuff that you actually need to see up-front. Next up is syntax-highlighting and
+suggestions. These are super useful especially if you don't want to type 50
+chars commands every time. The plugins that I use are
+https://github.com/zsh-users/zsh-syntax-highlighting.git[zsh-syntax-highlighting],
+https://github.com/zsh-users/zsh-autosuggestions.git[zsh-autosuggestions],
+https://github.com/zsh-users/zsh-completions.git[zsh-completions]. zsh has a
+special folder in which you must put your plugins, and that folder is
+`.oh-my-zsh/custom/plugins`, and this is exactly where I put the three plugins
+above
+
+```shell session
+ZSH_CUSTOM=$HOME/.oh-my-zsh/custom
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git  $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-autosuggestions.git      $ZSH_CUSTOM/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-completions.git          $ZSH_CUSTOM/plugins/zsh-completions
+```
+
+At this point zsh has almost reached perfection for what I need, as soon as you
+type something it's going to show a dimmed suggestion based on your previous
+commands.
+
+Another must-have tool is https://brew.sh[Homebrew]. I have a script that is
+going to install pretty much every app, font and binary that I need on my new
+machine. This is super convenient because you just need to run a one-liner and
+when it finishes you're going to have EVERYTHING that I usually install on every
+Mac that I have, without the need to visit 100 different websites, clicking a
+thousand different hyperlinks to download every application or binary that I use
+day-to-day.
+
+```bash
+#!/usr/bin/env bash
+
+# Check for Homebrew
+# Install if not present
+if test ! $(which brew); then
+    echo "Installing Homebrew 🍺..."
+    echo | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+tools=(
+    git
+    node
+    go
+    rust
+    openjdk
+)
+
+rust_bins=(
+    # a better `cat`
+    bat
+    # a better `ls`
+    exa
+    fd
+    # a better `diff`
+    git-delta
+    procs
+    tokei
+    ripgrep
+)
+
+other_bin=(
+    fzf
+    htop
+    jq
+    tree
+    tmux
+    wget
+    tldr
+    aria2
+    ack
+    grpcurl
+)
+
+gnu_tools=(
+    coreutils
+    moreutils
+    findutils
+    gnu-indent
+    gnu-getopt
+    gnu-sed
+    gnu-tar
+    gnutls
+    gawk
+    grep
+    stow
+    flex
+    bison
+)
+
+fonts=(
+    font-jetbrains-mono
+    font-fira-mono
+    font-fira-code
+    font-fira-mono-nerd-font
+)
+
+apps=(
+    alacritty
+    discord
+    jetbrains-toolbox
+    spotify
+    telegram
+    firefox
+    visual-studio-code
+    bartender
+    alfred
+    cyberduck
+    vlc
+    appcleaner
+    tor-browser
+    docker
+    sf-symbols
+    keka
+    transmission
+)
+
+brew install ${tools[@]}
+brew install ${gnu_tools[@]}
+brew install ${rust_bins[@]}
+brew install ${other_bin[@]}
+
+brew tap homebrew/cask-fonts
+brew install --cask ${fonts[@]}
+
+brew install --cask --appdir="/Applications" ${apps[@]}
+
+brew cleanup
+```
+
+Homebrew takes a little bit of time at first to sync and install all the
+dependencies but it's a great tool that everyone should have on their machine, I
+also use it on Linux and it's super useful there too. Also, the script is pretty
+concise and readable, I just create a couple of arrays to better see what I want
+to install and expand those in the installation commands at the bottom.
+
+If you read all the stuff that I installed with Homebrew you certainly noticed
+that I installed https://alacritty.org[Alacritty], which is a super cool and
+fast terminal emulator (written is Rust, it's a trend to point this out 😌 ).
+Ditch the default terminal app, it's crap.
+
+I would like to point out just a thing I have going on with Alacritty, you can
+find the entire
+https://github.com/mattrighetti/dotfiles/blob/master/.config/alacritty/alacritty.yml[alacritty.yml]
+config file on my GitHub.
+
+```yml
+shell:
+  program: /opt/homebrew/bin/tmux
+  args:
+    - new-session
+    - -A
+    - -D
+    - -s
+    - main
+```
+
+[warn]
+--
+If you are not using a M* Mac then your homebrew folder
+is going to be `/usr/local/` and not `/opt/homebrew/`
+--
+
+With this you are basically telling Alacritty to open a `tmux` session each time
+you open the terminal emulator app, this way you don't have to run it yourself
+every single time you boot up your system.
+
+At this point I'm almost done, I just need my config files in the right place. I
+usually put all my config files in `$HOME/.config`, and every binary that does
+not parse config files in that folder does not deserve to be installed. Also, I
+manage all my dotfiles with https://news.ycombinator.com/item?id=11071754[this] little trick. I have
+different branches for different systems, but for the moment I'm just assuming
+that everything is on the `master` branch.
+
+```shell session
+$ git init --bare $HOME/.cfg
+$ alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+$ config config status.showUntrackedFiles no
+$ config pull -u origin master
+```
+
+And magically all my dotfiles are cloned in the right place, nothing is broken
+and everything is versioned so that if I need to make some changes I can always
+keep track of them and sync them with my remote repository.
+
+```shell session
+$ tree .config
+.config
+├── alacritty
+│  └── alacritty.yml
+├── htop
+│  └── htoprc
+├── nvim
+│  ├── after
+│  │  ├── ftplugin
+│  │  │  ├── asciidoc.lua
+│  │  │  ├── gitcommit.lua
+│  │  │  └── markdown.lua
+│  │  └── plugin
+│  │     ├── fugitive.lua
+│  │     ├── lsp.lua
+│  │     ├── lualine.lua
+│  │     ├── telescope.lua
+│  │     ├── treesitter.lua
+│  │     └── undotree.lua
+│  ├── init.lua
+│  ├── legacy.vim
+│  ├── lua
+│  │  ├── nvimcmp.lua
+│  │  ├── options.lua
+│  │  ├── plugins.lua
+│  │  └── remap.lua
+│  └── plugin
+│     └── packer_compiled.lua
+└── tmux
+   └── tmux.conf
+```
+
+This is all that I usually do when I have to setup a Mac from scratch (and Linux
+too), it's the easiest and fastest way possible to do it. Is there anything
+better than running approximately 10 commands to setup your machine entirely?
+
+Now I can sit back and enjoy my fresh, minimal and fast terminal.
