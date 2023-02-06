@@ -120,11 +120,12 @@ img,
 object,
 svg,
 video {
-    display: inline-block;
+    display: block;
     vertical-align: middle;
     max-width: 100%;
     height: auto;
     border-radius: 10px;
+    margin: auto;
 }
 
 /* Code Blocks */

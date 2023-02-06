@@ -1,0 +1,66 @@
+---
+title: Bypassing Manual Encryption Check for iOS Apps 
+---
+:source-highlighter: rouge
+
+This is going to be a very small and dumb one but I've just dicovered this,
+after two years of iOS/macOS software development, so maybe it's going to be
+useful for other people as well.
+
+If you have ever archived and pushed an application to the AppStoreConnect
+website you've certainly encountered this and you probably know how annyoing it
+is to manually comply to it every. single. time.
+
+image::/assets/images/export-compliance.png[]
+
+I'm quoting Apple
+
+[quote, Apple Developer Documentation]
+____
+When you submit your app to TestFlight or the App Store, you upload your app to
+a server in the United States. If you distribute your app outside the U.S. or
+Canada, your app is subject to U.S. export laws, regardless of where your legal
+entity is based. If your app uses, accesses, contains, implements, or
+incorporates encryption, this is considered an export of encryption software,
+which means your app is subject to U.S. export compliance requirements, as well
+as the import compliance requirements of the countries where you distribute your
+app.
+____
+
+For some reason I always thought that you needed to handle this check manually,
+silly me. I never investigated this further, probably because I've never
+released more than once per week so this was not a real issue, but last week I was about
+to setup an Xcode Cloud pipeline to automate `testing -> archiving -> release`
+and I realised that this very encryption compliace was blocking the entire
+process. Apps could not be released because I had to first declare if the app
+was or was not using some sort of encryption. So I started googling and the
+solution was pretty straightforward.
+
+[quote, Apple Developer Documentation]
+____
+Every time you submit a new version of your app, App Store Connect asks you
+questions to guide you through a compliance review. **You can bypass these
+questions and streamline the submission process by providing the required
+information in your app’s Information Property List file.**
+
+Add the
+https://developer.apple.com/documentation/bundleresources/information_property_list/itsappusesnonexemptencryption[ITSAppUsesNonExemptEncryption]
+key to your app’s Info.plist file with a Boolean value that indicates whether
+your app uses encryption. Set the value to NO if your app—including any
+third-party libraries it links against—doesn’t use encryption, or if it only
+uses forms of encryption that are exempt from export compliance documentation
+requirements. Otherwise, set it to YES.
+____
+
+Therefore, the issue of manually checking export encryption compliance can be
+bypassed by adding this key to the app's `Info.plist` file.
+
+```Info.plist
+<key>ITSAppUsesNonExemptEncryption</key>
+<false/>
+```
+
+This only applies for apps that are not using encryption.
+If your app is using it then you should take a look at the
+https://developer.apple.com/documentation/security/complying_with_encryption_export_regulations[Apple
+Developer Documentation] page that describes the process to do it.
