@@ -72,6 +72,7 @@ title: Resume
             <h3>{{ position.name }}</h3>
             <h4>{{ position.company }}</h4>
             <span class="icon"><i class="fa fa-calendar" title="Started"></i></span>{{ position.start }}-{{ position.end }}<br>
+            <span class="icon"><i class="fa fa-map-marker" title="Location"></i></span>{{ position.location }}<br>
             <p>{{ position.content | markdownify }}</p>
         </div>
     {% endfor %}

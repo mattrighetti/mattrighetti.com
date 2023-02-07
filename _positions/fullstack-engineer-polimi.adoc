@@ -1,6 +1,7 @@
 ---
 name: Fullstack Engineer
 company: Politecnico di Milano
+location: Milan, Italy
 start: Jun 2018
 end: Sep 2021
 ---

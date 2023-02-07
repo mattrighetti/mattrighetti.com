@@ -1,6 +1,7 @@
 ---
 name: SDE Intern
 company: Amazon
+location: Luxembourg, Luxembourg
 start: Jun 2022
 end: Nov 2022
 ---
