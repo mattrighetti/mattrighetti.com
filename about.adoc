@@ -5,13 +5,13 @@ layout: default
 
 == Hey there!
 
-I am Mattia and I'm a software engineer from Italy. My main
-interests are distributes systems, performance optimization, databases and
-microservices but I also have experience with frontend, don't tell anyone.
+I am Mattia and I'm a software engineer from Italy. My main interests are
+distributed systems, performance optimization, databases and microservices but I
+also have experience with frontend, don't tell anyone.
 
-I am currently finishing my MSc in software engineering, in particular
-I am working on https://www.hyperledger.org/use/fabric[Hyperledger
-Fabric] and model driven development for my thesis.
+I am currently finishing my MSc in software engineering, in particular I am
+working on https://www.hyperledger.org/use/fabric[Hyperledger Fabric] and model
+driven development for my thesis.
 
 You can find me on https://github.com/mattrighetti[GitHub].
 
