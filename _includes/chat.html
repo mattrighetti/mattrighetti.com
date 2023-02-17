@@ -3,6 +3,6 @@
         {% include {{ include.character }}.svg %}
     </div>
     <div class="dialog-text">
-        <p>{{ include.text | markdownify }}</p>
+        {{ include.text | markdownify }}
     </div>
 </div>

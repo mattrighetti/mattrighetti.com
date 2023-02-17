@@ -2,10 +2,19 @@
 title: Bypassing Manual Encryption Check for iOS Apps 
 ---
 :source-highlighter: rouge
+:page-liquid:
 
 This is going to be a very small and dumb one but I've just dicovered this,
 after two years of iOS/macOS software development, so maybe it's going to be
 useful for other people as well.
+
+++++
+{% include chat.html character="professor" text="Uh, took you a lot of time my man..." %}
+++++
+
+++++
+{% include chat.html character="matt" text="Well... yeah... better late than never, they say" %}
+++++
 
 If you have ever archived and pushed an application to the AppStoreConnect
 website you've certainly encountered this and you probably know how annyoing it

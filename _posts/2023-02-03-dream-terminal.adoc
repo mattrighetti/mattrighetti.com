@@ -179,11 +179,23 @@ shell:
     - main
 ```
 
-[warn]
---
-If you are not using a M* Mac then your homebrew folder
-is going to be `/usr/local/` and not `/opt/homebrew/`
---
+++++
+{% include chat.html character="professor" text="Hmmm, I can't seem to find that
+folder on my system" %}
+++++
+
+++++
+{% include chat.html character="matt" text="Oh, forgot to tell that if you
+are not using a M1/2 Mac then your homebrew folder is going to be `/usr/local/`
+and not `/opt/homebrew/`. Either way, if you want to be sure about it you can
+just run `brew --prefix` and it will output the correct folder under which brew
+has been installed." %}
+++++
+
+++++
+{% include chat.html character="professor" text="Cool! Indeed I'm on an old
+Intel Mac and you are correct" %}
+++++
 
 With this you are basically telling Alacritty to open a `tmux` session each time
 you open the terminal emulator app, this way you don't have to run it yourself
