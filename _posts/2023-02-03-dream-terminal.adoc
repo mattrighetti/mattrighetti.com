@@ -2,15 +2,16 @@
 title: Dream Terminal
 ---
 :source-highlighter: rouge
+:page-liquid:
 
 I recently switched to the new M2 MacBook and as a common ritual, I have to set
 it up from scratch. My old MacBook that mounted an Intel i9 is in the corner
 crying at 80ºC but it will be fine.
 
-[note]
---
-You can find all my https://github.com/mattrighetti/dotfiles.git[dotfiles] on my GitHub.
---
+++++
+{% include chat.html character="matt" text="If you want to follow along with me,
+you can find all my [dotfiles](https://github.com/mattrighetti/dotfiles.git) on my GitHub." %}
+++++
 
 I spend 99% of my time in the terminal so as you can imagine I want it to feel
 fast and look good. The first thing that I usually setup is

@@ -1,0 +1,8 @@
+<div class="dialog {{ include.character }}" title="{{ include.character | capitalize }}">
+    <div class="dialog-head">
+        {% include {{ include.character }}.svg %}
+    </div>
+    <div class="dialog-text">
+        <p>{{ include.text | markdownify }}</p>
+    </div>
+</div>

@@ -2,16 +2,22 @@
 title: Let's Hack HTTP
 ---
 :source-highlighter: rouge
+:page-liquid:
 
 In this article I’m going to show you why you absolutely want to ditch
 https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol[HTTP] websites by
 impersonating an attacker that has targeted you.
 
-[warn]
---
-**This article is for educational purposes only. Do not try this with people
-that didn’t explicitly give you permission to do so.**
---
+++++
+{% include chat.html character="cop" text="Hey you! Do not try what's shown in
+the article with people that didn’t explicitly give you permission to do so,
+otherwise I'll be at your doorstep real soon." %}
+++++
+
+++++
+{% include chat.html character="matt" text="Yeah, no worries officer! I'm
+experimenting inside my home network" %}
+++++
 
 This article should give you a better understanding of
 why HTTP is bad and why you should avoid it. Also you’ll learn a few different

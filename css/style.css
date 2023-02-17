@@ -241,3 +241,58 @@ main {
     font-weight: 600;
     margin-top: 0.7em;
 }
+
+.dialog {
+    display: flex;
+    flex-direction: row;
+    font-size: 1.2rem; 
+    margin: 10px 0px;
+}
+
+.dialog p {
+    margin: 10px;
+    text-align: justify;
+}
+
+.dialog.matt {
+    flex-direction: row-reverse;
+}
+
+.dialog .dialog-head {
+    align-self: flex-start;
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+    margin: 0.2rem 0.4rem;
+    flex-shrink: 0;
+}
+
+.dialog.matt .dialog-head {
+    flex-basis: 68px;
+    width: 68px;
+    height: 68px;
+}
+
+.dialog .dialog-text {
+    max-width: 400px;
+    line-height: 1.3;
+    border-radius: 14px;
+    padding: 0rem 0.8rem;
+    overflow: hidden;
+    margin: 0;  
+}
+
+.dialog.matt .dialog-text {
+    background-color: #e3e3e333;
+    border: #e3e3e3 1px solid;
+}
+
+.dialog.cop .dialog-text {
+    background-color: #FFCD0233;
+    border: #FFCD02 1px solid;
+}
+
+.dialog.professor .dialog-text {
+    background-color: #66cc9933;
+    border: #72cc66 1px solid;
+}
