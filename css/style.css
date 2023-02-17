@@ -121,7 +121,6 @@ object,
 svg,
 video {
     display: block;
-    vertical-align: middle;
     max-width: 100%;
     height: auto;
     border-radius: 10px;
@@ -235,4 +234,10 @@ main {
     margin: 0;
     padding: 0 0 0 15px;
     list-style: circle;
+}
+
+#year {
+    font-size: 3rem;
+    font-weight: 600;
+    margin-top: 0.7em;
 }
