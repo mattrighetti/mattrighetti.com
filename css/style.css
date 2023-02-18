@@ -245,6 +245,7 @@ main {
 .dialog {
     display: flex;
     flex-direction: row;
+    align-items: start;
     font-size: 1.05rem; 
     margin: 10px 0px;
 }
@@ -263,7 +264,7 @@ main {
     flex-basis: 48px;
     width: 48px;
     height: 48px;
-    margin: auto 0.4rem;
+    margin: 0.2rem 0.4rem;
     flex-shrink: 0;
 }
 
