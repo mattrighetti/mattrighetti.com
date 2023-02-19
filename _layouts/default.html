@@ -1,19 +1,24 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en-US" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="{{ " /favicon.svg" | prepend: site.baseurl }}" type="image/svg+xml"/>
+    <link rel="icon" href="{{ "/favicon.svg" | prepend: site.baseurl }}" type="image/svg+xml"/>
 
     <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
-    <meta name="description"
-        content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
-    <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
-    <link rel="alternate" type="application/rss+xml" title="{{ site.title }}"
-        href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
+    
+    <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+    <meta property="description" content="{{ site.description }}">
+    <meta property="og:description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+    {% if page.url %}<meta property="og:url" content="{{ page.url | prepend: site.url }}">{% endif %}
+    {% if page.image %}
+    <meta property="og:image" content="{{ page.image }}">
+    {% endif %}
 
+    <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
     <link rel="stylesheet" href="{{ " /css/style.css" | prepend: site.baseurl }}">
     <link rel="stylesheet" href="{{ " /css/code.css" | prepend: site.baseurl }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -24,7 +29,12 @@
 
 <body>
     <nav>
-        <a class="-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+        <a class="-title" href="{{ site.baseurl }}/">
+            <div class="logo">
+                {% include matt.svg %}
+                {% include mattrighetti-alt2.xml %}
+            </div>
+        </a>
         {% for page in site.pages %}
         {% unless page.exclude %}
         {% if page.title %}
@@ -32,6 +42,10 @@
         {% endif %}
         {% endunless %}
         {% endfor %}
+        <button id="theme-toggle" class="toggle" type="button">
+            <span class="d-block-light d-none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+            <span class="d-block-dark d-none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
+        </button>
     </nav>
 
     <main>
@@ -49,7 +63,25 @@
             </a>
         </p>
     </footer>
+    <script>
+        const toggle = document.getElementById('theme-toggle');
 
+        var storedTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        if (storedTheme)
+            document.documentElement.setAttribute('data-theme', storedTheme)
+
+        toggle.onclick = function() {
+            console.log("Switching theme");
+            var currentTheme = document.documentElement.getAttribute("data-theme");
+            var targetTheme = "light";
+
+            if (currentTheme === "light") {
+                targetTheme = "dark";
+            }
+
+            document.documentElement.setAttribute('data-theme', targetTheme)
+            localStorage.setItem('theme', targetTheme);
+        };
+    </script>
 </body>
-
 </html>

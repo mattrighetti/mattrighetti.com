@@ -1,9 +1,10 @@
 ---
 title: "SQLite on iOS: The MVVM Way"
+image: "https://download.logo.wine/logo/SQLite/SQLite-Logo.wine.png"
 ---
 :source-highlighter: rouge
 
-image:https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fdownload.logo.wine%2Flogo%2FSQLite%2FSQLite-Logo.wine.png&f=1&nofb=1[align="center"]
+image:https://download.logo.wine/logo/SQLite/SQLite-Logo.wine.png[align="center"]
 
 Last week I was studying
 https://github.com/Ranchero-Software/NetNewsWire[NetNewsWire]
