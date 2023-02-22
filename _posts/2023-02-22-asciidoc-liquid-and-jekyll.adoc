@@ -1,0 +1,342 @@
+---
+title: AsciiDoc, Liquid and Jekyll
+---
+:source-highlighter: rouge
+
+
+A couple of days ago I was giving a little update to my website and I needed a way
+to create and inject custom HTML into some of my posts.
+
+[chat, professor]
+--
+Hehe, something tells me that
+you are talking about me and this cool chat!
+--
+
+[chat, matt]
+--
+Yeah... now let me talk a bit more about the website
+--
+
+My website is entirely statically generated, I'm specifically using Jekyll which
+is a very well known static site generator. It is served through GitHub Pages
+and I use Cloudflare to cache and route traffic to the GitHub page.
+
+At the time I decided to go for Jeyll because I wanted to learn its internals
+and because it seemed that it offered a lot of flexibility for technical blogs
+like mine. Jekyll has a huge community and there are a lot of useful plugins to
+integrate in the framework, one of my favorite is the AsciiDoc plugin.
+
+For those of you that don't know what https://asciidoc.org[AsciiDoc]:
+[quote]
+--
+AsciiDoc is a plain text markup language for writing technical content. It's
+packed with semantic elements and equipped with features to modularize and reuse
+content. AsciiDoc content can be composed using a text editor, managed in a
+version control system, and published to multiple output formats.
+--
+
+As you might guess, I am writing all my articles using AsciiDoc because it gives
+me even more flexibility on top of what Jekyll already offers. If you want to
+use AsciiDoc too you need to declare the plugin in the `_config.yml` of your
+root directory
+
+```yaml
+plugins:
+  - jekyll-asciidoc
+```
+
+Let's see if Jekyll really is as flexible as I initially thought.
+
+To create the chat section above I need to find a way to make Jekyll generate
+HTML code from a specific syntax, there is really no other way around it in this
+scenario because exploiting generated HTML classes and CSS is not really
+feasible here, at least for me.  Since I'm going to use these chat-like sections
+a lot in the future, I would like to end up with a construct that is very
+similar to common AsciiDoc syntax, to write the professor's chat above I would
+need to write something like this:
+
+```asciidoc
+[chat, professor]
+--
+Hehe, something tells me that you are talking about me and this cool chat!
+--
+```
+
+For those of you that are familiar with AsciiDoc, this snippet might be
+familiar. It's an https://docs.asciidoctor.org/asciidoc/latest/blocks/[AsciiDoc
+Block]. The above snippet would be the ideal final result, but let's go ahead
+and see what Jekyll offers out-of-the-box first.
+
+Jekyll has a special feature that enables you to create custom components called
+https://jekyllrb.com/docs/includes/[includes] which could be written in HTML and
+you call/include them directly in your posts. To use this feature you just need
+to
+
+. Declare your HTML component
+. Include the component in your post with a special syntax
+
+Every custom component that you whish to include in your post must live under
+the `_includes` directory in your root Jekyll folder. I'm going to call mine
+`chat.html` and it contains this HTML snippet
+
+```html
+<div class="dialog {{ include.character }}" title="{{ include.character }}">
+    <div class="dialog-head">
+        {% include character.svg %}
+    </div>
+    <div class="dialog-text">
+        {{ include.text | markdownify }}
+    </div>
+</div>
+```
+
+[chat, matt]
+--
+Before we continue, see those <code>{{ include ... }}</code> and <code>{%
+include ... %}</code>? That's <a href="https://shopify.github.io/liquid/">Liquid
+templating</a> syntax. With Jekyll you can make use of that pretty much
+everywhere in the project. For the moment, just consider each element
+in those bracket as a variable.
+--
+
+These components are HTML files that can contain whatever you'd like them to
+contain.
+
+```html
+<div class="dialog {{ include.character }}" title="{{ include.character | capitalize }}">
+```
+
+This snippet is creating a `<div>` and also injecting `{{ include.character }}`
+as its class, along with the title `{{ include.character }}`
+
+[chat, professor]
+--
+That looks intuitive, are those
+variable that you can pass to the component? If so, how?
+--
+
+Remember that each element enclosed in `{% %}` and `{{ }}` is a variable? You
+can pass those vars from the post in which you'd like to insert this custom
+component, this is how it would look like in the post
+
+```markdown
+{% include chat.html character="matt" text="Hey there, here is some text in a chat!" %}
+```
+
+This is pretty straightforward, Jekyll is going to insert the HTML snippet in
+the statically generated page and it will also populate the snippet with the
+variables that you declared in the `include` construct.
+
+This is the basic approach that you would go through to customize your Jekyll
+website, what I did not tell you is that this is only going to work if you are
+using the default Jekyll document language, which is Markdown. That's unfortunate,
+because I've transitioned every single post of my website to AsciiDoc just a
+couple of months ago and I don't plan to move back to Markdown just for this.
+
+[chat, professor]
+--
+What happens if we use the <code>include</code> syntax in AsciiDoc? Maybe we're
+lucky and it's going to work
+--
+
+AsciiDoc does not support Liquid syntax by default, so what's going to happen is
+that you're going to find `{% include chat.html ... %}` verbatim in your post,
+just like this
+
+{% include chat.html character="matt" text="Hey there! We got a probelm here :(" %}
+
+Not a great start, especially because there are not a lot of similar scenarios
+out there surprisingly, at least I couldn't find that much by first googling the
+problem. My
+https://stackoverflow.com/questions/75482246/how-can-i-render-html-using-liquid-in-asciidoc-in-jekyll[StackOverflow]
+question didn't receive any answers too, speak volumes since Jekyll and
+AsciiDoc have a very big community.
+
+I'm alone in this, let's see if I can find something on GitHub.
+
+The plugin that I'm using to generate HTML from AsciiDoc is
+https://github.com/asciidoctor/jekyll-asciidoc[jekyll-asciidoc], maybe we can
+find something interesting in there. By making a project-wide search of the word
+`liquid` I immediately get to this
+https://github.com/asciidoctor/jekyll-asciidoc/blob/89b8f55f5312e4a0f1bca496bd9217d53d5b21dd/docs/modules/ROOT/pages/liquid.adoc[documentation
+page] which is just what I am looking for, lucky me.
+
+After reading the docs, it seems like all I need to do is enable Liquid
+preprocessing by appending `:page-liquid:` at the top of my post. That is going
+to parse and generate Liquid code before sending the result to the AsciiDoc
+generator. Indeed, if we now add that tag at the top and reload the
+page, we're going to be presented with this
+
+<div class="dialog matt" title="matt"> <div class="dialog-head">
+<svg>......</svg> </div> <div class="dialog-text">Hey there! Finally we made
+it! This chat that you're reading is the generated and injected component!
+</div> </div>
+
+Almost there, now Liquid preprocessing correctly generates my custom HTML
+component, but it's not really injected in the page source. That is because the
+Liquid preprocessor only generates the content, but when everything is passed to
+the AsciiDoc generator it is interpreted as content text. If we really want to
+inject that HTML code in the static page, we need a way to tell the AsciiDoc
+generator that. This is a common feature of the language luckily, AsciiDoc lets
+you inject raw HTML code in the page, you just need to wrap it in a `\\++++`
+block. The final syntax we reached is this
+
+```asciidoc
+++++
+{% include chat.html character="matt" text="Hey there! Finally we made it! This chat that you're reading is the generated and injected component!" %}
+++++
+```
+
+Let's go through the entire generation process:
+
+* Liquid preprocessing
+```asciidoc
+++++
+<div class="dialog matt" title="matt">
+    <div class="dialog-head">
+        <svg>......</svg>
+    </div>
+    <div class="dialog-text">
+        Hey there! Finally we made it! This chat that you're reading is the generated and injected component!
+    </div>
+</div>
+++++
+```
+
+* AsciiDoc generation (and HTML injection)
+
+[chat, matt]
+--
+Hey there! Finally we made it! This chat that you're reading is the generated
+and injected component!
+--
+
+Ok, we made some progress, we are now able to use the include feature Jekyll
+offers to render custom HTML. But we're far from the initial AsciiDoc-like
+syntax that I wanted to achieve. Can we do better?
+
+The greates feature of AsciiDoc probably is its Extension APIs, which makes the
+language extremely powerful and extensible.
+
+[quote]
+--
+An extension is a library that enriches the AsciiDoc content either by
+introducing new syntax or weaving additional features into the output.
+--
+
+This is what we need! It's also a feature supported by the `jekyll-asciidoc`
+plugin. What we could do is create a new extension that recognizes the `[chat]`
+block by directly declaring a custom block `Asciidoctor::Extension`.
+
+[chat, professor]
+--
+But wait, AsciiDoc is written in Ruby, and you don't know Ruby!
+--
+
+[chat, matt]
+--
+I don't, but let's see if I can write something good enough for the job
+--
+
+`jekyll-asciidoc`
+https://github.com/asciidoctor/jekyll-asciidoc#enabling-asciidoctor-extensions[plugins
+docs] will look for potential extensions by looking in the `_plugins` directory
+of the Jekyll project, so that's where our extension is going to be saved.
+This is my `chat-extension.rb` file
+
+```ruby
+require 'asciidoctor/extensions'
+
+include Asciidoctor
+
+Asciidoctor::Extensions.register do
+  block :chat do
+    process do |parent, reader, attributes|
+      character = attributes.values[1]
+
+      svg = File.read("_includes/" + character + ".svg")
+      content = reader.lines.join(' ')
+
+      html = %(
+        <div class="dialog #{character}" title="#{character.capitalize}">
+          <div class="dialog-head">
+          #{svg}
+          </div>
+          <div class="dialog-text">
+          <p>#{content}</p>
+          </div>
+        </div>
+      )
+
+      create_pass_block parent, html, {}, :content_model => :raw
+    end
+  end
+end
+```
+
+As you can see, I'm not a magician with Ruby, this is
+mainly strings manipulation, so it's not that difficult.
+Let me go through the code once more
+
+* I initially take the second field of the syntax block
+```ruby
+# [chat, professor]
+# --
+# ...
+# --
+character = attributes.values[1] # <- "professor"
+```
+
+* Load svg from file using the `character` variable we just read
+```ruby
+svg = File.read("_includes/" + character + ".svg")
+```
+
+* Put the content of the block in a string
+```ruby
+# this contains everything that's inside the -- block
+#
+# [chat, professor]
+# --
+# Hey there!
+# --
+content = reader.lines.join(' ') # <- "Hey there!"
+```
+
+* Inject raw `html` in page
+```ruby
+create_pass_block parent, html, {}, :content_model => :raw
+```
+
+If I now try to replace the original `include` syntax with
+
+```asciidoc
+[chat, matt]
+--
+Hey there! Finally we made it! This chat that you're reading is the generated
+and injected component! This time using AsciiDoc Extension
+--
+```
+
+I'm going to get
+
+[chat, matt]
+--
+Hey there! Finally we made it! This chat that you're reading is the generated
+and injected component! This time using AsciiDoc Extension
+--
+
+That is looking really good and a lot less verbose than the initial Jekyll way,
+if you inspect the page source you're going to see that AsciiDoc now generates
+the custom HTML code, as expected. The only issue that I have right now is that
+the content of the block is not getting parsed since I'm just putting it into a
+string variable and spitting it out in the HTML variable as-is, but that's good enough
+for what I need at the moment.
+
+Hopefully you learned a little bit more about this topic which is not really a
+big thing out there for some reason, it took me quite a lot of research to get
+to this result. I guess that Ruby is the only thing blocking me from writing
+more complex logic for this extension and others yet to come, but I am super
+satisfied with the AsciiDoc switch, you can do literally everything you want
+with the language if you start digging into the parsers and extensions.
