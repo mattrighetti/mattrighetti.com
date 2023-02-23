@@ -1,5 +1,5 @@
 ---
-title: Dream Terminal
+title: Opinionated Terminal Essentials
 ---
 :source-highlighter: rouge
 :page-liquid:
