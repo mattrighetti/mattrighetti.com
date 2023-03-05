@@ -414,3 +414,19 @@ main {
     background-color: rgba(var(--dialog-professor-bg-color), 0.2);
     border: rgba(var(--dialog-professor-bg-color), 1.0) 1px solid;
 }
+
+.charts-container {
+    font-family: Arial, sans-serif;
+    font-weight: 900;
+}
+
+@media (min-width: 620px) {
+    .charts-container {
+        display: flex;
+    }
+}
+
+.chart-single-container {
+    text-align: center;
+    margin: 0 auto;
+}

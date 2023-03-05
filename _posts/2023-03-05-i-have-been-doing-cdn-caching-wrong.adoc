@@ -1,0 +1,633 @@
+---
+title: I Have Been Doing CDN Caching Wrong
+render_graphs: true
+---
+:source-highlighter: rouge
+
+One of the nice things that reaching the HN frontpage gives you is that your website,
+or content in general, will get flooded by requests by the community. This is so frequent
+that it gained the name **Hug of Death** among the HN members, because usually servers are
+not able to keep up with the overwhelming clicks of the HN users and they either crash or
+make you wait for minutes to get a response back.
+
+For people that love graphs and data, this is an exciting moment because you see that cool
+spike in the requests graph, going from hundreds of requests per hour to thousands. This may
+be less exciting if your website is hosted on a service that will charge you based on the amount
+of bandwidth that you use to serve content to your readers. It's not my case, I don't have to
+worry about bandwidth because I host all my precious content on GitHub pages, but I still care
+about performance.
+
+The performance of my website is not that bad, on computer. On average,
+https://pagespeed.web.dev[PageSpeed] reports a score of >= 98 on computer, but
+it's not as good on mobile, which on average scores >= 89.
+
+At the time of writing, my domain is registered on Cloudflare, you can check by
+yourself if you don't trust me
+
+```shell session
+$ dig NS mattrighetti.com +nostats
+
+; <<>> DiG 9.10.6 <<>> NS mattrighetti.com +nostats
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 58683
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;mattrighetti.com.		IN	NS
+
+;; ANSWER SECTION:
+mattrighetti.com.	42469	IN	NS	barbara.ns.cloudflare.com.
+mattrighetti.com.	42469	IN	NS	jermaine.ns.cloudflare.com.
+```
+
+`barbara` and `jasmine` are the Cloudflare nameservers, that's the proof.
+
+Cloudflare offers a plethora of useful features, including the visually
+appealing analytics graphs that I mentioned earlier. But what really sets it
+apart is its content caching capability and the ability to function as a
+full-fledged CDN if you so desire.
+
+Enough with the praising, let's take a look at the graphs and see if everything
+is working as expected.
+
+[chat, professor]
+--
+Hmmm, what are your expectations though?
+--
+
+[chat, matt]
+--
+Well, everything that is served on this domain is an HTML page
+that does not change until I push something on GitHub, so I expect
+that at least the great majority of files is cached and served through Cloudflare
+--
+
+To actually see what's really going on behind the scenes we can go to the
+dashboard, and this is what it's looking like right now.
+
+++++
+<div class="charts-container">
+    <div class="chart-single-container">
+        <h4>Content Type Breakdown</h4>
+        <div class="ct-chart" id="chart1"></div>
+    </div>
+    <div class="chart-single-container">
+        <h4>Bandwidth Saved</h4>
+        <div class="ct-chart" id="chart2"></div>
+    </div>
+</div>
+<script>
+    var sum = function(a,b) { return a+b};
+    var served_data = {
+        labels: ['HTML', 'CSS', 'Empty', 'SVG', 'Other'],
+        series: [45, 22, 16, 14, 2]
+    };
+
+    var cached_data = {
+        labels: ['Cached', 'Uncached'],
+        series: [14, 86]
+    }
+
+    var options1 = {
+        chartPadding: 30,
+        height: 300,
+        showLabel: true,
+        labelInterpolationFnc: function(value) {
+            return value + ' ' + Math.round(served_data.series[served_data.labels.indexOf(value)] / served_data.series.reduce((a,b) => a+b) * 100) + '%';
+        }
+    };
+
+    var options2 = {
+        chartPadding: 30,
+        startAngle: 336,
+        showLabel: true,
+        height: 300,
+        labelInterpolationFnc: function(value) {
+            return value + ' ' + Math.round(cached_data.series[cached_data.labels.indexOf(value)] / cached_data.series.reduce(sum) * 100) + '%';
+        }
+    };
+
+    new Chartist.Pie('#chart1', served_data, options1);
+    new Chartist.Pie('#chart2', cached_data, options2);
+</script>
+++++
+
+[chat, matt]
+--
+Ouch, I did not expect this much uncached content from a completely static
+website!  I must be doing something wrong, right?
+--
+
+The first thing that comes to my mind is to take a look at some HTTP response headers
+so that I can have a better understanding of what Cloudflare is returning upon
+each request.
+
+```shell session
+$ curl -s \
+  -D - \
+  -o /dev/null \
+  "https://mattrighetti.com/2023/02/22/asciidoc-liquid-and-jekyll.HTML"
+```
+
+Let's break down this `curl` command while we're at it:
+
+* `-s` -> Avoid showing progress bar
+* `-D -` -> Dump headers to a file, but `-` sends it to stdout
+* `-o /dev/null` -> Ignore response body
+
+This is what is returned
+
+```response headers
+> HTTP/2 200
+> date: Fri, 24 Feb 2023 16:39:25 GMT
+> content-type: text/HTML; charset=utf-8
+> last-modified: Fri, 24 Feb 2023 09:10:51 GMT
+> access-control-allow-origin: *
+> expires: Fri, 24 Feb 2023 09:24:40 GMT
+> cache-control: max-age=600
+> x-proxy-cache: HIT
+> x-githubX-id: 9C30:13193:13500B1:140FF03:63F8800F
+> via: 1.1 varnish
+> age: 101
+> x-served-by: cache-mxp6980-MXP
+> x-cache: HIT
+> x-cache-hits: 1
+> x-timer: S1677256766.539307,VS0,VE1
+> vary: Accept-Encoding
+> x-fastlyX-id: 06820b4614d533aabf6555f2718a5a637c542140
+> cf-cache-status: DYNAMIC
+> server-timing: cf-q-config;dur=7.0000005507609e-06
+> report-to: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=O3nGiCEgvqmF7T4qHerl1eoB%2B%2BUqpM2Zz5sXuQpoOlwE38ntJnQaC0nnQkJf62iNWOJ7f16AUHlbBp2g3ePFu3%2BAOu8quDj1dM0A2F3PQsnZBnYsHjNYOhcEq7gSYSyj%2FX6E"}],"group":"cf-nel","max_age":604800}
+> nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+> server: cloudflare
+> cf-ray: 79e9a3207ea983b2-MXP
+> alt-svc: h3=":443"; ma=86400, h3-29=":443"; ma=86400
+```
+
+Most of the response headers above are garbage and are not useful for this
+particular scenario. The top most ones are basically telling us that we're using
+`HTTP/2`, that the content returned is `text/html` and that the content at that
+URL was last modified on a specific date.
+
+Let me take out the most important ones by piping the previous command to `grep cache`
+
+```response headers
+> x-proxy-cache: HIT
+> x-served-by: cache-mxp6980-MXP
+> x-cache: HIT
+> x-cache-hits: 1
+> cf-cache-status: DYNAMIC
+```
+
+It looks like some cache is getting HIT, but CF definitely showed us the
+opposite.
+
+This would be a good time to go through their documentation, but I've already
+done that for you so I'm going to explain what's going on here. Quoting the
+https://developers.cloudflare.com/cache/about/default-cache-behavior/[CF default
+cache behavior].
+
+[quote]
+--
+Cloudflare respects the origin web server's cache headers in the following order
+unless an Edge Cache TTL page rule overrides the headers.
+
+. Cloudflare does cahe the resource when:
+.. The `Cache-Control` header is set to public and `max-age` is greater than 0.
+Note that Cloudflare does cache the resource even if there is no `Cache-Control`
+header based on status codes.
+.. The `Expires` header is set to a future date.
+--
+
+I see no issue here since these two points are satisfied, but if we
+go on reading we find an interesting culprit.
+
+[quote]
+--
+Cloudflare only caches based on file extension and not by MIME type. **The
+Cloudflare CDN does not cache HTML by default.**
+--
+
+[chat, professor]
+--
+Aha! So that is why we're not getting the content from the CF cache!
+--
+
+[chat, matt]
+--
+I guess so, I didn't make any changes to my CF account, so I think I didn't even
+try to cache stuff at this point
+--
+
+At the moment, no caching is being done **by default** on HTML files. If we
+check what `DYNAMIC` means in that response header we can get another
+confirmation:
+
+[quote]
+--
+`DYNAMIC`: Cloudflare does not consider the asset eligible to cache and your
+Cloudflare settings do not explicitly instruct Cloudflare to cache the asset.
+Instead, the asset was requested from the origin web server. Use Page Rules to
+implement custom caching options.
+--
+
+Well, the problem is very clear at this point. If we did not provide any custom
+rules for content caching, CF is not going to do it out-of-the-box because it could
+lead to undefined behavior.
+
+[chat, matt]
+--
+That makes sense, imagine an HTML page with dynamic content, that is definitely
+not something you would want to cache by default!
+--
+
+Now that we assessed that CF does not cache HTML by default without rules that
+explicitly instruct to do so, I am going to go ahead and add some caching
+rules to the account of my domain. If everthing goes smoothly, I should get a
+`HIT` in the `cf-cache-status` header, which means
+
+[quote]
+--
+`HIT`: The resource was found in Cloudflare’s cache.
+--
+
+Pretty straightforward, right?
+
+It's reasonable to cache every single HTML page that is present on my website,
+because articles remain the same once you publish them, so there's no need for
+CF to talk back to the origin server every time someone want to read one. This
+is going to introduce some small issues down the road as I'll show you, but for
+the moment let's keep our focus on caching.
+
+Let's go ahead and create some rules so that content gets cached. CF offers a
+lot of APIs that you can use to control all the things that you would usually
+see from the web client, I'm going to use those in this example because GUIs
+are boring.
+
+To create a page rule I can make use of the
+https://developers.cloudflare.com/api/operations/page-rules-create-a-page-rule[`pagerules`]
+API
+
+```shell session
+$ curl -X POST \
+  --url "https://api.cloudflare.com/client/v4/zones/<zone_id>/pagerules" \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <api_token>' \
+  --data '{
+    "actions": [
+      {
+        "id": "browser_cache_ttl",
+        "value": 7200
+      },
+      {
+        "id": "cache_level",
+        "value": "cache_everything"
+      },
+      {
+        "id": "edge_cache_ttl",
+        "value": 259200
+      }
+    ],
+    "priority": 1,
+    "status": "active",
+    "targets": [
+      {
+        "constraint": {
+          "operator": "matches",
+          "value": "mattrighetti.com/*"
+        },
+        "target": "url"
+      }
+    ]
+  }'
+```
+
+In the query above I'm telling CF to cache everthing that starts with the url
+`mattrighetti.com/`. Actions are executed in order when a URL is requested, in
+this case I'm specifying that I want user browsers to keep visited pages in
+cache (`browser_cache_ttl`) for two hours, that I would like CF CDN to keep
+my pages in cache (`edge_cache_ttl`) for three days and that I would like this
+rule to be turned on immediately with `status -> active`.
+
+Once we make the request above, rule will be in place and active. We can double check that with
+https://developers.cloudflare.com/api/operations/page-rules-list-page-rules[`pagerules`].
+
+```shell session
+$ curl -X GET \
+  --url https://api.cloudflare.com/client/v4/zones/<zone_id>/pagerules \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <api_token>' \
+  | jq
+```
+
+```json
+{
+  "result": [
+    {
+      "id": "...",
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "mattrighetti.com/*"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "browser_cache_ttl",
+          "value": 7200
+        },
+        {
+          "id": "cache_level",
+          "value": "cache_everything"
+        },
+        {
+          "id": "edge_cache_ttl",
+          "value": 259200
+        }
+      ],
+      "priority": 1,
+      "status": "active",
+      "created_on": "2023-02-24T22:46:36.000000Z",
+      "modified_on": "2023-02-24T22:51:09.000000Z"
+    }
+  ],
+  "success": true,
+  "errors": [],
+  "messages": []
+}
+```
+
+That should be it, I expect the changes to take some time before actually
+working but in my case it worked almost instantly.
+
+Let's try again to fire a request now that we're caching every HTML page.
+The very first time I expect cache to `MISS` because CF is a pull CDN, so the
+content has to be pulled from the origin server the very first time.
+
+[quote]
+--
+In a pull CDN, the content is cached on servers located at strategic points
+around the world. When a user requests the content, the CDN determines the
+user's location and routes the request to the closest server. The server then
+retrieves the content from the origin server (where the content is stored),
+caches it locally, and delivers it to the user.
+--
+
+* First query
+```response headers
+> HTTP/2 200
+> date: Fri, 24 Feb 2023 22:51:53 GMT
+> content-type: text/HTML; charset=utf-8
+> last-modified: Fri, 24 Feb 2023 09:10:51 GMT
+...
+> cf-cache-status: MISS
+```
+
+* Second query
+```response headers
+> HTTP/2 200
+> date: Fri, 24 Feb 2023 22:55:10 GMT
+> content-type: text/HTML; charset=utf-8
+> last-modified: Fri, 24 Feb 2023 09:10:51 GMT
+...
+> cf-cache-status: HIT
+```
+
+[chat, matt]
+--
+Hey! That's our <code>HIT</code>!
+--
+
+You can try to query my website by yourself, most of the content is now served
+through CF cache, as fast as it gets.
+
+It's not all sunshine and rainbows though. As I anticipated before, this kind of
+caching introduces some new issues. What do you think is going to happen if I
+post a new article? Well, in practical terms, you're not going to see it until
+CF updates its edge cache, which we set to take place every three days in the
+caching rule.
+
+Actually, it is a bit incorrect to say that you won't be able to see it. To be
+precise, you won't be able to see that I posted a new article if you navigate to
+my webiste, because every article that I post is inserted into the main list
+that is shown in the homepage, and the new article is not going to appear
+immediately. Wonder why? Well, the homepage that your browser is going to show
+you is either the one that is cached locally (remember `browser_cache_ttl`?) or
+the one that CF is going to send back you, which is still a previously cached
+version of the homepage that does not contain my new article.
+
+There still is a way you can view my article: write its URL manually in your
+browser's search bar. Now, I don't expect anyone to do that, but it's definitely
+possible. You would need to:
+
+. Set some kind of notification on my website's GitHub repo that notifies you every time I push
+something on the remote `master` branch
+. Check if a new post has been added in the last commit, i.e.
+`_posts/2023-03-05-i-have-been-doing-cdn-caching-wrong.adoc`
+. Navigate to
+`mattrighetti.com/2023/03/05/i-have-been-doing-cdn-caching-wrong.html`, notice the
+pattern `filename -> URL`?
+
+Why would this work? Easy, that URL refers to a file that is not cached by CF,
+because it's just been created. At that point CF will try to ask if the resource
+is actually present on the server - which it is - cache the page and return it to
+your browser.
+
+What if I push some typo fixes to my freshly created article? You guessed it,
+nobody would be able to see those fixes because the page has now been cached by
+CF and you are only going to see the original article for quite some time, typos
+included.
+
+We can clearly see that the problem here is that nobody is going to see changes
+that I make to cached content, possibly for days.
+
+[chat, professor]
+--
+What a headache, there must be another way around this!
+--
+
+Luckily for us, there is a way. When you open up your website domain on the CF
+dashboard, one of the first things that you notice is that shiny blue button labeled
+*Purge Cache*, which is the solution to all our problems.
+
+*Purge Cache* is going to do exactly what the word says: empty the CF cache so
+that everything will need to be cached and served all over again, this time with
+the latest available content, of course.
+
+The easy solution would be to purge everything and just forget about the rest,
+but I love the people at CF and I want to purge just what's necessary.
+
+Let's recall what I said before, what do I really need to update when I push a
+new article to my website?
+
+. Home page, so that new articles appear in the list
+. Article page, in case I push typos fixes or changes
+
+Again, CF has an API to do just this, that's the
+https://developers.cloudflare.com/api/operations/zone-purge[`purge_cache`] method,
+which takes a list of file URLs to remove from cache. Enterprise users have a lot
+more choice here, if you pay the extra money you can pass prefixes, hosts and
+tags, but I'm currenlty enjoying my free-tier so I can only pass an array of
+URLs.
+
+```shell session
+curl -X POST \
+  --url https://api.cloudflare.com/client/v4/zones/<zone_id>/purge_cache \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <api_token>' \
+  --data '{
+  "files": [
+    "https://mattrighetti.com/",
+    "https://mattrighetti.com/2022/03/05/i-have-been-doing-cdn-caching-wrong.html",
+  ]
+}'
+```
+
+Request above is pretty self expainatory, we're telling CF to purge the
+content of the URLs:
+
+. `mattrighetti.com/` -> the homepage
+. `mattrighetti.com/2022/03/05/i-have-been-doing-cdn-caching-wrong.html` -> the article
+
+If we request the content of those URLs, we're going to get a `MISS` again, and
+the new content will be served and cached from the origin server. Cool, right?
+
+If you and me are like-minded, you should be able to see another problem.
+
+[chat, professor]
+--
+Ehw, who wants to do that every time something is pushed to remote? I can't even
+remember the damn API request!
+--
+
+This gets very tedious, very quick. I would like my CI/CD to take care of all
+this, automatically. With little knowledge of `git` and some bash scripting, it
+should be easy enough to craft a script that:
+
+. Checks which file has been changed in the commit
+. Transforms filenames into their respective URLs
+. `curl` CF APIs as soon as the new content is published on the server
+
+Let me think out loud the possible steps. I'm going to tackle this one step at a
+time and I'm going to assume that the outputs of each command is going to be
+piped, in order, to the next command.
+
+* Check which files have been changed
+```shell session
+$ git diff --name-only HEAD HEAD^1 | grep _posts
+
+_posts/2023-02-24-i-have-been-doing-caching-wrong.adoc
+```
+
+* Transform filenames into URLs
+```shell session
+$ sed 's/_posts\///' | \
+  sed 's/\.adoc//' | \
+  awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html", $1, $2, $3, substr($0,12)) }'
+
+https://mattrighetti.com/2023/03/05/i-have-been-doing-cdn-caching-wrong.html
+```
+
+* Create JSON from returned values
+```shell session
+$ jq -Rn '{"files":["https://mattrighetti.com/", inputs]}'
+
+{
+  "files": [
+    "https://mattrighetti.com/"
+    "https://mattrighetti.com/2023/03/05/i-have-been-doing-cdn-caching-wrong.html",
+  ]
+}
+
+```
+
+* `curl` CF APIs
+```shell session
+$ curl -X POST \
+      --url https://api.cloudflare.com/client/v4/zones/<zone_id>/purge_cache \
+      -H 'Content-Type: application/json' \
+      -H 'Authorization: Bearer <api_token>' \
+      --data-binary @-
+
+{
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result": {
+    "id": "fc418140aa167fb1f3326ffc9f393c"
+  }
+}
+```
+
+[chat, matt]
+--
+Here <code>@-</code> will take the input from pipe
+--
+
+I wrote quite a bit of commands but it's mainly string manipulation to get a
+valid URL of an article from its filename.
+
+I can add this little script to my GH Action that is going to be triggered right
+after the content has been deployed on the origin server. This is the step that
+I'm adding to the existing
+https://github.com/mattrighetti/mattrighetti.github.io/blob/f85f7cef1cb435f52a4e730e321bae3da363393f/.github/workflows/ci.yml#L38-L51[action]
+
+```yaml
+- name: Purge CF Cache
+  run: |
+    sleep 60
+    git diff --name-only HEAD HEAD~1 | \
+    grep _posts | \
+    sed 's/_posts\///' | sed 's/\.adoc//' | \
+    awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html", $1, $2, $3, substr($0,12)) }' | \
+    jq -Rn '{"files": ["https://mattrighetti.com/", inputs]}' | \
+    curl -s -X POST \
+      --url https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache \
+      -H 'Content-Type: application/json' \
+      -H 'Authorization: Bearer ${{ secrets.CF_API_TOKEN }}' \
+      --data-binary @- | \
+    jq
+```
+
+And voila! GH Actions will now do the hard and redundant work for us.
+
+It took me quite a bit of time, but now the workflow that I have to adopt
+to post new articles on my website is basically the same as before, with the
+addition that now content is cached and delivered faster to my readers.
+
+I'm going to conclude this article with the graph that now shows what I initally
+expected. This is the data after a week of content caching, take a look
+
+++++
+<div class="charts-container">
+    <div class="chart-single-container">
+        <h4>Bandwidth Saved</h4>
+        <div class="ct-chart" id="chart3"></div>
+    </div>
+</div>
+<script>
+    var sum = function(a,b) { return a+b };
+    var cached_data = {
+        labels: ['Cached', 'Uncached'],
+        series: [63, 9]
+    }
+
+    var options2 = {
+        chartPadding: 30,
+        startAngle: 336,
+        showLabel: true,
+        height: 300,
+        labelInterpolationFnc: function(value) {
+            return value + ' ' + Math.round(cached_data.series[cached_data.labels.indexOf(value)] / cached_data.series.reduce(sum) * 100) + '%';
+        }
+    };
+
+    new Chartist.Pie('#chart3', cached_data, options2);
+</script>
+++++

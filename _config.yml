@@ -6,6 +6,8 @@ github_username:  mattrighetti
 
 author: Mattia Righetti
 
+host: 0.0.0.0
+
 collections:
   positions:
     order:
