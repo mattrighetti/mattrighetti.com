@@ -80,21 +80,22 @@ dashboard, and this is what it's looking like right now.
     </div>
 </div>
 <script>
-    var sum = function(a,b) { return a+b};
+    var sum = function(a,b) { return a+b}; 
     var served_data = {
         labels: ['HTML', 'CSS', 'Empty', 'SVG', 'Other'],
         series: [45, 22, 16, 14, 2]
     };
 
+
     var cached_data = {
         labels: ['Cached', 'Uncached'],
-        series: [14, 86]
+        series: [13, 87]
     }
 
     var options1 = {
         chartPadding: 30,
-        height: 300,
         showLabel: true,
+        height: 300,
         labelInterpolationFnc: function(value) {
             return value + ' ' + Math.round(served_data.series[served_data.labels.indexOf(value)] / served_data.series.reduce((a,b) => a+b) * 100) + '%';
         }
@@ -102,12 +103,8 @@ dashboard, and this is what it's looking like right now.
 
     var options2 = {
         chartPadding: 30,
-        startAngle: 336,
         showLabel: true,
-        height: 300,
-        labelInterpolationFnc: function(value) {
-            return value + ' ' + Math.round(cached_data.series[cached_data.labels.indexOf(value)] / cached_data.series.reduce(sum) * 100) + '%';
-        }
+        height: 300
     };
 
     new Chartist.Pie('#chart1', served_data, options1);
