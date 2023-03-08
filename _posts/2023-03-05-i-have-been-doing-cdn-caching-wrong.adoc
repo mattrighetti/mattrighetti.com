@@ -104,7 +104,10 @@ dashboard, and this is what it's looking like right now.
     var options2 = {
         chartPadding: 30,
         showLabel: true,
-        height: 300
+        height: 300,
+        labelInterpolationFnc: function(value) {
+            return value + ' ' + Math.round(cached_data.series[cached_data.labels.indexOf(value)] / cached_data.series.reduce((a,b) => a+b) * 100) + '%';
+        }
     };
 
     new Chartist.Pie('#chart1', served_data, options1);
@@ -609,22 +612,20 @@ expected. This is the data after a week of content caching, take a look
     </div>
 </div>
 <script>
-    var sum = function(a,b) { return a+b };
-    var cached_data = {
+    let cached_data_2 = {
         labels: ['Cached', 'Uncached'],
         series: [63, 9]
     }
 
-    var options2 = {
+    var options3 = {
         chartPadding: 30,
-        startAngle: 336,
         showLabel: true,
         height: 300,
         labelInterpolationFnc: function(value) {
-            return value + ' ' + Math.round(cached_data.series[cached_data.labels.indexOf(value)] / cached_data.series.reduce(sum) * 100) + '%';
+            return value + ' ' + Math.round(cached_data_2.series[cached_data_2.labels.indexOf(value)] / cached_data_2.series.reduce(sum) * 100) + '%';
         }
     };
 
-    new Chartist.Pie('#chart3', cached_data, options2);
+    new Chartist.Pie('#chart3', cached_data_2, options3);
 </script>
 ++++
