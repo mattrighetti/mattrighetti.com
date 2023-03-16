@@ -1,0 +1,107 @@
+---
+title: Notes on Python 
+---
+:source-highlighter: rouge
+
+Python is my main language when I'm solving leetcode problems, because I don't
+want to focus too much on language when I'm just trying to nail the quiz. I've
+been leetcoding for a few weeks now and I wanted to show some useful methods
+that I've learned during the process.
+
+I'm writing this more as a personal note than an actual article, with the aim of
+keeping it up-to-date for my future self. Despite my best efforts, I tend to
+forget many of these things when I visit Leetcode and I haven't been practicing
+in a while.
+
+Some of them are trivial, I know, but I used different ways to get the same
+result. These are just more elegant and sometimes effortless alternatives.
+
+*Last edited 16 Mar 2023*
+
+---
+
+### Bit count
+(Python >3.10)
+
+```python
+n = 4329      # 0b1000011101001
+n.bit_count() # 6
+```
+
+### Check if `str` is a number
+
+```python
+"10".isnumeric()         # True
+"notAnumber".isnumeric() # False
+```
+
+### Set Operations
+
+* Intersection
+```python
+set([0,1,2]) & set([3,1,2])  # set([1,2])
+set([0,1,2]).intersection(set([3,1,2]))
+```
+
+* Contains
+```python
+set([1,2,3]) <= set([1,2,3,5,6,7]) # True
+set([1]) <= set([2,3])             # False
+set([1,2]) < set([1,2])            # False
+```
+* Union
+```python
+set([1,2]) | set([1,3,4])      # set([1,2,3,4])
+set([1,2]).union(set([1,3,4]))
+```
+
+### Iterate backwards
+There are multiple ways to do this, but this is very nice imo.
+```python
+arr = [1,2,3,4]
+for i in range(len(arr)):
+    print(arr[~i]) # 4 3 2 1
+```
+
+### Iterate Matrix (single index)
+```python
+mat = [[0, 2], [3, 4], [5, 0]]
+m, n = len(mat), len(mat[0])
+
+for i in range(m * n):
+    print(mat[i//n][i%n]) # 0 2 3 4 5 0
+```
+
+### Merge two dictionaries
+(Python >3.9)
+
+```python
+s = {k: 0 for k in "abcd"}
+d = {k: 1 for k in "lol"}
+z = s | d # {'a':0, 'b':0, 'c':0, 'd':0, 'l':1, 'o':1}
+```
+
+### Counter intersections
+
+Final result is going to have the keys that both `Counter` have, if
+they have different values the min one is going to be kept.
+
+```python
+from collections import Counter
+
+a = Counter(list("heeeere"))  # {h: 1, e: 4, r: 1}
+b = Counter(list("here!"))    # {h: 1, e: 2, r: 1, !: 1}
+z = a & b                     # {h: 1, e: 2, r: 1}
+```
+
+### Permutations & Combinations
+
+```python
+import itertools
+
+# Order matters
+c = itertools.combinations([0,1,2], 2) # [(0, 1), (0, 2), (1, 2)]
+
+# Order doesn't matter
+p = itertools.permutations([0,1,2], 2) # [(0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1)]
+```
