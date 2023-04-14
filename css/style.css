@@ -23,10 +23,12 @@
     --dialog-professor-bg-color: 102, 204, 153;
     --dialog-cop-bg-color: 255, 205, 2;
     --dialog-matt-bg-color: 227, 227, 227;
+
+    --separator: #b0b0b0;
 }
 
 [data-theme="dark"] {
-    --bg-color: #181818;
+    --bg-color: #222222;
 
     --navbar-text-color: #ffffff;
     --primary-text-color: #e2e2e2;
@@ -50,6 +52,8 @@
     --dialog-professor-bg-color: 132, 194, 113;
     --dialog-cop-bg-color: 255, 205, 2;
     --dialog-matt-bg-color: 117, 117, 117; 
+
+    --separator: #383838;
 }
 
 body {
@@ -147,6 +151,8 @@ nav a:hover {
 footer {
     display: flex;
     justify-content: center;
+    border-top: 1px solid var(--separator);
+    margin-top: 16px;
 }
 
 footer a {
@@ -420,4 +426,16 @@ main {
 .chart-single-container {
     text-align: center;
     margin: 0 auto;
+}
+
+.patreon-block {
+    margin-top: 40px;
+    background-color: #EC633E;
+    padding: 3px 15px;
+    border-radius: 25px;
+    color: #181818;
+}
+
+.patreon-block a {
+    color: #181818;
 }
