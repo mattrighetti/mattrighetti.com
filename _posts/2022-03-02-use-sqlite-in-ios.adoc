@@ -249,8 +249,8 @@ image:https://media.giphy.com/media/bBV1Sbs5soDaEuqQh0/giphy.gif[align="center"]
 
 == Conclusion
 
-This was a very simple scenario that might now show a huge
-boot in performance with respect to the CoreData version, but
+This was a very simple scenario that might not show a huge
+boost in performance with respect to the CoreData version, but
 it's a different way to store data in a more familiar SQLite database.
 
 If you want more control over your data, SQLite and the power of SQL
