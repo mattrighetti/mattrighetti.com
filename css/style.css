@@ -431,7 +431,7 @@ main {
 }
 
 .patreon-block {
-    margin-top: 40px;
+    margin: 40px 0px;
     background-color: #EC633E;
     padding: 3px 15px;
     border-radius: 25px;

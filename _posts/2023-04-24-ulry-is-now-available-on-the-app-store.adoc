@@ -1,0 +1,103 @@
+---
+title: Ulry is Now Available on the App Store
+---
+:source-highlighter: rouge
+
+After a long wait I can finally say that Ulry has been release to the public and
+can be https://apps.apple.com/it/app/ulry/id1603982621?l=en[downloaded] from the
+App Store in this very moment.
+
+This is without a doubt the biggest project I've shipped and also the second
+most used one (for now), it may not seem a lot but it certainly is for me.
+
+I've been working on Ulry for a long time, it's a tool that I use daily and it
+has served me well. Let me tell you the whole story of how it came to be.
+
+A couple of years ago I started to be an active community member of HN and every
+single day I started to read a bunch of articles that I found interesting. It
+didn't take long until I couldn't keep up with the amount of cool links that are
+shared there, I just couldn't read them all, so I started to use the _Add To
+Reading List_ feature of Safari and that's when it all started.
+
+I remember that a week later the _Read It Later_ section of the browser was
+filled with approximately 50 articles that were interesting to me when I saved
+them. Which one do I read? Why did I save this article? Why did I find this
+interesting? These were the questions that I kept asking myself for the majority
+of the links that were in there waiting to be read. The browser feature couldn't
+help me at all with that, let alone the poor user interface of it.
+
+Is there a better way? Well, kind of. I started to organize links in folders and
+kept them in my browser's bookmarks section.
+
+This lasted a couple of weeks, until I realized that in the long run I would
+have ended up with hundreds of links in a single folder, that's not easy to
+navigate and to go through. I gave this alternative a chance but I knew way in
+advance that I wouldn't have liked it. The bookmarks section to me is something
+that has to contain websites that you actually visit almost on a daily basis,
+not something to keep a read-it-later list with hundreds of articles and
+folders. That felt messy and I gave up trying.
+
+Other solutions out there had bad UI/UX and had features that I did not want or
+needed, like _suggest me what to read next_. No thanks, I don't need an
+algorithm to suggest me stuff that I will 99% of the time have no interest in
+reading. I see that a lot of the read-it-later apps also try to scrape text from
+the article itself so that you can totally bypass the owner's website and a lot
+of them fail at it badly by presenting you broken text or even HTML-entities
+that were not processes correctly. I prefer to read content from the owner's
+website, most of the time they have cool fonts, nicer/original interfaces and/or
+content that can't be displayed on a native application.
+
+I couldn't find a simple but nice app that just saved links and made them easily
+indexable and organizable. That's when I decided to create my own, just for me.
+
+```shell session
+commit 4d5fafea6b62070bbabb9ee34f445344f6d0b2ff
+
+Author: Mattia Righetti <---------------->
+Date:   Thu Dec 23 15:05:51 2021 +0100
+
+    Initial Commit
+```
+
+This is the very first commit. After many iterations of the app and many months
+later, I appreciate the time that I put into this project for a bunch of
+different reasons. Mostly because now I have a tool that I enjoy using and
+actually helps me manage my links. Not only that, but I got to know a bunch of
+persons that liked the idea and found the app useful and use it to this day.
+
+What makes Ulry different? It does what it's meant for, nothing else. It's a
+link archiver, its feature is to save your links without too many hurdles,
+that's it. Well, to be fair, it also makes it easy to search for them and
+organize them with categories/tags/notes but nothing more than that. If you
+noticed, Ulry basically answers the questions that I kept asking myself
+previously:
+
+1. Which one do I read? Pick a tag and a category that you feel you want to read
+and choose a link that's in them.
+2. Why did I save this/find this interesting? Read the note that you (hopefully)
+attached to the link when you saved it.
+
+Overall, it's been a great journey and I've now reached a point where I feel
+like the app is stable, has enough features to make me like it and can be
+released to public.
+
+I spent these final months over-obsessing over the fact that some more tests
+were needed before launching it and that maybe _that_ feature could be a deal
+breaker if it made it to the first public release. I started to notice that I
+was over complicating stuff when there was no need for it, so I decided to just
+stop implementing and testing stuff, finished those little things that needed to
+be done before release (mostly fixing alerts text) and submitted the app for
+review to Apple.
+
+[quote, Elad Gil]
+--
+"If it doesn't ship, it doesn't exist"
+--
+
+Finally, I would like to thank each and every one of you that sent bug reports
+and sent me kind emails during the development stage. Thanks for patiently
+hanging around for this long. Now I'm going to take a little break before
+introducing new features (I'll stick around for hotfixes though :) ). In the
+meantime, for those that enjoy Ulry, reviews are very welcome!
+
+Thanks again folks!
