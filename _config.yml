@@ -11,6 +11,7 @@ host: 0.0.0.0
 collections:
   positions:
     order:
+      - anthropos-fullstack-engineer.adoc
       - amazon-sde-intern.adoc
       - fullstack-engineer-polimi.adoc
   projects:

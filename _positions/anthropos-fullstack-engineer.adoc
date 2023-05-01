@@ -1,0 +1,7 @@
+---
+name: Fullstack Engineer
+company: Anthropos
+location: Lugano, Switzerland
+start: May 2023
+end: Present
+---
