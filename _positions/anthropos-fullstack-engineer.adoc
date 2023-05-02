@@ -1,5 +1,5 @@
 ---
-name: Full-stack Engineer
+name: Software Engineer
 company: Anthropos
 location: Lugano, Switzerland
 start: May 2023
