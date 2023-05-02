@@ -61,15 +61,17 @@ download it in [.pdf](https://mattrighetti.github.io/resume.pdf)" %}
 </section>
 <section class="position-list">
     <h2>Professional Experience</h2>
+    <div class="positions-container">
     {% for position in site.positions %}
         <div class="position">
             <h3>{{ position.name }}</h3>
             <h4>{{ position.company }}</h4>
-            <span class="icon"><i class="fa fa-calendar" title="Started"></i></span>{{ position.start }}-{{ position.end }}<br>
-            <span class="icon"><i class="fa fa-map-marker" title="Location"></i></span>{{ position.location }}<br>
+            <span class="icon"><i class="fa fa-calendar" title="Started"></i>{{ position.start }}-{{ position.end }}</span><br>
+            <span class="icon"><i class="fa fa-map-marker" title="Location"></i>{{ position.location }}</span><br>
             <p>{{ position.content | markdownify }}</p>
         </div>
     {% endfor %}
+    </div>
 </section>
 <section>
     <h2>Publications</h2>

@@ -24,6 +24,8 @@
     --dialog-cop-bg-color: 255, 205, 2;
     --dialog-matt-bg-color: 227, 227, 227;
 
+    --timeline-color: #ead9d9;
+
     --separator: #b0b0b0;
 }
 
@@ -52,6 +54,8 @@
     --dialog-professor-bg-color: 132, 194, 113;
     --dialog-cop-bg-color: 255, 205, 2;
     --dialog-matt-bg-color: 117, 117, 117; 
+
+    --timeline-color: #372f2f;
 
     --separator: #383838;
 }
@@ -329,6 +333,39 @@ main {
     color: var(--secondary-text-color);
 }
 
+.positions-container {
+    position: relative;
+    margin: 0 auto;
+}
+
+.positions-container::before {
+    content: '';
+    position: absolute;
+    width: 1px;
+    background-color: var(--timeline-color);
+    top: 10px;
+    bottom: 0;
+    left: 0%;
+    margin-left: 3px;
+}
+
+.position {
+    padding-left: 20px;
+    position: relative;
+}
+
+.position::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    left: -1.6px;
+    top: 8px;
+    background-color: var(--timeline-color);
+    border-radius: 50%;
+    z-index: 1;
+}
+
 .position h3 {
     margin: 25px 0 0 0;
 }
@@ -339,7 +376,12 @@ main {
 }
 
 .position span {
+    color: var(--tertiary-text-color);
+}
+
+.position span i {
     margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 .position p {
