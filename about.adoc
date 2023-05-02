@@ -5,14 +5,23 @@ layout: default
 
 == Hey there!
 
-I am Mattia and I'm a software engineer from Italy. My main interests are
-distributed systems, performance optimization, databases and microservices but I
-also have experience with frontend, don't tell anyone.
+I'm Matt, a software engineer with a passion for building efficient software
+solutions and engineering in general.
 
-I am currently finishing my MSc in software engineering, in particular I am
-working on https://www.hyperledger.org/use/fabric[Hyperledger Fabric] and model
-driven development for my thesis.
+My primary focus is on backend development and system programming. I tend to
+work a lot with distributed systems, algorithms, and data structures which
+allow me to solve complex problems and build high-performance systems.
 
-You can find me on https://github.com/mattrighetti[GitHub].
+In addition to backend development, I do a lot of the frontend for all my side
+projects. I enjoy creating user-friendly and beautiful interfaces that are easy
+to use and provide a delightful experience. On top of that, I do quite a lot of
+iOS and macOS applications development.
+
+Overall, I'm a technology enthusiast who is always eager to learn and tackle new
+challenges. If you're looking for a software engineer who can help you create
+innovative and reliable software solutions, then I'm your guy. Let's chat!
+
+You can find me on https://github.com/mattrighetti[GitHub] or you can just hit
+me up by email.
 
 Code samples on this blog are dual licensed under MIT OR Apache-2.0.
