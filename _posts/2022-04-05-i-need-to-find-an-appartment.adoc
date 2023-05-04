@@ -1,5 +1,6 @@
 ---
 title: I Need to Find an Apartment
+show_patreon: true
 ---
 :source-highlighter: rouge
 

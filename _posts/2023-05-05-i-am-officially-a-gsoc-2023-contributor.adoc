@@ -1,0 +1,75 @@
+---
+title: I'm officially a GSoC 2023 contributor
+---
+
+I'm super excited to annouce that my proposal for
+https://summerofcode.withgoogle.com[Google Summer of Code 2023] has been
+accepted and I will work with the https://www.torproject.org[Tor project] org.,
+specifically I will design their **Network Status APIs** from the ground-up
+(kind-of) using https://actix.rs[`actix_web`] and Rust.
+
+The Tor Project is a non-profit organization that develops and maintains the Tor
+network, which is a free and open-source software project that helps to protect
+user privacy and security online.
+
+Tor works by encrypting user traffic and routing it through a series of relays,
+making it difficult for anyone to trace the user's internet activity back to
+their physical location. This makes it an effective tool for protecting against
+surveillance, censorship, and other forms of online tracking.
+
+**The Tor network is particularly useful for journalists, activists, and other
+individuals who need to communicate or access information securely and
+anonymously. It can also be used by anyone who is concerned about their online
+privacy and wants to avoid being tracked by third parties, such as advertisers
+or governments.**
+
+In addition to the Tor network, the Tor Project also develops and maintains a
+number of related tools and services, such as the Tor Browser, which is a web
+browser that allows users to access the internet through the Tor network. They
+also provide resources and support for developers who want to incorporate Tor
+into their own applications or services.
+
+Overall, the Tor Project is a valuable resource for anyone who wants to protect
+their online privacy and security, and it plays an important role in promoting
+freedom of expression and access to information online.
+
+I've been using Tor for at least 7 solid years and this was one of the driving
+factors that got me interested in the project, being a privacy maniac myself
+it's something that I've always wanted to contribute to.
+
+Moving to the program itself, for those of you who don't know what GSoC is:
+
+[quote]
+--
+Google Summer of Code is a global, online mentoring program focused on
+introducing new contributors to open source software development. GSoC
+contributors work on a 12+ week programming project with the guidance of mentors
+from their open source organization.  During Google Summer of Code,
+participating contributors are paired with mentors from open source
+organizations, gaining exposure to real-world software development techniques.
+
+Contributors will learn from experienced open source developers while writing
+code for real-world projects! A small stipend is provided as an incentive.
+
+Participating organizations use the program to identify and bring in new,
+excited developers. Many of those new developers will continue to contribute to
+their new communities and open source long after GSoC is over.
+--
+
+I applied for GSoC back in March, it's usually a bit late to apply because in
+order to maximize your chances you should start to interact with the community
+~1-2 months before submitting your proposal and/or contributing with PRs to
+current projects. But I had nothing to loose and I really wanted to work on this
+project and be part of this big open-source community, so I spent 3 days working
+on this document full-time and submitted a PR to another project that my mentors
+were working on. That turned out to be time super well spent! So, next year, if
+you're unsure about submitting your proposal, remember that it's never too late.
+
+If you're interested in the proposal I submitted and everything that concerns
+the project, you can find it
+https://mattrighetti.com/assets/docs/gsoc2023.pdf[here].
+
+I will try to keep you posted during this journey and talk about what I learn
+during the process, but I'm super excited to work with Rust and `actix_web` but
+mostly to be a contributor of Tor Project which is vital for so many people all
+around the world!

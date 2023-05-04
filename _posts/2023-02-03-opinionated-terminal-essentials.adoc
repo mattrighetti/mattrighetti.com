@@ -1,5 +1,6 @@
 ---
 title: Opinionated Terminal Essentials
+show_patreon: true
 ---
 :source-highlighter: rouge
 :page-liquid:

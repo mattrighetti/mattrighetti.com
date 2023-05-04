@@ -1,5 +1,6 @@
 ---
 title: "SwiftUI and CoreData: The MVVM Way"
+show_patreon: true
 ---
 :source-highlighter: rouge
 

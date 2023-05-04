@@ -1,6 +1,7 @@
 ---
 title: I Have Been Doing CDN Caching Wrong
 render_graphs: true
+show_patreon: true
 ---
 :source-highlighter: rouge
 

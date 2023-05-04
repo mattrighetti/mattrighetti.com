@@ -1,5 +1,6 @@
 ---
 title: Flat List Design in SwiftUI
+show_patreon: true
 ---
 :source-highlighter: rouge
 

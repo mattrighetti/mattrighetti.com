@@ -1,5 +1,6 @@
 ---
 title: Automate XCTests with GitHub Actions
+show_patreon: true
 ---
 :source-highlighter: rouge
 

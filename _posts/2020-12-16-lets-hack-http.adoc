@@ -1,5 +1,6 @@
 ---
 title: Let's Hack HTTP
+show_patreon: true
 ---
 :source-highlighter: rouge
 :page-liquid:

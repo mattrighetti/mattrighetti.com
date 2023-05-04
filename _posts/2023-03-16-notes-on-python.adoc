@@ -1,5 +1,6 @@
 ---
 title: Notes on Python 
+show_patreon: true
 ---
 :source-highlighter: rouge
 

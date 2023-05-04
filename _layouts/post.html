@@ -5,12 +5,14 @@ layout: default
   <h1>{{ page.title }}</h1>
   <div class="post-meta sect1">{{ page.date | date: "%b %-d, %Y" }}</div>
   {{ content }}
+  {% if page.show_patreon %}
   <div class="patreon-block">
     <h2>Enjoyed the read?</h2>
     <p>If you enjoy my writing, please check out my Patreon 
       <b><a href="https://www.patreon.com/mattrighetti">patreon.com/mattrighetti</a></b>
       and become my supporter. Sharing the article is also greatly appreciated.</p>
   </div>
+  {% endif %}
 </article>
 
 <script>
