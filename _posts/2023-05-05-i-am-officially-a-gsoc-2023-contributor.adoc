@@ -1,5 +1,5 @@
 ---
-title: I'm officially a GSoC 2023 contributor
+title: I'm Officially a GSoC 2023 Contributor
 ---
 
 I'm super excited to annouce that my proposal for
