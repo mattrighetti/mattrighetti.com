@@ -1,5 +1,6 @@
 ---
 title: I Have Been Doing CDN Caching Wrong
+hn: 35043452
 render_graphs: true
 show_patreon: true
 ---

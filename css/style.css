@@ -280,6 +280,10 @@ p code {
     border: 1px solid var(--inline-code-border-color);
 }
 
+.discuss-on-hn a {
+    color: #ED702D;
+}
+
 .lang-tag {
     float: left;
     display: block;
