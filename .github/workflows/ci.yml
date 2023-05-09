@@ -38,7 +38,7 @@ jobs:
         git diff --name-only HEAD HEAD~1 | \
         grep _posts | \
         sed 's/_posts\///' | sed 's/\.adoc//' | \
-        awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html", $1, $2, $3, substr($0,12)) }' | \
+        awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html\n", $1, $2, $3, substr($0,12)) }' | \
         jq -Rn '["https://mattrighetti.com/", inputs]'
 
     - name: Purge CF Cache
@@ -47,7 +47,7 @@ jobs:
         git diff --name-only HEAD HEAD~1 | \
         grep _posts | \
         sed 's/_posts\///' | sed 's/\.adoc//' | \
-        awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html", $1, $2, $3, substr($0,12)) }' | \
+        awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html\n", $1, $2, $3, substr($0,12)) }' | \
         jq -Rn '{"files": ["https://mattrighetti.com/", inputs]}' | \
         curl -s -X POST \
           --url https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache \
