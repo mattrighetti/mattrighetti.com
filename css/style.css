@@ -395,6 +395,29 @@ main {
     list-style: circle;
 }
 
+.contribution h3 {
+    margin: 25px 0 0 0;
+}
+
+.contribution h4 {
+    margin: 0 0 5px 0;
+    color: var(--tertiary-text-color);
+}
+
+.contribution span {
+    color: var(--tertiary-text-color);
+}
+
+.contribution span i {
+    margin-right: 10px;
+    margin-bottom: 0px;
+}
+
+.contribution p {
+    color: var(--secondary-text-color);
+    margin-top: 0;
+}
+
 #year {
     font-size: 3rem;
     font-weight: 700;

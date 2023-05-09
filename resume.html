@@ -6,6 +6,15 @@ title: Resume
 download it in [.pdf](https://mattrighetti.github.io/resume.pdf)" %}
 
 <div class="sect2">
+    <h3>Summary</h3>
+    <div>
+        <ul>
+            <li><a href="#professional-experience">Professional Experience</a></li>
+            <li><a href="#open-source-contributions">Open Source Contributions</a></li>
+            <li><a href="#education">Education</a></li>
+            <li><a href="#technical-skills">Technical Skills</a></li>
+        </ul>
+    </div>
     <h3 id="personal-details">Personal Details</h3>
     <div class="hdlist">
         <table>
@@ -45,6 +54,36 @@ download it in [.pdf](https://mattrighetti.github.io/resume.pdf)" %}
         </table>
     </div>
 </div>
+<section class="position-list">
+    <h2 id="professional-experience">Professional Experience</h2>
+    <div class="positions-container">
+    {% for position in site.positions %}
+        <div class="position">
+            <h3>{{ position.name }}</h3>
+            <h4>{{ position.company }}</h4>
+            <span class="icon"><i class="fa fa-calendar" title="Started"></i>{{ position.start }}-{{ position.end }}</span><br>
+            <span class="icon"><i class="fa fa-map-marker" title="Location"></i>{{ position.location }}</span><br>
+            <p>{{ position.content | markdownify }}</p>
+        </div>
+    {% endfor %}
+    </div>
+</section>
+<section class="contribution-list">
+    <h2 id="open-source-contributions">Open Source Contributions</h2>
+    <div class="contribution-container">
+    {% for contribution in site.contributions %}
+        <div class="contribution">
+            <h3>{{ contribution.organization.name }}</h3>
+            <h4>{{ contribution.name }}</h4>
+            <span class="icon"><i class="fa fa-calendar" title="Started"></i>{{ contribution.start }}-{{ contribution.end }}</span><br>
+            <span class="icon">
+                <i class="fa fa-landmark" title="Organization"></i><a href="{{ contribution.organization.url }}">Organization</a></span><br>
+            <span class="icon"><i class="fa fa-{{ contribution.githost }}" title="Repository"></i><a href="{{ contribution.repository }}">Project Repository</a></span>
+            <p>{{ contribution.content | markdownify }}</p>
+        </div>
+    {% endfor %}
+    </div>
+</section>
 <section>
     <h2 id="education">Education</h2>
     <div class="ulist">
@@ -58,35 +97,8 @@ download it in [.pdf](https://mattrighetti.github.io/resume.pdf)" %}
         </ul>
     </div>
 </section>
-<section class="position-list">
-    <h2>Professional Experience</h2>
-    <div class="positions-container">
-    {% for position in site.positions %}
-        <div class="position">
-            <h3>{{ position.name }}</h3>
-            <h4>{{ position.company }}</h4>
-            <span class="icon"><i class="fa fa-calendar" title="Started"></i>{{ position.start }}-{{ position.end }}</span><br>
-            <span class="icon"><i class="fa fa-map-marker" title="Location"></i>{{ position.location }}</span><br>
-            <p>{{ position.content | markdownify }}</p>
-        </div>
-    {% endfor %}
-    </div>
-</section>
 <section>
-    <h2>Publications</h2>
-    <div class="sect3">
-        <h4 id="model-driven-development-of-distributed-ledger-applications">Model-Driven Development of Distributed
-            Ledger Applications</h4>
-        <div class="paragraph">
-            <p><span class="icon"><i class="fa fa-users" title="Authors"></i></span> Piero Fraternali, S. L. Herrera
-                Gonzalez, Matteo Frigerio, Mattia Righetti<br>
-                <span class="icon"><i class="fa fa-link"></i></span> coming soon
-            </p>
-        </div>
-    </div>
-</section>
-<section>
-    <h2>Technical Skills</h2>
+    <h2 id="technical-skills">Technical Skills</h2>
     <div class="ulist">
         <ul>
             <li>
@@ -96,8 +108,7 @@ download it in [.pdf](https://mattrighetti.github.io/resume.pdf)" %}
                 <p>MySQL, Postgres, PostGIS, SQLite, DynamoDB, Aurora</p>
             </li>
             <li>
-                <p>Docker, NGINX, Redis, AWS EC2, AWS S3, AWS Glue, AWS CloudFormation, AWS ECR, AWS Fargate, AWS Lambda
-                </p>
+                <p>Docker, NGINX, Redis, AWS EC2, AWS S3, AWS Glue, AWS CloudFormation, AWS ECR, AWS Fargate, AWS Lambda</p>
             </li>
         </ul>
     </div>

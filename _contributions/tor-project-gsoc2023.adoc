@@ -1,0 +1,15 @@
+---
+name: Google Summer of Code 2023
+organization:
+  name: Tor Project
+  url: https://torproject.org
+start: May 2023
+end: Present
+githost: gitlab
+repository: https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi
+---
+
+I took part in this project during *Google Summer of Code 2023*. The aim of the
+project is to create a RESTful API service which is going to be used by Tor
+stakeholders to get to know the Tor Network health status at any point in time.
+The service has been developed using the *actix_web* framework in *Rust*.

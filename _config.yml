@@ -14,6 +14,9 @@ collections:
       - anthropos-fullstack-engineer.adoc
       - amazon-sde-intern.adoc
       - fullstack-engineer-polimi.adoc
+  contributions:
+    order:
+      - tor-project-gsoc2023.adoc
   projects:
     order:
       - ulry.adoc
