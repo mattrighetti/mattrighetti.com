@@ -1,0 +1,69 @@
+---
+title: "GSoC 2023: Week 1"
+show_patreon: false
+---
+:source-highlighter: rouge
+
+Since I'm trying to write more and more, I decided to try and commit to keep you
+up-to-date with the progress of the project I'm working on for GSoC 2023.
+
+This could be a nice opportunity for me to talk about the project, the tech
+stack that I'm using and issues I'm going to deal with during the entire
+journey. And also give you some little insights on the Tor Project, why not?
+
+Let's start off by saying that community members try to keep discussions about
+everything that concerns the project on publicly accessible channels:
+communication happens mostly on IRC, specifically on https://www.oftc.net[oftc].
+
+There are three main channels:
+
+. `#tor-project` is the main channel where community members talk about the
+  project in general
+
+. `#tor-dev` where people talk about dev related topics
+
+. `#tor-meeting` where each monday different teams at different time slots give
+  updates on their progress on different projects
+
+Each of those IRC channels is also mirrored on https://matrix.org[Matrix] if you
+prefer that.
+
+Week 1 is the so-called *community bonding* period, which is probably the best
+thing that you can get out of GSoC accoring to a lot of people that did it in
+the past (https://news.ycombinator.com/item?id=35194002[see here]).
+
+That's what I did, I spent this week getting to know my mentors and the Tor
+Project itself, me and other GSoC mentees participated in a meeting where we
+explained what we are going to work on and why. I've coded very little during
+this period, it's not what you should do at this very stage really so I don't
+have a lot to share about that.
+
+Before leaving, I would like to talk a bit more about the project for those of
+you who want a TLDR of the proposal that I linked last week in my
+https://mattrighetti.com/2023/05/05/i-am-officially-a-gsoc-2023-contributor.html[article].
+
+If you take a look at the https://metrics.torproject.org/rs.html#search[Tor relay
+search] page, you can query a lot of different info about Tor relays and
+bridges. That page uses the https://metrics.torproject.org/onionoo.html[onionoo]
+protocol to get all the data about the Tor network.
+
+The issue that the Network Status team is facing is that the data retrivial
+process on the backend is very I/O bound since it works by creating files and
+aggregating data from them in responses. This of course uses a lot of resources
+and is slowing down the service. In order to solve this, a lot of the data in
+those files are now being moved to a big Postgres instance so that the service
+can scale accordingly to user demand. Not only that, but data is also going to
+be pushed in a VictoriaMetrics timeseries database so that we can provide
+historical data about relays and bridges.
+
+The project I'm working on does exactly that: exposes APIs that will return data
+queried from those two instances, hopefully making onionoo obsolete. We decided
+to go for Rust and `actix_web` for the service framework because it's
+https://www.techempower.com/benchmarks/#section=data-r21[one of the the fastes]
+and reliable out there, both crucial factors in this case. I've used `actix_web`
+a couple of times for simpler personal services before so I'm in no way an
+expert of the framework but that's the very reason why I applied for this exact
+project: learn more about `actix_web` and work with Rust, all of this
+contributing to the FOSS community.
+
+I'll see you next week with more updates.
