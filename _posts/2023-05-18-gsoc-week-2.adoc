@@ -1,0 +1,185 @@
+---
+title: "GSoC 2023: Week 2"
+show_patreon: false
+---
+:source-highlighter: rouge
+
+Week #2 is still supposed to be dedicated to community bonding and other prepping
+stuff that's going to be needed before the coding part starts (29th May).
+
+This is not strictly enforced and nobody prevents you from actually writing some
+code before May 29th. I've indeed started coding this week, not a lot but the
+bare minimum project setup.
+
+Let's start by saying that the service is going to be almost identical to the
+current **onionoo** protocol, which currently exposes six different endpoints:
+
+. `/summary`
+. `/details`
+. `/bandwidth`
+. `/weights`
+. `/clients`
+. `/uptime`
+
+Plus, the new service is adding historical data querying, so we're introducing
+two more endpoints:
+
+. `/history/summary`
+. `/history/clients`
+
+[chat, matt]
+--
+Well, actually this is not yet decided. We'll have to see if we want two more
+endpoints or just add more query params to handle this.
+--
+
+Each endpoint accepts HTTP `GET` methods. With all this info I went ahead and
+coded this very small part of the webserver.
+
+Let's start with the least number of dependencies which in this case are
+`actix_web`, `sqlx`, `tokio` and `env_logger`.
+
+```toml
+[dependencies]
+actix-web = "4"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+reqwest = { version = "0.11", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+env_logger = "0.10.0"
+
+[dependencies.sqlx]
+version = "0.6"
+default-features = false
+features = [
+    "runtime-tokio-rustls",
+    "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate",
+    "offline"
+]
+```
+
+For those of you who don't know: `actix_web` is the web framework that I'm going
+to use for this project, `tokio` is the async runtime that integrates perfectly
+with `actix_web` and is the de-facto standard in Rust and `sqlx` is my framework
+of choice when I have to work with databases.
+
+With all the above I should have the bare minimum configuration to get started with the basics of
+the project.
+
+```rust
+pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server> {
+    let db_pool = web::Data::new(db_pool);
+
+    std::env::set_var("RUST_LOG", "actix_web=info");
+    let _ = env_logger::try_init();
+
+    let server = HttpServer::new(move || {
+        App::new()
+            .wrap(middleware::Logger::default())
+            .app_data(db_pool.clone())
+            .service(web::resource("/summary")
+                .route(web::get().to(not_implemented))
+            )
+            .service(web::resource("/details")
+                .route(web::get().to(not_implemented))
+            )
+            .service(web::resource("/bandwidth")
+                .route(web::get().to(not_implemented))
+            )
+            .service(web::resource("/weights")
+                .route(web::get().to(not_implemented))
+            )
+            .service(web::resource("/clients")
+                .route(web::get().to(not_implemented))
+            )
+            .service(web::resource("/uptime")
+                .route(web::get().to(not_implemented))
+            )
+            .service(
+                web::scope("/history")
+                    .service(web::resource("/summary")
+                        .route(web::get().to(not_implemented))
+                    )
+                    .service(web::resource("/clients")
+                        .route(web::get().to(not_implemented))
+                    )
+            )
+    })
+    .listen(listener)?
+    .run();
+
+    Ok(server)
+}
+```
+
+I've created this `run` method that spins up the server by taking a `TcpListener` and the database pool, this
+will come in handy for testing where we would like to bind the webserver to different ports and addresses and maybe
+use a local database instance.
+
+As you can see, I'm creating multiple different services. Each one of those will
+get triggered when an HTTP GET request hits the endpoint as the `web::get()`
+points out (more on that in future articles). This is all you need to start a
+simple server with Rust and `actix_web`!
+
+I'm currently not going to implement much more than this as I am still going through 
+the current onionoo service and waiting for
+https://gitlab.torproject.org/tpo/tpa/team/-/issues/41167[Postgres access].
+
+I've also went ahead and wrote down the response structs along with their docs,
+that took a strong hour just to type everything out as some
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/tree/dev/src/models/responses[responses]
+are pretty big and going back and forth to copy the documentation took a bit of
+time, no big deal.
+
+Let's take a look at the current
+https://gitlab.torproject.org/tpo/network-health/metrics/onionoo[onionoo]
+project instead. It's written in Java and it seems to be using Servlets. Since it's a
+web protocol there must be an entry-point that handles HTTP requests
+
+```shell session
+$ tree src/main/java/org/torproject/metrics/onionoo/ -L1
+.
+├── cron
+├── docs
+├── package-info.java
+├── server
+├── updater
+├── util
+└── writer
+```
+
+If we inspect the server package we can see that there's a Java class named
+https://gitlab.torproject.org/tpo/network-health/metrics/onionoo/-/blob/master/src/main/java/org/torproject/metrics/onionoo/server/ServerMain.java[`ServerMain`]
+that does start the server. Also,
+https://gitlab.torproject.org/tpo/network-health/metrics/onionoo/-/blob/master/src/main/java/org/torproject/metrics/onionoo/server/ServerMain.java[`ResourceServlet`]
+is the class that handles the current HTTP GET requests. It wraps the request in
+an https://gitlab.torproject.org/tpo/network-health/metrics/onionoo/-/blob/master/src/main/java/org/torproject/metrics/onionoo/server/HttpServletRequestWrapper.java[`HttpServletRequestWrapper`]
+which exposes useful getters for the incoming request.
+
+`ResourceServlet`
+https://gitlab.torproject.org/tpo/network-health/metrics/onionoo/-/blob/master/src/main/java/org/torproject/metrics/onionoo/server/ResourceServlet.java#L115-135[determines]
+which kind of request it received and then goes through a lot of logic, a lot of
+that involves building different kind of responses depending on which query
+parameters the requestor is providing, and eventually returns a
+https://gitlab.torproject.org/tpo/network-health/metrics/onionoo/-/blob/master/src/main/java/org/torproject/metrics/onionoo/server/ResourceServlet.java#L453-459[response].
+
+I'm not gonna bore you with the details, you can take a look at the servlet if
+you want to.
+
+As I said before, I'm waiting for TLS access to the Postgres instance, but until
+that's a thing I have the
+https://gitlab.torproject.org/tpo/network-health/metrics/descriptorParser/-/tree/main/src/main/sql[database
+schema] so I can replicate it locally. This will be especially useful
+in the future when I'm going to use `sqlx` macros to statically check SQL
+queries.
+
+That's it for this week, things are still a bit quiet for the moment as I'm
+basically going through pre-existing codebases but that must be done to get the
+whole picture but it's also a good exercise for every software dev, reading
+other's people code is hard :) ! So, the more you do it, the better you get at
+it.
+
+See you next week for more updates!
