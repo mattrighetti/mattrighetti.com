@@ -7,11 +7,23 @@
     <link rel="icon" href="{{ "/favicon.svg" | prepend: site.baseurl }}" type="image/svg+xml"/>
 
     <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
-    
+
+    <meta name="title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+    <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+
+    <meta property="twitter:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+    <meta property="og:type" content="webiste">
+
     <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
     <meta property="og:description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
-    {% if page.url %}<meta property="og:url" content="{{ page.url | prepend: site.url }}">{% endif %}
+    <meta property="twitter:description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+    {% if page.url %}
+    <meta property="twitter:url" content="{{ page.url | prepend: site.url }}">
+    <meta property="og:url" content="{{ page.url | prepend: site.url }}">
+    {% endif %}
+
     {% if page.image %}
+    <meta property="twitter:image" content="{{ page.image }}">
     <meta property="og:image" content="{{ page.image }}">
     {% endif %}
 
