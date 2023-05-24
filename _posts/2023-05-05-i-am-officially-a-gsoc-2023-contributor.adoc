@@ -1,5 +1,6 @@
 ---
 title: I'm Officially a GSoC 2023 Contributor
+image: "https://mattrighetti.com/assets/gsoc-thumb.jpg"
 ---
 
 I'm super excited to annouce that my proposal for
