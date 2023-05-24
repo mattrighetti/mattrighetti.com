@@ -1,6 +1,6 @@
 ---
 title: "GSoC 2023: Week 1"
-image: "https://mattrighetti.com/assets/gsoc-thumb.jpg"
+image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
 ---
 :source-highlighter: rouge
