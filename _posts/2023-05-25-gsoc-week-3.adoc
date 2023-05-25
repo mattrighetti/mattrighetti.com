@@ -1,0 +1,53 @@
+---
+title: "GSoC 2023: Week 3"
+image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
+show_patreon: false
+---
+:source-highlighter: rouge
+
+Hey there! This has been yet another _reading code_ week, again :) but bear with
+me a little longer.
+
+If you read the previous articles you already know that coding should start on
+the 29th of May, before that date you should spend time bonding with the
+community and other people participating in GSoC 2023.
+
+I did write some more (very little) filtering logic for query params that might
+come with each request, you can find all those in the
+https://metrics.torproject.org/onionoo.html#parameters[onionoo protocol
+specifications]. Later this week I'm also going to setup an initial CI/CD
+pipeline to automatically test code when commits are pushed to any remote branch
+so that I'm sure I'm not pushing broken stuff.
+
+Plus, I've also started to lay down another crucial thing that I
+talked about last week: *responses -> table columns* mappings.
+
+Right now the Network Status Team is loading data into their databases and we're
+going to have access to the new instance
+https://gitlab.torproject.org/tpo/tpa/team/-/issues/41167[next week] as the
+issue is getting noticed and is moving forward.
+
+I had to write down where data is to be queried and how, because there were some
+mismatches in responses field names and table columns. A first attempt to
+illustrate the mappings is provided in this
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/issues/1[issue]
+and is now being discussed with other community members.
+
+This docs will be necessary when I'll have to actually query the databases to
+contruct the responses that the service returns. I still don't have access to pg
+as you know, but I can replicate a mirrored instance locally with docker since I have the
+entire
+https://gitlab.torproject.org/tpo/network-health/metrics/descriptorParser/-/tree/main/src/main/sql[database
+schema] at my disposal, and you have too of course.
+
+This is how the database currently looks
+(https://mattrighetti.com/assets/images/tor_metrics_postgres.png[full image])
+
+image::/assets/images/tor_metrics_postgres.png[]
+
+Things are going smoothly for the moment, the project is almost 100%
+setup and soon I'll start to code the APIs. I've now participated in more
+than two weekly meetings and I'm starting to understand more of how the Tor
+Project community operates and I'm happy to be part of it.
+
+See you next week for more updates!
