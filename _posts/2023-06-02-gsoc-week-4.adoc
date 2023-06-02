@@ -1,0 +1,498 @@
+---
+title: "GSoC 2023: Week 4 (Actix Extractors)"
+image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
+show_patreon: false
+---
+:source-highlighter: rouge
+
+Here we are with another update, we're starting to get serious this time around.
+
+Let me start with the easy part: this week I've created the very first wiki page
+of the project, it's a description of the mappings that bind fields in responses
+with table columns.
+
+After that, I've finally started coding, for real :) first of all I've created
+some more files to keep code consistent, at Tor we're using
+https://editorconfig.org/[editorconfig]. I did not know about this tool before,
+but it's turning out to be super useful. When I'm not using vim I'm 99% on
+VSCode and there's even an editorconfig plugin for that. It triggers on file
+save and it applied what you specified in
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/blob/dev/.editorconfig[`.editorconfig`]
+file. In my case not that much really but it's still really useful, I hate to
+see diffs containing removed trailing whitespaces, this is a good enough reason
+to adopt it.
+
+A good project should be tested thoroughly, but I'm lazy and I forget things,
+like running `cargo test` every time I push stuff remotely. Luckily enough with
+little effort I've created a very simple CI/CD pipeline that does two things:
+
+. Checks that file satisfies editorconfig constraints
+. Runs tests for you, both for nightly and stable rust releases
+
+I've never setup a CI/CD on GitLab but they seem way more intuitive than the
+GitHub alternative. The config file at least is much more readable imo.
+
+Now comes the meaty part: actual APIs coding.
+
+I've spent these nights working on the query parameters that the service is
+going to expose. There are a bunch of query params to support, you can find a
+list on the current
+https://metrics.torproject.org/onionoo.html#parameter[sonionoo] wiki. A lot of
+these actually have a lot of constraints, and Rust makes the process of working
+with these super cool, let me tell you why.
+
+Let me start things off by giving you a refresher on how the server looks like:
+
+```rust
+App::new()
+	// ...
+    .service(web::resource("/summary")
+        .route(web::get().to(not_implemented))
+    )
+    .service(web::resource("/details")
+        .route(web::get().to(not_implemented))
+    )
+    .service(web::resource("/bandwidth")
+        .route(web::get().to(not_implemented))
+    )
+    .service(web::resource("/weights")
+        .route(web::get().to(not_implemented))
+    )
+    .service(web::resource("/clients")
+        .route(web::get().to(not_implemented))
+    )
+    // More endpoints ...
+```
+
+This should look familiar if you've ever worked on some kind of REST APIs
+before. You're basically telling the server which function should handle the
+request that hit an endpoint with a certain HTTP method. Forget for a minute
+that each one of them get passed to `not_implemented()` right now as this was
+just the project setup.
+
+Take `/summary` for example. If that endpoint gets hit with a `GET` request,
+it's going to trigger its `not_implemented` method. A quick look at the docs
+will tell you what kind of function `.to()` will take:
+
+```rust
+pub fn to<F, Args>(mut self, handler: F) -> Self
+where
+    F: Handler<Args>,
+    Args: FromRequest + 'static,
+    F::Output: Responder + 'static
+```
+
+So `.to()` takes a function of type `Handler` that has `Args` as input and that
+returns a `Responder`, plus, `Args` is something that does implement the
+`FromRequest` trait. This might seem a little complicated at first but I'll cite
+the docs to make things a little bit clearer:
+
+[quote]
+--
+A handler is just an async function that receives request-based arguments, in
+any order, and returns something that can be converted to a response.
+--
+
+Keep in mind the following definition, it's going to be useful later.
+
+[quote]
+--
+A type that implements `FromRequest` is called an **extractor** and can extract
+data from the request.
+--
+
+Now, let's jump into some more code so that you can have a better understanding
+of how a simple handler as `not_implemented` looks like
+
+```rust
+pub async fn not_implemented() -> impl Responder {
+    HttpResponse::InternalServerError()
+        .body("method has not been implemented")
+}
+```
+
+The function takes no arguments in this case and it always returns a simple
+`500 Internal Server Error` with a message body that tells you that the endpoint logic has not
+been implemented yet. As we said before, the function needs to be `async` and
+return something that implements `Responder`. Hopefully, things should be a
+little bit less scarier than before, but now that you got this I'll take a jump
+back to my initial problem and show you how cool `actix_web` is.
+
+We're working with query params and we want each of the endpoints above to
+potentially have those in each request. `actix_web` has a special extractor for
+query params that will give us a lot of things for free. I'm talking about the
+https://actix.rs/docs/extractors#query[`web::Query<T>`] extractor. It takes a
+generic argument and it's going to try extract data based on the type that we
+specify as its generic argument and give it back to us, filled with the
+extracted data. This is the struct that reflects all the possible query params
+that the server has to deal with in each request:
+
+```rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct QueryParams {
+    pub r#type: Option<String>,
+    pub running: Option<bool>,
+    pub search: Option<String>,
+    pub lookup: Option<String>,
+    pub country: Option<String>,
+    pub r#as: Option<String>,
+    pub as_name: Option<String>,
+    pub flag: Option<String>,
+    pub first_seen_days: Option<String>,
+    pub last_seen_days: Option<String>,
+    pub first_seen_since: Option<String>,
+    pub last_seen_since: Option<String>,
+    pub contact: Option<String>,
+    pub family: Option<String>,
+    pub version: Option<String>,
+    pub os: Option<String>,
+    pub host_name: Option<String>,
+    pub recommended_version: Option<String>,
+    pub fields: Option<String>,
+    pub order: Option<String>,
+    pub offset: Option<i32>,
+    pub limit: Option<i32>
+}
+```
+
+Since in this case there can be no query params, all of them are marked as
+optionals. We can make use of this `QueryParams` type in each of our
+handler functions like this
+
+```rust
+pub async fn summary_function(params: web::Query<QueryParams>) -> impl Responder {
+    // Logic goes here
+}
+```
+
+`actix_web` will now extract query params for us and we can access them through
+the `params` argument. The thing that's even more cool is that `actix_web` will
+return a `400 Bad Request` in case extraction goes wrong. Let's say that a user
+tries to use a query params named `network=public`, you can clearly see that the
+struct I defined above does not have such a field, therefore extraction is going
+to fail and an error will be returned. Same happens if you try to pass a query
+param with an unexpected type, e.g. `offset=threehundred`. How cool is
+that? This all comes for free, we just declared the signature of a function and
+a struct and we get a lot of things from just those two things!
+
+I don't want to ruin the party, but things might still be tedious to work with
+right now. You may recall that those query params have a lot of constraints to
+satisfy in order for them to be valid. Just to name a few:
+
+. `country` must be a valid 2 chars identifier
+. `version` must satisfy the format of https://gitlab.torproject.org/tpo/core/torspec/-/blob/main/version-spec.txt[valid Tor versions]
+. `lookup` must be a 40 hex chars long identifier
+
+Sorry, but `QueryParams` struct won't check those boxes for us. At the moment
+`lookup` could be a 30 chars string, or an empty one too. `version` could be
+`"1.2.3_dev"`, which is clearly an invalid Tor version.
+
+You get the point, we are not done yet and we need to add some validation logic.
+
+This is where the true power and beauty of Rust and `actix_web` comes out, we
+don't have to throw away what we got for free above, but we can build up on it.
+What I want to do is implement a new struct that's equivalent to the
+`QueryParams` above, with the only difference that it will only contain valid
+stuff. I'm going to achieve this with what is called type-safety.
+
+[quote]
+--
+In Rust, type-safety refers to the language's ability to prevent certain types
+of runtime errors by enforcing strict compile-time checks on types. It ensures
+that programs are free from certain classes of errors related to incorrect type
+usage, such as type mismatches, null pointer dereferences, and memory safety
+issues.
+--
+
+I'm now going to create some types that represent valid query params, let's jump
+right into some examples:
+
+```rust
+/// String wrapper that always returns a lowercase, non-emtpy String
+#[derive(Debug)]
+pub struct CaseInsensitiveString(String);
+
+impl TryFrom<String> for CaseInsensitiveString {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.is_empty() {
+            return Err("case insensitive string cannot be empty".to_string());
+        }
+
+        Ok(Self(value.to_lowercase()))
+    }
+}
+```
+
+```rust
+/// Wrapper for full fingerprints or hashed fingerprints
+/// consisting of 40 hex characters.
+/// Lookups are case-insensitive.
+#[derive(Debug)]
+pub struct LookupString(CaseInsensitiveString);
+
+impl TryFrom<String> for LookupString {
+    type Error = String;
+    
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.len() != 40 {
+            return Err("lookup param must be a 40 char long string containing hex chars".to_string());
+        }
+
+        Ok(Self(CaseInsensitiveString(value)))
+    }
+}
+```
+
+```rust
+/// Wrapper for Country code string of length 2, case-insensitive
+#[derive(Debug)]
+pub struct CountryCode(CaseInsensitiveString);
+
+impl TryFrom<String> for CountryCode {
+    type Error = String;
+    
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.len() != 2 {
+            return Err("country code must be two chars long.".to_string())
+        }
+
+        Ok(Self(CaseInsensitiveString(value)))
+    }
+}
+```
+
+```rust
+/// Wrapper for valid Tor Version
+/// Specs can be found at
+/// https://gitlab.torproject.org/tpo/core/torspec/-/blob/main/version-spec.txt
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct Version {
+    pub major: u8,
+    pub minor: u8,
+    pub micro: u8,
+    pub patchlevel: u8,
+    pub cvs: Option<String>
+}
+
+impl TryFrom<String> for Version {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(?P<MAJOR>\d+)\.(?P<MINOR>\d+)\.(?P<MICRO>\d+)\.(?P<PATCHLEVEL>\d+)(?P<CVS>-[A-Za-z]+)*$").unwrap();
+        }
+
+        let caps = match RE.captures(&value) {
+            None => return Err("invalid version.".to_string()),
+            Some(caps) => caps,
+        };
+
+        Ok(Self {
+            major: caps["MAJOR"].parse().map_err(|_| "major version is nan.")?,
+            minor: caps["MINOR"].parse().map_err(|_| "minor version is nan.")?,
+            micro: caps["MICRO"].parse().map_err(|_| "micro version is nan.")?,
+            patchlevel: caps["PATCHLEVEL"].parse().map_err(|_| "patchlevel version is nan.")?,
+            cvs: caps.name("CVS").map(|v| v.as_str().into())
+        })
+    }
+}
+```
+
+These are just some of the constraints that I've implemented, if you're
+interested you can check them all out at
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/blob/dev/src/models/query/domain.rs[domain.rs],
+nothing exciting really, just some validation logic.
+
+Now that we have those type-safe structs we can define the type-safe
+representation of `QueryParams`.
+
+```rust
+#[derive(Debug, Default)]
+pub struct QueryFilters {
+    // More params...
+    pub lookup: Option<LookupString>,
+    pub country: Option<CountryCode>,
+    pub version: Option<VersionType>,
+    // Even more params...
+}
+```
+
+Can you see where I'm getting at? Remember that we don't want to trash what we
+got for free above, we still want to work with our beloved `QueryParams` struct
+and extract data from it, that's why I'll implement a `TryFrom<QueryParams>` for
+`QueryFilters` that will do just that, if everything goes smoothly then we're
+going to get a valid `QueryFilters`, otherwise a nice `Err`.
+
+```rust
+impl TryFrom<QueryParams> for QueryFilters {
+    type Error = String;
+
+    fn try_from(value: QueryParams) -> Result<Self, Self::Error> {
+        let mut s = Self::default();
+        
+        // ...
+        
+        if let Some(lookup) = value.lookup {
+            s.lookup = Some(
+                LookupString::try_from(lookup)?
+            );
+        }
+        
+        if let Some(country) = value.country {
+            s.country = Some(
+                CountryCode::try_from(country)?
+            )
+        }
+        
+        if let Some(version) = value.version {
+            s.version = Some(
+                VersionType::try_from(version)?
+            )
+        }
+        
+        // ...
+        
+        Ok(s)
+    }
+}
+```
+
+This is as clean as it gets (if you got a cleaner solution, please reach out, I
+want to know your wizardly way). We have a shiny new method that takes a
+`QueryParams` and returns a `Result<QueryFilters, String>`, that's all we need
+for the remaining step.
+
+With this new `try_from()` we can go back to our handler function and adjust the
+code to validate our stuff
+
+```rust
+pub async fn summary_function(params: web::Query<QueryParams>) -> impl Responder {
+    match QueryFilters::try_from(params) {
+        Ok(filters) => {
+            // Successfully validated all the query params
+            // More logic here
+        },
+        Err(e) => {
+            HttpResponse::BadRequest().body(e)
+        }
+    }
+}
+```
+
+As you can see I'm validating stuff inside the function, in case
+something is invalid we're returning a `400 Bad Request` with the error message
+in its body. This is not that bad, but this will inevitably lead to a lot of
+redundant, duplicated code, and that's not what I want.
+
+Recall extractors? Yes, we can implement our own! We just need to implement
+`FromRequest` after all. That way we can use `actix_web` magic to hide this
+validation logic. To implement `FromRequest` for our `QueryFilters` type we just
+need to implement `from_request`, which is a method that will return a `Future`
+of type `Ready<Result<QueryFilters, actix_web::Error>>`. Don't be scared of the
+verbosity of Rust, it's easier than what you may think.
+
+```rust
+impl FromRequest for QueryFilters {
+    type Error = actix_web::Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
+        // 1. Extract `QueryParams` from the request, this
+        //    is the same thing that happens in the very first
+        //    handler implementation with `web::Query<QueryParams>`
+        if let Ok(query_params) = web::Query::<QueryParams>::extract(req).into_inner() {
+            return match QueryFilters::try_from(query_params.into_inner()) {
+                // 2. Try to validate data
+                Ok(filters) => ready(Ok(filters)),
+                // 3. If data is invalid return 400 Bad Request
+                Err(e) => ready(Err(ErrorBadRequest(e)))
+            }
+        }
+
+        // 4. If initial `QueryParams` is incorrect, still return 400 Bad Request
+        ready(Err(ErrorBadRequest("incorrect query params.")))
+    }
+}
+```
+
+`QueryFilters` now has got superpowers in the land of `actix_web`, let's put it to use.
+
+```rust
+pub async fn summary_function(params: QueryFilters) -> impl Responder {
+    // ...
+}
+```
+
+I mean, how cool is that?! By using Rust type-safety and `actix_web` extractors
+we're now guaranteed that if that function will ever get triggered, it will
+contain valid query params. If not, the user will be yeeted with a specific
+error message that points out what is wrong with the first query param that did
+not succeed validation.
+
+If you reached this point, thank you! I would like to show another cool
+extractor example that I've used in other projects that needed JWT
+authentication just to give you an idea of what you can actually achieve with
+these cool little objects.
+
+```rust
+#[derive(Serialize, Deserialize)]
+pub struct AuthenticationToken {
+    pub email: String
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    pub email: String,
+    pub exp: i64
+}
+
+impl FromRequest for AuthenticationToken {
+    type Error = actix_web::Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
+        if let Ok(bearer) = BearerAuth::extract(req).into_inner() {
+            let secret = req.app_data::<web::Data<String>>().unwrap();
+
+            let decode: Result<TokenData<Claims>, JwtError> = decode::<Claims>(
+                bearer.token(),
+                &DecodingKey::from_secret(secret.as_str().as_ref()),
+                &Validation::new(jsonwebtoken::Algorithm::HS256)
+            );
+
+            return match decode {
+                Ok(token) => ready(Ok(AuthenticationToken { email: token.claims.email })),
+                Err(_) => ready(Err(ErrorUnauthorized("Invalid token")))
+            }
+        }
+
+        ready(Err(ErrorUnauthorized("Unauthorized")))
+    }
+}
+```
+
+This is an extractor that can be used to take the `Authentication: Bearer
+<token>` from each request that the server receives, check that it's a valid
+token, extract the data that's in it and return a type-safe struct containing
+that data. If you want to protect and endpoint you just have to include
+`AuthorizationToken` in your handler function, just like this
+
+```rust
+pub async fn protected_route(auth: AuthenticationToken) -> impl Responder {
+    // ...
+}
+```
+
+Yet again, super clean and intuitive, now you can code your logic inside that
+function knowing that if a request reaches that point it's going to be from an
+authenticated user, granted 100%.
+
+I've worked with a lot of frameworks in the past, with all kinds of different
+languages, but this is a game changer for me, and I didn't even scratch the
+surface of what you can actually do with `actix_web` and Rust. I'm starting to see
+why this is praised this much.
+
+Hope you enjoyed this _deep dive_ into what I'm doing and how, I'll see you next
+week with more updates on the APIs!
