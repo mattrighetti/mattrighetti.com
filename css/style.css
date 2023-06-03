@@ -5,7 +5,8 @@
     --primary-text-color: #383838;
     --secondary-text-color: #828282;
     --tertiary-text-color: #555353;
-    --quote-color: #333333;
+    --quote-color: #8ED5E5;
+    --quote-bg-color: #8ED5E535;
     --post-text-color: #66cc99;
 
     --tip-bg-color: #6c95bd;
@@ -36,7 +37,8 @@
     --primary-text-color: #e2e2e2;
     --secondary-text-color: #b39393;
     --tertiary-text-color: #b0b0b0;
-    --quote-color: #636060;
+    --quote-color: #8ED5E560;
+    --quote-bg-color: #8ED5E520;
     --post-text-color: #66cc99;
 
     --tip-bg-color: #6c95bd;
@@ -231,7 +233,12 @@ blockquote {
 }
 
 blockquote>div {
-    padding-left: 7px;
+    padding: 1px 15px 1px 15px;
+    border-top-left-radius: 0em;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 0em;
+    background-color: var(--quote-bg-color);
     border-left: 3px solid var(--quote-color);
 }
 
