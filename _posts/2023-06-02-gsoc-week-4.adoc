@@ -7,9 +7,10 @@ show_patreon: false
 
 Here we are with another update, we're starting to get serious this time around.
 
-Let me start with the easy part: this week I've created the very first wiki page
-of the project, it's a description of the mappings that bind fields in responses
-with table columns.
+Let me start with the easy part: this week I've created the very first
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/wikis/Metrics-Mappings[wiki]
+page of the project, it's a description of the mappings that bind fields in
+responses with table columns.
 
 After that, I've finally started coding, for real :) first of all I've created
 some more files to keep code consistent, at Tor we're using
@@ -37,7 +38,7 @@ Now comes the meaty part: actual APIs coding.
 I've spent these nights working on the query parameters that the service is
 going to expose. There are a bunch of query params to support, you can find a
 list on the current
-https://metrics.torproject.org/onionoo.html#parameter[sonionoo] wiki. A lot of
+https://metrics.torproject.org/onionoo.html#parameter[onionoo] wiki. A lot of
 these actually have a lot of constraints, and Rust makes the process of working
 with these super cool, let me tell you why.
 
