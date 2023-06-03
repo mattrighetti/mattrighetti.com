@@ -6,52 +6,53 @@ on:
     - master
 
 jobs:
-  build-and-deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 2
-    - uses: actions/cache@v3
-      with:
+      - uses: actions/checkout@v3
+
+      # Use GitHub Actions' cache to cache dependencies on servers
+      - uses: actions/cache@v3
+        with:
           path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile') }}
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-gems-
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '2.7'
 
-    - run: bundle install && bundle exec jekyll build
+      # Use GitHub Deploy Action to build and deploy to Github
+      - uses: jeffreytse/jekyll-deploy-action@v0.4.0
+        with:
+          provider: 'github'
+          token: ${{ secrets.GITHUB_TOKEN }} # It's your Personal Access Token(PAT)
+          repository: ''             # Default is current repository
+          branch: 'gh-pages'         # Default is gh-pages for github provider
+          jekyll_src: './'           # Default is root directory
+          jekyll_cfg: '_config.yml'  # Default is _config.yml
+          jekyll_baseurl: ''         # Default is according to _config.yml
+          bundler_ver: '>=0'         # Default is latest bundler version
+          cname: ''                  # Default is to not use a cname
+          actor: ''                  # Default is the GITHUB_ACTOR
+          pre_build_commands: ''     # Installing additional dependencies (Arch Linux)
 
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        personal_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_branch: gh-pages
-        publish_dir: _site
-        force_orphan: true
-    
-    - name: Check changed files
-      run: |
-        git diff --name-only HEAD HEAD~1 | \
-        grep _posts | \
-        sed 's/_posts\///' | sed 's/\.adoc//' | \
-        awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html\n", $1, $2, $3, substr($0,12)) }' | \
-        jq -Rn '["https://mattrighetti.com/", inputs]'
+      - name: Check changed files
+        run: |
+          git diff --name-only HEAD HEAD~1 | \
+          grep _posts | \
+          sed 's/_posts\///' | sed 's/\.adoc//' | \
+          awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html\n", $1, $2, $3, substr($0,12)) }' | \
+          jq -Rn '["https://mattrighetti.com/", inputs]'
 
-    - name: Purge CF Cache
-      run: |
-        sleep 60
-        git diff --name-only HEAD HEAD~1 | \
-        grep _posts | \
-        sed 's/_posts\///' | sed 's/\.adoc//' | \
-        awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html\n", $1, $2, $3, substr($0,12)) }' | \
-        jq -Rn '{"files": ["https://mattrighetti.com/", inputs]}' | \
-        curl -s -X POST \
-          --url https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache \
-          -H 'Content-Type: application/json' \
-          -H 'Authorization: Bearer ${{ secrets.CF_API_TOKEN }}' \
-          --data-binary @- | \
-        jq
+      - name: Purge CF Cache
+        run: |
+          sleep 60
+          git diff --name-only HEAD HEAD~1 | \
+          grep _posts | \
+          sed 's/_posts\///' | sed 's/\.adoc//' | \
+          awk -F '-' '{ printf("https://mattrighetti.com/%s/%s/%s/%s.html\n", $1, $2, $3, substr($0,12)) }' | \
+          jq -Rn '{"files": ["https://mattrighetti.com/", inputs]}' | \
+          curl -s -X POST \
+            --url https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache \
+            -H 'Content-Type: application/json' \
+            -H 'Authorization: Bearer ${{ secrets.CF_API_TOKEN }}' \
+            --data-binary @- | \
+          jq
