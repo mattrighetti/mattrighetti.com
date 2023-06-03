@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-US" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+
+    <title>GSoC 2023: Week 3</title>
+
+    <meta name="title" content="GSoC 2023: Week 3">
+    <meta name="description" content="Hey there! This has been yet another reading code week, again :) but bear withme a little longer.">
+
+    <meta property="twitter:title" content="GSoC 2023: Week 3">
+    <meta property="og:type" content="webiste">
+
+    <meta property="og:title" content="GSoC 2023: Week 3">
+    <meta property="og:description" content="Hey there! This has been yet another reading code week, again :) but bear withme a little longer.">
+    <meta property="twitter:description" content="Hey there! This has been yet another reading code week, again :) but bear withme a little longer.">
+    
+    <meta property="twitter:url" content="https://mattrighetti.com/2023/05/25/gsoc-week-3.html">
+    <meta property="og:url" content="https://mattrighetti.com/2023/05/25/gsoc-week-3.html">
+    
+
+    
+    <meta property="twitter:image" content="https://mattrighetti.com/assets/images/gsoc-thumb.jpg">
+    <meta property="og:image" content="https://mattrighetti.com/assets/images/gsoc-thumb.jpg">
+    
+
+    <link rel="canonical" href="https://mattrighetti.com/2023/05/25/gsoc-week-3.html">
+    <link rel="alternate" type="application/rss+xml" title="mattrighetti" href="https://mattrighetti.com/feed.xml">
+    <link rel="stylesheet" href=" /css/style.css">
+    <link rel="stylesheet" href=" /css/code.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://kit.fontawesome.com/6e5845808c.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <a class="-title" href="/">
+            <div class="logo">
+                <?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="476.000000pt" height="440.000000pt" viewBox="0 0 476.000000 440.000000" preserveAspectRatio="xMidYMid meet" id="icon"> <g transform="translate(0.000000,440.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none"> <path d="M2003 3812 c-182 -62 -283 -171 -354 -382 -41 -124 -50 -259 -24 -376 19 -89 37 -124 63 -124 15 0 146 171 268 348 1 2 32 -20 68 -47 213 -161 482 -274 721 -302 171 -20 212 -5 186 67 -18 51 -74 143 -116 194 -20 24 -34 44 -32 47 2 2 35 -4 72 -12 62 -15 70 -15 84 -1 13 14 13 22 3 62 -47 174 -163 285 -333 317 -32 6 -59 14 -59 17 0 3 26 19 58 35 45 24 58 36 60 57 5 41 -44 53 -213 53 -140 0 -164 -5 -267 -50 -16 -6 -17 -3 -11 26 4 19 7 48 8 64 0 29 -2 30 -50 33 -34 1 -76 -7 -132 -26z"/> <path d="M3347 3243 c-18 -17 -1 -44 68 -113 l75 -75 -80 -80 c-59 -59 -79 -86 -74 -98 3 -9 13 -17 21 -17 17 0 178 152 195 184 9 16 -4 33 -83 112 -89 90 -107 102 -122 87z"/> <path d="M3653 2914 c-13 -35 23 -44 182 -44 159 0 193 8 179 43 -5 15 -25 17 -180 17 -153 0 -175 -2 -181 -16z"/> <path d="M1573 2853 c-56 -86 23 -297 119 -318 30 -7 33 -14 42 -102 4 -43 25 -107 62 -189 3 -5 -98 -64 -223 -130 -252 -132 -301 -166 -355 -245 -43 -62 -311 -763 -328 -858 -26 -146 46 -285 204 -390 l40 -26 1121 0 c1085 0 1122 1 1150 19 74 47 143 118 175 178 29 54 35 75 38 148 l4 85 -132 355 c-150 405 -166 444 -216 511 -45 62 -122 112 -367 239 -156 80 -198 106 -194 119 3 9 17 44 32 78 14 35 28 92 32 128 6 65 6 65 47 84 23 10 54 32 69 50 66 78 78 271 17 271 -22 0 -22 0 -20 -87 1 -67 -21 -134 -57 -165 -10 -10 -37 -21 -59 -26 l-39 -8 -11 -86 c-16 -117 -37 -177 -90 -248 -104 -142 -275 -214 -448 -189 -208 29 -372 197 -398 407 -16 125 -15 122 -48 122 -85 0 -162 166 -116 249 28 51 -19 73 -51 24z m412 -791 c198 -119 458 -89 635 74 l55 51 230 -121 c261 -137 289 -157 339 -229 38 -56 309 -767 321 -844 9 -60 -11 -145 -48 -200 -18 -26 -60 -68 -95 -95 l-63 -48 -95 0 -94 0 0 198 0 197 78 45 c74 44 95 71 73 93 -7 7 -29 -1 -71 -27 -34 -20 -66 -36 -71 -36 -5 0 -9 115 -9 280 0 311 -2 323 -63 360 -31 19 -56 20 -852 20 -805 0 -821 0 -853 -20 -58 -36 -62 -58 -62 -369 l0 -279 -69 40 c-71 40 -91 42 -91 8 0 -12 26 -34 80 -67 l79 -48 1 -197 0 -198 -92 0 c-73 0 -99 4 -123 19 -63 39 -125 103 -152 159 -23 48 -28 69 -27 132 0 71 7 93 137 438 75 199 146 381 158 404 43 83 100 126 354 260 l240 127 50 -48 c28 -27 73 -63 100 -79z m1084 -347 c16 -8 34 -28 40 -46 7 -22 11 -190 11 -526 l0 -493 -862 2 -863 3 -3 485 c-2 326 1 497 8 522 20 71 -24 67 853 68 674 0 792 -2 816 -15z"/> <path d="M1773 2854 c-3 -9 7 -57 23 -106 39 -124 45 -128 196 -128 158 0 170 6 198 103 12 39 23 78 25 85 3 6 20 12 39 12 34 0 35 -1 61 -80 38 -115 47 -120 201 -120 155 0 163 5 200 134 14 49 23 95 20 102 -4 12 -86 14 -481 14 -429 0 -476 -2 -482 -16z"/> <path d="M3105 2658 c-3 -8 -4 -79 -3 -158 3 -137 4 -145 23 -145 19 0 20 7 20 155 0 140 -2 155 -18 158 -9 2 -19 -3 -22 -10z"/> <path d="M3294 2661 c-48 -20 -64 -58 -64 -147 0 -94 12 -129 51 -150 33 -17 60 -18 92 -3 42 19 57 59 57 153 0 80 -2 88 -27 116 -30 32 -75 45 -109 31z m64 -63 c7 -7 12 -42 12 -89 0 -83 -11 -103 -52 -97 -22 3 -23 8 -26 86 -3 87 5 112 37 112 9 0 22 -5 29 -12z"/> <path d="M3515 2658 c-3 -8 -4 -79 -3 -158 3 -137 4 -145 23 -145 19 0 20 7 20 155 0 140 -2 155 -18 158 -9 2 -19 -3 -22 -10z"/> <path d="M3704 2661 c-48 -20 -64 -58 -64 -147 0 -94 12 -129 51 -150 52 -27 115 -8 137 41 7 14 12 64 12 110 0 78 -2 87 -27 115 -30 32 -75 45 -109 31z m65 -65 c8 -9 11 -45 9 -98 l-3 -83 -29 -3 c-16 -2 -32 2 -37 10 -13 20 -11 162 3 176 16 16 43 15 57 -2z"/> <path d="M3342 2218 c-14 -14 -17 -275 -3 -296 5 -8 17 -12 27 -10 17 3 19 15 22 147 2 97 -1 148 -9 157 -14 17 -21 18 -37 2z"/> <path d="M3514 2220 c-12 -4 -31 -21 -43 -37 -21 -25 -22 -37 -19 -126 3 -94 4 -100 31 -123 32 -27 75 -31 116 -9 41 21 54 61 50 159 -4 76 -7 88 -29 110 -28 27 -75 39 -106 26z m64 -62 c7 -7 12 -44 12 -95 0 -78 -2 -84 -22 -92 -46 -17 -58 2 -58 92 0 84 9 107 40 107 9 0 21 -5 28 -12z"/> <path d="M3774 2220 c-12 -4 -31 -21 -43 -36 -18 -23 -21 -40 -21 -121 0 -91 1 -96 29 -124 47 -47 132 -33 159 26 14 31 16 163 2 199 -16 44 -84 74 -126 56z m64 -62 c13 -13 17 -156 4 -174 -15 -22 -42 -24 -62 -4 -26 26 -28 134 -4 168 17 24 43 29 62 10z"/> <path d="M3981 2221 c-8 -5 -11 -50 -9 -157 3 -141 4 -149 23 -149 19 0 20 8 23 151 2 121 0 153 -11 157 -8 3 -19 2 -26 -2z"/> </g> </svg>
+                <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 20010904//EN'  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg id="name" width="1834pt" height="492pt" version="1.0" viewBox="0 0 1834 492" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 492) scale(.1 -.1)">
+<path d="m5013 3880c-28-12-47-78-38-139 3-25 17-97 31-159 14-63 26-148 27-190 1-43 5-79 8-82 6-4 51-622 46-626-1-1-66-11-144-22-142-21-195-39-240-82-23-21-29-55-15-78 10-15 66-32 108-32 26 0 189 38 280 65 20 6 22 2 28-52 40-372 68-602 77-636 24-91 81-155 118-132 19 11 12 139-15 256-42 186-58 289-88 546l-6 51 157 37c545 127 732 192 835 293 77 74 86 142 19 142-15 0-68-24-118-54-125-74-206-111-358-161-122-41-396-107-496-121l-46-6-6 68c-10 109-27 715-24 869 2 116-1 148-16 188-25 64-63 81-124 57z"/>
+<path d="m6303 3808c-37-47-41-162-9-284 26-101 36-228 43-531l6-293h-55c-79 0-221-27-273-51-87-41-121-112-70-145 34-22 107-15 258 26 61 16 120 30 130 30 15 0 17-12 17-112 1-170 29-758 38-798 14-55 33-80 64-80 55 0 65 67 39 280-27 219-40 378-48 575l-6 162 94 12c200 26 323 32 565 29 205-2 254 0 268 11 45 37-14 91-121 111-81 16-349 8-622-18l-183-17 3 490c3 451 2 494-15 540-21 59-38 75-82 75-17 0-36-6-41-12z"/>
+<path d="m14570 3807c-13-7-30-24-37-37-20-40-15-152 12-268 33-144 54-322 80-683l7-86-144-6c-154-6-196-14-249-50-27-18-35-31-37-59-4-43 18-62 81-73 30-6 37-11 32-24-4-9-14-47-22-86-21-93-51-159-102-223-188-237-716-381-1066-292-112 29-177 62-239 120-107 101-122 203-50 349 56 114 160 214 284 274 116 56 212 79 304 75l69-3-52-57c-54-59-236-188-356-252-94-50-130-79-145-116-25-59 27-117 95-104 100 18 446 280 520 393 128 195-54 359-311 280-85-26-126-47-229-113-111-72-196-154-259-250-77-115-99-187-94-301 5-84 12-110 56-197 2-5-14-8-35-8s-65-12-98-25c-35-14-63-21-68-16-15 15-25 90-37 267-13 202-25 305-47 376-94 317-375 390-643 167-72-60-197-224-268-351l-50-89-6 43c-3 24-11 196-17 383-14 473-33 747-55 813-45 137-147 151-161 21-5-55 3-106 47-269 45-168 72-540 68-935-3-207-2-223 19-267 23-51 46-68 91-68 71 0 139 86 187 238 68 212 208 386 370 457 135 60 215 7 264-175 25-93 39-180 46-290 14-225 43-329 109-396 94-95 266-80 313 27 17 38 18 40 33 22 19-21 37-33 105-69 237-126 622-123 990 6 345 122 564 358 568 612l1 67 89 21c49 11 92 20 96 20 5 0 11-44 15-97 11-158 46-453 61-521 25-106 77-182 125-182 46 0 41 75-16 276-27 97-61 310-70 446-7 96-7 97 17 102 13 3 134 24 269 46 271 44 531 105 600 140 25 12 63 37 86 56l41 33 7-67c11-122 12-120-36-126-213-24-246-33-300-84-33-30-36-64-8-92s96-26 231 6c61 15 113 24 116 20 3-3 8-47 9-98 2-51 10-181 18-288 20-262 38-353 79-397 25-28 41-29 67-3 28 28 26 76-10 269-16 89-34 219-40 289-5 70-12 155-15 190-4 46-2 64 7 67 25 8 336 44 473 54 77 6 222 13 323 16l183 5-15-27c-24-48-39-182-38-338 1-160 16-260 53-346 36-82 95-106 124-49 14 26 13 38-2 122-24 135-24 376 1 493 21 102 18 145-17 196-57 84-129 92-512 55-148-15-317-31-375-36s-129-12-158-16l-53-6 1 409c2 350 0 415-14 459-22 71-59 100-104 83-54-20-65-124-32-301 17-94 40-301 40-366 0-18-4-22-19-17-10 3-63-10-117-29-55-19-144-51-200-70-125-45-331-89-534-114-85-11-156-19-158-17-7 6-23 341-31 640-5 169-14 316-20 337-13 41-56 98-74 98-7 0-23-6-37-13z"/>
+<path d="m16812 3634c-64-45 36-113 109-73 18 9 17 12-22 50-45 43-55 46-87 23z"/>
+<path d="m9253 3489c-51-19-11-53 62-53 50-1 75 7 63 20-18 17-105 41-125 33z"/>
+<path d="m1503 3271c-110-28-231-130-314-266l-46-75-7 62c-4 34-14 75-22 90-13 24-20 29-47 26-61-6-87-102-87-317 0-181-15-336-50-506-49-238-72-388-67-438 8-90 72-134 123-86 35 32 44 78 44 215 0 141 32 415 61 529 53 205 159 413 267 522 72 71 163 123 218 123 106 0 218-144 269-344 47-185 55-342 28-521-25-163-23-218 6-249 30-31 50-33 85-5 40 32 52 63 85 227 33 162 57 234 116 352 81 160 168 266 283 341 153 100 229 93 296-30 78-144 104-288 111-626 4-137 11-279 16-315 22-137 111-237 193-216 40 10 43 43 8 80-69 72-76 112-96 546-22 447-53 570-172 679-84 77-163 96-279 66-165-43-323-206-470-487l-55-103v52c0 70-36 274-62 353-51 157-118 245-223 295-64 30-154 41-212 26z"/>
+<path d="m3775 2986c-119-31-215-93-335-216-138-143-245-338-270-495-31-193 61-359 234-422 56-20 169-19 241 2 97 28 212 92 283 158 17 17 32 28 32 23 0-24 170 193 226 290 9 16 13 8 23-51 20-121 61-267 93-335 44-91 136-182 202-199 82-20 146 5 146 59 0 36-15 46-75 53-43 4-55 11-87 46-42 48-101 182-129 296-15 61-22 128-26 280-4 163-9 208-24 243-10 23-22 42-28 42s-26 24-44 53c-48 73-91 111-170 148-57 26-83 32-155 35-52 2-107-2-137-10zm207-146c45-13 88-56 119-120 13-26 32-50 41-53 21-6 15-63-18-164-80-244-287-450-510-507-191-49-301 17-312 188-3 48 1 93 12 136 18 70 83 210 97 210 5 0 9 6 9 14 0 25 143 168 211 211 124 80 255 111 351 85z"/>
+<path d="m10106 2939c-224-56-387-214-442-430-21-82-14-202 15-281 36-93 135-190 229-222l35-12-48-40c-27-21-90-80-141-131-300-300-376-645-204-934 50-85 166-204 263-273 151-106 372-195 535-215 282-36 503 101 589 363 48 149 43 503-13 880-8 55-12 106-9 114s1 20-4 26c-16 21-46 395-35 451 5 30 13 38 52 55 70 31 112 67 112 96 0 38-39 49-124 35-58-10-71-9-78 2-4 8-21 20-37 27-37 15-61 4-121-61-40-42-62-54-190-104-80-32-194-82-253-112l-109-55-76 4c-183 11-282 132-253 313 38 244 278 411 507 352 89-23 128-51 195-138 67-89 104-114 143-99 46 17 46 97 1 176-31 53-118 132-177 162-52 25-180 59-248 64-25 2-76-4-114-13zm647-927c86-452 112-685 105-935-4-140-9-173-31-242-31-93-79-169-137-215-283-224-944 37-1082 428-81 233 28 522 287 758 142 129 206 170 276 178 139 16 346 96 474 184 33 23 62 42 65 42s22-89 43-198z"/>
+<path d="m7905 2921c-114-19-215-79-286-168-19-23-39-37-54-38-67-2-101-96-92-255 3-58 11-148 17-200 5-52 14-178 19-280 8-192 22-254 64-288 24-20 67-10 90 19 35 48 39 110 16 242-32 189-40 317-28 447 16 187 50 271 128 323 56 37 111 49 235 49 174 0 288-32 541-149 175-81 241-101 274-83 65 34-21 124-202 210-277 133-554 198-722 171z"/>
+<path d="m9158 2700c-9-6-24-33-33-60-14-43-16-85-13-260 1-116 6-210 11-210 4 0 7-39 7-87 1-125 16-265 35-323 21-62 63-100 112-100 84 0 149 83 119 154-17 41-28 48-70 48h-33l-11 82c-7 50-9 194-6 378 4 254 2 303-11 335-9 20-21 41-28 45-17 11-59 9-79-2z"/>
+</g>
+</svg>
+
+            </div>
+        </a>
+        
+        
+        
+        
+        
+        
+        
+        <a href="/about.html">About</a>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <a href="/projects.html">Projects</a>
+        
+        
+        
+        
+        
+        <a href="/resume.html">Resume</a>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <button id="theme-toggle" class="toggle" type="button">
+            <span class="d-block-light d-none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>
+            <span class="d-block-dark d-none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>
+        </button>
+    </nav>
+
+    <main>
+        <article>
+  <h1>GSoC 2023: Week 3</h1>
+  <div class="post-meta sect1">May 25, 2023</div>
+  
+  <div class="paragraph">
+<p>Hey there! This has been yet another <em>reading code</em> week, again :) but bear with
+me a little longer.</p>
+</div>
+<div class="paragraph">
+<p>If you read the previous articles you already know that coding should start on
+the 29th of May, before that date you should spend time bonding with the
+community and other people participating in GSoC 2023.</p>
+</div>
+<div class="paragraph">
+<p>I did write some more (very little) filtering logic for query params that might
+come with each request, you can find all those in the
+<a href="https://metrics.torproject.org/onionoo.html#parameters">onionoo protocol
+specifications</a>. Later this week I&#8217;m also going to setup an initial CI/CD
+pipeline to automatically test code when commits are pushed to any remote branch
+so that I&#8217;m sure I&#8217;m not pushing broken stuff.</p>
+</div>
+<div class="paragraph">
+<p>Plus, I&#8217;ve also started to lay down another crucial thing that I
+talked about last week: <strong>responses &#8594; table columns</strong> mappings.</p>
+</div>
+<div class="paragraph">
+<p>Right now the Network Status Team is loading data into their databases and we&#8217;re
+going to have access to the new instance
+<a href="https://gitlab.torproject.org/tpo/tpa/team/-/issues/41167">next week</a> as the
+issue is getting noticed and is moving forward.</p>
+</div>
+<div class="paragraph">
+<p>I had to write down where data is to be queried and how, because there were some
+mismatches in responses field names and table columns. A first attempt to
+illustrate the mappings is provided in this
+<a href="https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/issues/1">issue</a>
+and is now being discussed with other community members.</p>
+</div>
+<div class="paragraph">
+<p>This docs will be necessary when I&#8217;ll have to actually query the databases to
+contruct the responses that the service returns. I still don&#8217;t have access to pg
+as you know, but I can replicate a mirrored instance locally with docker since I have the
+entire
+<a href="https://gitlab.torproject.org/tpo/network-health/metrics/descriptorParser/-/tree/main/src/main/sql">database
+schema</a> at my disposal, and you have too of course.</p>
+</div>
+<div class="paragraph">
+<p>This is how the database currently looks
+(<a href="https://mattrighetti.com/assets/images/tor_metrics_postgres.png">full image</a>)</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/assets/images/tor_metrics_postgres.png" alt="tor metrics postgres">
+</div>
+</div>
+<div class="paragraph">
+<p>Things are going smoothly for the moment, the project is almost 100%
+setup and soon I&#8217;ll start to code the APIs. I&#8217;ve now participated in more
+than two weekly meetings and I&#8217;m starting to understand more of how the Tor
+Project community operates and I&#8217;m happy to be part of it.</p>
+</div>
+<div class="paragraph">
+<p>See you next week for more updates!</p>
+</div>
+  
+</article>
+
+<script>
+    function renderCodeTags() {
+        const collection = document.getElementsByClassName("rouge highlight");
+
+        for (let i = 0; i < collection.length; i++) {
+        let cNode = collection[i].firstChild;
+        let lang = cNode.getAttribute("data-lang");
+
+        let newNode = document.createElement("div");
+        newNode.className = "lang-tag";
+        newNode.innerHTML += lang;
+
+        collection[i].insertBefore(newNode, cNode);
+        }
+    }
+
+    renderCodeTags()
+</script>
+
+    </main>
+
+    <footer>
+        <p>
+            <a href="https://patreon.com/mattrighetti">
+                <i class="fa-brands fa-patreon"></i>
+            </a>
+
+            <a href=" /feed.xml">
+                <i class="fa fa-rss"></i> RSS
+            </a>
+
+            <a href="https://github.com/mattrighetti">
+                <i class="fa fa-github"></i> mattrighetti
+            </a>
+
+            <a href="https://www.youtube.com/channel/UCaLpe7l5BS4slR2bL2n-bmg">
+                <i class="fa fa-youtube-play"></i>
+            </a>
+        </p>
+    </footer>
+    <!-- <script src=" /js/chartist.min.js"></script> -->
+    <script>
+        const toggle = document.getElementById('theme-toggle');
+
+        var storedTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        if (storedTheme)
+            document.documentElement.setAttribute('data-theme', storedTheme)
+
+        toggle.onclick = function() {
+            console.log("Switching theme");
+            var currentTheme = document.documentElement.getAttribute("data-theme");
+            var targetTheme = "light";
+
+            if (currentTheme === "light") {
+                targetTheme = "dark";
+            }
+
+            document.documentElement.setAttribute('data-theme', targetTheme)
+            localStorage.setItem('theme', targetTheme);
+        };
+    </script>
+</body>
+</html>
