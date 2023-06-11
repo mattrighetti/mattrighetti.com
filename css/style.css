@@ -16,6 +16,7 @@
     --code-border-color: #eeeeee;
     --code-language-text-color: #a04100;
     --code-language-bg-color: #ffd1ac;
+    --code-lang-tag-background-color: #ffffff;
 
     --inline-code-text-color: #000000;
     --inline-code-bg-color: #f8f8f8;
@@ -31,7 +32,7 @@
 }
 
 [data-theme="dark"] {
-    --bg-color: #222222;
+    --bg-color: #202020;
 
     --navbar-text-color: #ffffff;
     --primary-text-color: #e2e2e2;
@@ -48,6 +49,7 @@
     --code-border-color: #2b1f1f;
     --code-language-text-color: #c97030;
     --code-language-bg-color: #323232;
+    --code-lang-tag-background-color: #282828;
 
     --inline-code-text-color: #fbf1c7;
     --inline-code-bg-color: #404040;
@@ -55,7 +57,7 @@
 
     --dialog-professor-bg-color: 132, 194, 113;
     --dialog-cop-bg-color: 255, 205, 2;
-    --dialog-matt-bg-color: 117, 117, 117; 
+    --dialog-matt-bg-color: 117, 117, 117;
 
     --timeline-color: #372f2f;
 
@@ -267,6 +269,7 @@ pre {
     overflow-x: auto;
     border-radius: 0.5em;
     border: 1px solid var(--code-border-color);
+    background-color: var(--code-lang-tag-background-color);
 }
 
 pre code {
@@ -292,14 +295,14 @@ p code {
 }
 
 .lang-tag {
+    display: flex;
     float: left;
-    display: block;
     font-weight: bold;
     padding: 0.2em 0.5em;
-    border-radius: 0 0 8px 0;
     text-transform: capitalize;
     color: var(--code-language-text-color);
     background: var(--code-language-bg-color);
+    border-radius: 0px 0px 10px 0px;
 }
 
 .tip {
@@ -472,7 +475,7 @@ main {
     border-radius: 14px;
     padding: 0rem 0.8rem;
     overflow: hidden;
-    margin: 0;  
+    margin: 0;
 }
 
 .dialog.matt .dialog-text {

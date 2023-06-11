@@ -9,26 +9,29 @@ layout: default
   {% if page.show_patreon %}
   <div class="patreon-block">
     <h2>Enjoyed the read?</h2>
-    <p>If you enjoy my writing, please check out my Patreon 
+    <p>If you enjoy my writing, please check out my Patreon
       <b><a href="https://www.patreon.com/mattrighetti">patreon.com/mattrighetti</a></b>
       and become my supporter. Sharing the article is also greatly appreciated.</p>
   </div>
   {% endif %}
 </article>
 
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
 <script>
     function renderCodeTags() {
-        const collection = document.getElementsByClassName("rouge highlight");
+        const codeblocks = document.querySelectorAll('.listingblock>.content>.highlight');
 
-        for (let i = 0; i < collection.length; i++) {
-        let cNode = collection[i].firstChild;
-        let lang = cNode.getAttribute("data-lang");
+        for (let i = 0; i < codeblocks.length; i++) {
+            let cNode = codeblocks[i].firstChild;
+            let lang = cNode.getAttribute("data-lang");
 
-        let newNode = document.createElement("div");
-        newNode.className = "lang-tag";
-        newNode.innerHTML += lang;
+            let newNode = document.createElement("div");
+            newNode.className = "lang-tag";
+            newNode.innerHTML += lang;
 
-        collection[i].insertBefore(newNode, cNode);
+            codeblocks[i].insertBefore(newNode, cNode);
         }
     }
 

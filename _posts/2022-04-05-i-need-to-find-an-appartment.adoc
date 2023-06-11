@@ -3,7 +3,6 @@ title: I Need to Find an Apartment
 hn: 30968721
 show_patreon: true
 ---
-:source-highlighter: rouge
 
 Long story short: I've taken a new position in Luxembourg and I have to
 find an apartment, in a different country, in a reasonably short time.

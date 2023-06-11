@@ -3,7 +3,6 @@ title: Cloudflare Tunnel
 published: false
 show_patreon: true
 ---
-:source-highlighter: rouge
 
 this is another file
 

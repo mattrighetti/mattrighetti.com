@@ -2,7 +2,6 @@
 title: Let's Hack HTTP
 show_patreon: true
 ---
-:source-highlighter: rouge
 :page-liquid:
 
 In this article I’m going to show you why you absolutely want to ditch

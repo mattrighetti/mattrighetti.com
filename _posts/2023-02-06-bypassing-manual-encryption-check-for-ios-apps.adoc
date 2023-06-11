@@ -2,7 +2,6 @@
 title: Bypassing Manual Encryption Check for iOS Apps 
 show_patreon: true
 ---
-:source-highlighter: rouge
 :page-liquid:
 
 This is going to be a very small and dumb one but I've just dicovered this,

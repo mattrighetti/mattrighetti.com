@@ -4,7 +4,6 @@ hn: 35043452
 render_graphs: true
 show_patreon: true
 ---
-:source-highlighter: rouge
 
 One of the nice things that reaching the HN frontpage gives you is that your website,
 or content in general, will get flooded by requests by the community. This is so frequent

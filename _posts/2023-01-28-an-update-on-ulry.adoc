@@ -1,7 +1,6 @@
 ---
 title: An Update on Ulry
 ---
-:source-highlighter: rouge
 :page-liquid:
 
 If you've been following me lately you know that I'm working on a **link

@@ -2,7 +2,6 @@
 title: Flat List Design in SwiftUI
 show_patreon: true
 ---
-:source-highlighter: rouge
 
 == Introduction
 I’m going to explain the little steps that are needed to achieve a good looking

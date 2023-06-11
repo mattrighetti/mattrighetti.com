@@ -5,3 +5,18 @@ location: Lugano, Switzerland
 start: May 2023
 end: Present
 ---
+
+- Contributed to the improvement and development of backend APIs that supported
+  various Anthropos services. I've worked on enhancing existing APIs and built
+  new ones, enabling faster communication and functionality across different
+  components of our system.
+- Integrated Stripe's payment processing capabilities with our backend
+  infrastructure. I developed a robust and secure system for managing premium
+  subscriptions and billing. This implementation ensured a reliable premium
+  experience for our customers, contributing to revenue growth and customer
+  satisfaction.
+- Redesigned and enhanced data parsing and autofill capabilities of the
+  company's Chrome extension using React and Google Chrome APIs. Through my
+  contributions, the chrome extension delivered a seamless user experience,
+  empowering individuals to efficiently manage and automate job applications'
+  form filling and tracking.

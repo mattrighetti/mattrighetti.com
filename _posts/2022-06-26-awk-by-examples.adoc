@@ -3,7 +3,6 @@ title: Awk by Examples
 published: false
 show_patreon: true
 ---
-:source-highlighter: rouge
 
 In this short article I'm going to write as many examples
 as I can to get you started with `awk`

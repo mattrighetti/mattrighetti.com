@@ -3,7 +3,6 @@ title: "GSoC 2023: Week 1"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
 ---
-:source-highlighter: rouge
 
 Since I'm trying to write more and more, I decided to try and commit to keep you
 up-to-date with the progress of the project I'm working on for GSoC 2023.

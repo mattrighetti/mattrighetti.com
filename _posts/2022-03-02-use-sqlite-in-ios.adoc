@@ -3,7 +3,6 @@ title: "SQLite on iOS: The MVVM Way"
 image: "https://download.logo.wine/logo/SQLite/SQLite-Logo.wine.png"
 show_patreon: true
 ---
-:source-highlighter: rouge
 
 image:https://download.logo.wine/logo/SQLite/SQLite-Logo.wine.png[align="center"]
 

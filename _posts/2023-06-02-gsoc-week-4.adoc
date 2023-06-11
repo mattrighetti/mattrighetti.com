@@ -3,7 +3,6 @@ title: "GSoC 2023: Week 4 (Actix Extractors)"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
 ---
-:source-highlighter: rouge
 
 Here we are with another update, we're starting to get serious this time around.
 

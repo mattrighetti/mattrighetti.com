@@ -1,7 +1,6 @@
 ---
 title: Ulry is Now Available on the App Store
 ---
-:source-highlighter: rouge
 
 After a long wait I can finally say that Ulry has been release to the public and
 can be https://apps.apple.com/it/app/ulry/id1603982621?l=en[downloaded] from the
