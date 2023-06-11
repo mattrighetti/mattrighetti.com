@@ -1,0 +1,312 @@
+---
+title: "GSoC 2023: Week 5 (sqlx)"
+image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
+show_patreon: false
+---
+:source-highlighter: rouge
+
+Week 5 has come to an end a couple of days ago and more code has been written.
+
+During this week I made my very
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/merge_requests/1[first
+MR] to the project and it received a pretty positive feedback so I’m satisfied.
+Some issues came up from the review and some minor implementations needed to
+change but we’re in the middle of a bunch re-deployments so I still don't have
+access to resources that I need to fix those particular issues. Since those MR
+fixes are blocked for the moment, I've continued to work on the endpoints logic,
+in particular with `/summary`.
+
+The `/summary` endpoint should return a json response of type
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/blob/dev/src/models/responses/generic.rs[`SummaryResponse`].
+
+[chat,matt]
+--
+This will need to be renamed later on because it is the response that each
+handler will return and the `Summary*` part may be misleading
+--
+
+That will contain `relays` or `bridges`
+depending on the `type` query param that you pass to the request, if none is
+present then it defaults to `relays`.
+
+To query our Postgres cluster I’m using the `sqlx` crate. `sqlx` is a good
+default choice when you want to work with a solid database framework that has a
+very active community and provides a lot of features. One of the coolest is that
+it provides a macro `query!` and `query_as!` that will run the query at compile
+time and statically check its correctness based on your database tables.
+
+Let's take for example the `server_status` table
+```sql
+CREATE TABLE IF NOT EXISTS server_status(
+  is_bridge            BOOLEAN                      NOT NULL,
+  published            TIMESTAMP WITHOUT TIME ZONE  NOT NULL,
+  nickname             TEXT                         NOT NULL,
+  fingerprint          TEXT                         NOT NULL,
+  or_addresses         TEXT,
+  last_seen            TIMESTAMP WITHOUT TIME ZONE  NOT NULL,
+  first_seen           TIMESTAMP WITHOUT TIME ZONE  NOT NULL,
+  running              BOOLEAN,
+  flags                TEXT,
+  country              TEXT,
+  country_name         TEXT,
+  autonomous_system    TEXT,
+  as_name              TEXT,
+  verified_host_names  TEXT,
+  last_restarted       TIMESTAMP WITHOUT TIME ZONE  NOT NULL,
+  exit_policy          TEXT,
+  contacts             TEXT,
+  platform             TEXT,
+  version              TEXT,
+  version_status       TEXT,
+  effective_family     TEXT,
+  declared_family      TEXT,
+  transport            TEXT,
+  bridgedb_distributor TEXT,
+  blocklist            TEXT,
+  PRIMARY KEY(fingerprint, nickname, published)
+);
+```
+
+Our model for the `/summary` endpoint for the `relays`
+field look like
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/blob/dev/src/models/responses/summary.rs#L4-22[this]
+
+```rust
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RelaySummary {
+    /// Relay nickname consisting of 1–19 alphanumerical characters.
+    pub n: String,
+
+    /// Relay fingerprint consisting of 40 upper-case hexadecimal characters.
+    pub f: String,
+
+    /// Array of IPv4 or IPv6 addresses where the relay accepts onion-routing
+    /// connections or which the relay used to exit to the Internet in the past 24
+    /// hours. The first address is the primary onion-routing address that the relay
+    /// used to register in the network, subsequent addresses are in arbitrary
+    /// order. IPv6 hex characters are all lower-case.
+    pub a: Vec<String>,
+
+    /// Boolean field saying whether this relay was listed as running in the last
+    /// relay network status consensus.
+    pub r: bool
+}
+```
+
+Now, to query a `Vec<RelaySummary>` using the macros that I was talking about,
+I would just need to do this
+
+```rust
+async fn get_relay_summary_objs(
+    pg: &PgPool,
+    filters: &QueryFilters
+) -> Result<Vec<RelaySummary>, String> {
+    sqlx::query_as!(
+        RelaySummary,
+        r#"SELECT nickname as n, fingerprint as f, or_addresses as a, running as r
+        FROM server_status
+        WHERE is_bridge = false"#
+    )
+    .fetch_all(pg)
+    .await
+    .map_err(|e| e.to_string())
+}
+```
+
+At compile-time, this macro will:
+
+. Look for an `.env` file in your project directory
+. Find an env variable named `DATABASE_URL`
+. Try to connect to that database
+. Execute the query that you provided
+. Notify errors in case the query fails
+
+You can now be sure that all your queries are correct and you won't get any
+surprise at runtime, if you don't change your table structure after the program
+has been compiled.
+
+But... unfortunately, I won't be able to use these macros a lot. Why? you may
+ask. Well, you may remember from previous articles that there are a bunch of query
+parameters, `QueryFilters`, that each endpoint must accept and model the
+response data accordingly. Since these will introduce different conditions on
+the query itself, we don't know how the query is going to look like at compile
+time. That means that I won't be able to statically check the correctness of the
+query itself and I will need to instead make sure that I type everything out
+correctly and proably double check with a bunch of unit tests.
+
+I am in the process of finding a nicer way to build this kind of logic but for
+the time being I'm simply checking for a query param at a time and append stuff
+to the query itself.
+
+To dynamically create the query at runtime, I'm using sqlx's
+https://docs.rs/sqlx/latest/sqlx/struct.QueryBuilder.html[`QueryBuilder`]
+
+```rust
+async fn get_relay_summary_objs(pg: &PgPool, filters: &QueryFilters) -> Result<Vec<RelaySummary>, String> {
+    if filters.search.is_some() {
+        return Err("search query params is not supported yet.".to_string());
+    }
+
+    if filters.os.is_some() {
+        return Err("os query params is not supported yet.".to_string());
+    }
+
+    // ...
+
+    let mut builder: QueryBuilder<Postgres> = QueryBuilder::new(
+        r#"SELECT ss.nickname, ss.fingerprint, ss.or_addresses, ss.running
+           FROM server_status ss JOIN server_descriptor sd ON ss.fingerprint = sd.fingerprint
+           WHERE ss.is_bridge = false"#
+    );
+
+    if let Some(ref running) = filters.running {
+        builder.push(" AND ss.running=");
+        builder.push_bind(running);
+    }
+
+    if let Some(ref lookup) = filters.lookup {
+        builder.push(" AND ss.lookup=");
+        builder.push_bind(lookup.as_ref());
+    }
+
+    if let Some(ref r#as) = filters.r#as {
+        builder.push(" AND ss.as=");
+        builder.push_bind(r#as);
+    }
+
+    if let Some(ref country) = filters.country {
+        builder.push(" AND ss.country=");
+        builder.push_bind(country.as_ref());
+    }
+
+    if let Some(ref family) = filters.family {
+        builder.push(r#" AND ss.fingerprint IN (
+            WITH valid AS (
+                SELECT fingerprint, (jsonb_array_elements_text(family::jsonb)) AS fam
+                FROM server_descriptor
+                WHERE family <> 'null'
+            )
+            SELECT fingerprint
+            FROM valid
+            WHERE fam = '"#);
+        builder.push_bind(family);
+        builder.push("%')");
+    }
+
+    if let Some(ref r#as) = filters.r#as {
+        builder.push(" AND as='");
+        builder.push_bind(r#as);
+        builder.push("'");
+    }
+
+    if let Some(ref as_name) = filters.as_name {
+        builder.push(" AND as_name='");
+        builder.push_bind(as_name);
+        builder.push("'");
+    }
+
+    let query = builder.build();
+    let sql = query.sql();
+
+    sqlx::query_as::<_, RelaySummary>(sql)
+        .fetch_all(pg)
+        .await
+        .map_err(|e| e.to_string())
+}
+```
+
+As you can see it is a little bit verbose, but it works for now so I'm going to
+focus on the logic of it instead of the code structure, that can change later as
+I discuss what would be best with the rest of the team. It's good practice,
+though, to keep database related stuff in separate methods or modules because
+you don't want to read hundreds of lines of code where you zig-zag through SQL
+queries and Rust logic.
+
+`get_relay_summary_objs` (again, naming is terrible, I'll get better at it I
+promise) is the method that is invoked from the endpoint handler
+that I haven't yet talked about. In that, I've implemented more logic that actually builds the
+response that is going to be returned to clients.
+
+```rust
+pub async fn get_summary(
+    params: QueryFilters,
+    pg: web::Data<PgPool>
+) -> Result<HttpResponse, Error> {
+    let mut response: SummaryResponseBuilder<RelaySummary, BridgeSummary> = SummaryResponseBuilder::default();
+    response.version(VERSION.into());
+    response.next_major_version_scheduled(None);
+    response.build_version(None);
+    response.relays_published("TODO".into());
+    response.bridges_published("TODO".into());
+
+    let (tot_r, tot_b): (i64, i64) = get_totals(&pg)
+        .await
+        .map_err(ErrorInternalServerError)?
+        .into();
+
+    match params.r#type.unwrap_or(ParametersType::Relay) {
+        ParametersType::Relay => {
+            let relays = get_relay_summary_objs(&pg, &params)
+                .await
+                .map_err(ErrorInternalServerError)?;
+
+            response.relays(relays);
+            response.relays_skipped(params.offset.map(|f| f.into()));
+            response.relays_truncated(
+                get_truncated(tot_r as i32, params.limit, params.offset)
+            );
+
+            response.bridges(vec![]);
+            response.bridges_truncated(tot_b as i32);
+            response.bridges_skipped(None);
+        },
+        ParametersType::Bridge => {
+            let bridges = get_bridges_summary_objs(&pg)
+                .await
+                .map_err(ErrorInternalServerError)?;
+
+            response.bridges(bridges);
+            response.bridges_skipped(params.offset.map(|f| f.into()));
+            response.bridges_truncated(
+                get_truncated(tot_b as i32, params.limit, params.offset)
+            );
+
+            response.relays(vec![]);
+            response.relays_truncated(tot_r as i32);
+            response.relays_skipped(None);
+        }
+    }
+
+    let summary = response.build()
+        .map_err(ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok().json(summary))
+}
+```
+
+The logic here is much simpler that the querying section. As I was mentioning
+before, you can either get `bridges` or `relays`, so the very first step that
+I'm taking is checking if the user requested a specific `type` of data, if not then
+I fallback to `relays` by default. Other than that I'm building the response
+using the builder design pattern which is convenient in this case and it's
+easier to read.
+
+[chat,matt]
+--
+The code above is not finished as you may have noticed. There are a bunch of
+`TODO` returned in the response, that is because I'm missing informations on how to
+retrieve those particular fields and since leaving those fields to `None` will
+make the builder return an error, that's the quickest way possible to make the
+server work
+--
+
+Busy week, small steps - I'm a little bit behind schedule as I wanted to have
+both `/summary` and `/details` ready during this week, which was not a thing.
+I didn't immediately realise that query params would eventually take this much
+time, but once they're settled for a single endpoint that will apply to all the
+others without too many adjustments. Hopefully I'll catch-up by the end of next
+week when issues related to the first MR will be fixed.
+
+If you have any critics or suggestions on the implementation, please continue
+to reach out by email as I've gained a lot of insights lately from some of my
+readers and I really appreciate that.
