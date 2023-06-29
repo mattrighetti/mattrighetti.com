@@ -86,8 +86,9 @@ svg.feather.feather-moon {
     width: 20px;
     height: 20px;
     fill: none;
-    stroke: var(--primary-text-color);
     stroke-width: 2px;
+    stroke: var(--primary-text-color);
+    stroke: var(--primary-text-color);
     stroke-linecap: round;
     stroke-linejoin: round;
 }
@@ -278,6 +279,16 @@ pre code {
     display: block;
     padding: 0.5em;
     clear: both;
+}
+
+.paragraph p {
+    text-align: justify;
+    margin: 16px 10px;
+}
+
+.position p {
+    text-align: justify;
+    margin-right: 16px;
 }
 
 p code {

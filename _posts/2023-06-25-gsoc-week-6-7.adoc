@@ -421,7 +421,7 @@ I find this to be a better approach for multiple reasons:
 . Decoupling of database data types and response types
 . Data transformation from database rows to responses is easier to test and mock
 . Less error prone and cleaner since I am working with types instead of extracting columns one by one
-. `FromRow`` can fail, `From` can't
+. `FromRow` can fail, `From` can't
 
 [chat, matt]
 --
