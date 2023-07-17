@@ -1,0 +1,46 @@
+---
+title: "I'm Open-Sourcing Ulry"
+show_patreon: false
+---
+
+Ulry's first ever commit is dated 23 Dec 2021. The motivation behind its
+creation stemmed from my inability to find a user-friendly link archiver that I
+liked and didn't involve the hassle of an account registration.  Additionally,
+at that time I was getting more and more interested in SQLite and its internals,
+I discovered that a lot of cool iOS apps available out there used it instead of
+the classic CoreData framework provided by Apple. That was the perfect excuse to
+create a new side project and learn something new that I was really interested
+into.
+
+This turned out to be my most successful project to date. This month, Ulry has
+reached more than 2K downloads on the App Store and I am overwhelmed by the
+positive user feedbacks that praise the app for the very reason I felt the need
+to create it: fast, lightweight, simple.
+
+I initially thought of keeping the project's source-code private and see if I
+could earn something from it, but I found out that that would require too much
+additional work from my side. I felt obliged to be ready to fix every single bug
+that popped out of nowhere and have a 100% functional product at any time. After
+dedicating more than a year to its development, I felt the need to jump on new
+projects, learn something different and take a break from iOS development in
+general.
+
+Lately I've been pretty involved with the open source community and I've met a
+lot of smart and thoughtful people that taught me a lot about software. Ulry
+itself wouldn't have been possible if it wasn't for a couple of very famous
+open-source projects.
+
+While I am taking a break from iOS development, I want to share as much
+knowledge as I can and give it back to the OS community. This is why I've
+decided to open-source Ulry. 
+
+Hopefully people will learn from it and contribute to the project, that is my
+new goal for Ulry.
+
+https://github.com/mattrighetti/UlryApp[Here] you can find the project repo.
+https://ulry.app[Here] is the app's website.
+
+The GitHub repo still needs some fixes and a better README, some refactoring
+would be good too, but for now it should work!
+
+I hope to see you on GitHub and work with you on this :)
