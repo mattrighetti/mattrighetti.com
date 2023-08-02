@@ -287,13 +287,16 @@ pre code {
     clear: both;
 }
 
-.paragraph p {
+p {
     word-break: break-word;
     word-wrap: break-word;
     -webkit-hyphens: auto;
     -moz-hyphens: auto;
     -ms-hyphens: auto;
     hyphens: auto;
+}
+
+.paragraph p {
     text-align: justify;
     margin: 16px 0px;
 }
