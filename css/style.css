@@ -68,7 +68,7 @@ body {
     background-color: var(--bg-color);
     font-weight: 400;
     font-size: 1.2em;
-    font-family: 'Zilla Slab', sans-serif;
+    font-family: 'Zilla Slab', serif;
     line-height: 1.6;
     max-width: 800px;
     margin-left: auto;
@@ -184,6 +184,7 @@ footer .fa {
 }
 
 article h1 {
+    font-family: 'Podkova';
     color: var(--post-text-color);
     margin: 25px 0 5px 0;
 }
@@ -217,6 +218,7 @@ article h1 {
 }
 
 .post-list a {
+    font-family: 'Podkova';
     display: block;
     text-decoration: none;
     color: var(--post-text-color);
