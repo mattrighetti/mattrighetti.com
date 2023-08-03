@@ -185,6 +185,7 @@ footer .fa {
 
 article h1 {
     font-family: 'Podkova';
+    line-height: 1.1;
     color: var(--post-text-color);
     margin: 25px 0 5px 0;
 }
@@ -219,6 +220,7 @@ article h1 {
 
 .post-list a {
     font-family: 'Podkova';
+    line-height: 1.1;
     display: block;
     text-decoration: none;
     color: var(--post-text-color);
