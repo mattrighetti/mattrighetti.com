@@ -32,7 +32,7 @@
 }
 
 [data-theme="dark"] {
-    --bg-color: #202020;
+    --bg-color: #211f1f;
 
     --navbar-text-color: #ffffff;
     --primary-text-color: #e2e2e2;
@@ -51,8 +51,8 @@
     --code-language-bg-color: #323232;
     --code-lang-tag-background-color: #282828;
 
-    --inline-code-text-color: #fbf1c7;
-    --inline-code-bg-color: #404040;
+    --inline-code-text-color: #d2c5a5;
+    --inline-code-bg-color: #282828;
     --inline-code-border-color: #383838;
 
     --dialog-professor-bg-color: 132, 194, 113;
@@ -67,15 +67,19 @@
 body {
     background-color: var(--bg-color);
     font-weight: 400;
-    font-size: 1em;
-    font-family: 'Work Sans', sans-serif;
-    line-height: 1.4;
+    font-size: 1.2em;
+    font-family: 'Zilla Slab', serif;
+    line-height: 1.6;
     max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     text-rendering: geometricPrecision;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
+}
+
+.listingblock .content {
+    font-size: .9em;
 }
 
 main {
@@ -180,6 +184,9 @@ footer .fa {
 }
 
 article h1 {
+    font-family: 'Podkova';
+    line-height: 1.1;
+    color: var(--post-text-color);
     margin: 25px 0 5px 0;
 }
 
@@ -212,6 +219,8 @@ article h1 {
 }
 
 .post-list a {
+    font-family: 'Podkova';
+    line-height: 1.1;
     display: block;
     text-decoration: none;
     color: var(--post-text-color);
@@ -263,7 +272,7 @@ svg {
 /* Code Blocks */
 
 code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
 }
 
 pre {
@@ -275,26 +284,35 @@ pre {
 
 pre code {
     font-weight: 100;
-    font-size: 0.8em;
+    font-size: 13px;
+    line-height: 1.5;
     display: block;
     padding: 0.5em;
     clear: both;
 }
 
+p {
+    word-break: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
 .paragraph p {
     text-align: justify;
-    margin: 16px 10px;
+    margin: 16px 0px;
 }
 
 .position p {
     text-align: justify;
-    margin-right: 16px;
 }
 
 p code {
     padding: 0.2em;
     font-weight: 100;
-    font-size: 0.8em;
+    font-size: 14px;
     border-radius: 0.2em;
     color: var(--inline-code-text-color);
     background-color: var(--inline-code-bg-color);
@@ -329,9 +347,13 @@ p code {
     padding: 0 0.7em;
 }
 
+.openblock p {
+    padding: 10px 15px;
+}
+
 .note {
     background-color: rgba(var(--note-bg-color), 0.424);
-    border: 2px solid rgb(var(--note-bg-color));
+    /*border: 2px solid rgb(var(--note-bg-color)); */
 }
 
 .warn {
@@ -368,7 +390,7 @@ main {
     position: absolute;
     width: 1px;
     background-color: var(--timeline-color);
-    top: 10px;
+    top: 22px;
     bottom: 0;
     left: 0%;
     margin-left: 3px;
@@ -376,6 +398,7 @@ main {
 
 .position {
     padding-left: 20px;
+    padding-right: 16px;
     position: relative;
 }
 
@@ -385,7 +408,7 @@ main {
     width: 10px;
     height: 10px;
     left: -1.6px;
-    top: 8px;
+    top: 13px;
     background-color: var(--timeline-color);
     border-radius: 50%;
     z-index: 1;
@@ -401,6 +424,7 @@ main {
 }
 
 .position span {
+    font-size: .9em;
     color: var(--tertiary-text-color);
 }
 
@@ -418,6 +442,11 @@ main {
     margin: 0;
     padding: 0 0 0 15px;
     list-style: circle;
+}
+
+.contribution {
+    padding-right: 16px;
+    padding-left: 10px;
 }
 
 .contribution h3 {
