@@ -1,0 +1,346 @@
+---
+title: "GSoC 2023: Wrap-up"
+image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
+show_patreon: false
+---
+
+It's been a while since my last GSoC project status update, but after almost 3
+months in, my adventure is coming to an end and I would like to give a final and
+brief wrap-up of what I've been working on lately and what changes took place
+during this time.
+
+In my last article about the project I left off by talking about VictoriaMetrics
+and how most of the endpoints would need to proxy requests to it. Initially, I
+thought that we needed to manipulate the data that VictoriaMetrics returned - to
+manipulate data you also have to parse it first. This is the snippet of code
+that I first wrote to _proxy_ requests to VM
+
+```rust
+impl VictoriaMetricsClient {
+    pub async fn query(
+        &self,
+        params: Vec<(String, String)>
+    ) -> Result<Vec<victoriametrics::Result>, String> {
+        let res = self.client.get(&self.config.url)
+            .query(&params)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if res.status().as_str() != "200" {
+            let err_res = res.json::<victoriametrics::ErrorResponse>()
+                .await
+                .unwrap();
+
+            return Err(err_res.error);
+        }
+
+        if let Ok(response) = res.json::<victoriametrics::Response>().await {
+            return Ok(response.data.result);
+        }
+
+        Err("something went wrong during VM data deserialization".into())
+    }
+}
+```
+
+Why would you need to parse the data and then return it, you might ask? I am
+asking myself the same thing right now, it doesn't make sense at all! I later
+found out that we could actually just skip parsing and return the same response
+that VM returned to the service, that's the whole point of calling it "proxy".
+Needless to say that I completely refactored the way I _proxy_ requests to
+VictoriaMetrics.
+
+```rust
+pub async fn query(
+    &self,
+    params: &Vec<(String, String)>
+) -> HttpResponse {
+    let req = self.client.get(&self.config.url).query(params);
+    if req.is_err() {
+        return HttpResponse::InternalServerError()
+            .body("Encountered error while building request")
+    }
+    
+    let res = req.unwrap()
+        .basic_auth(&self.config.username, &self.config.passwd)
+        .insert_header(("User-Agent", "awc/3.0"))
+        .send()
+        .await;
+        
+    if let Ok(res) = res {
+        return res.into_http_response();
+    }
+    
+    HttpResponse::InternalServerError().into()
+}
+```
+
+This might look similar to the previous implementation, probably because it is,
+but instead of parsing the data I am just fetching the response and transforming
+it into an `HttpResponse` with the help of that `into_http_response` method.
+
+`IntoHttpResponse` is a little trait that I've found on crates.io while I was
+searching for good ways to return `ClientResponse` as an `HttpResponse`.
+
+```rust
+/// Trait for converting a [`ClientResponse`] into a [`HttpResponse`].
+///
+/// You can implement this trait on your types, of course, but its
+/// main goal is to enable [`ClientResponse`] as return value in
+/// [`impl Responder`](actix_web::Responder) contexts.
+///
+/// [`ClientResponse`]: ClientResponse
+/// [`HttpResponse`]: HttpResponse
+///
+pub trait IntoHttpResponse {
+    /// Creates a [`HttpResponse`] from `self`.
+    ///
+    /// [`HttpResponse`]: HttpResponse
+    ///
+    fn into_http_response(self) -> HttpResponse;
+    /// Wraps the [`HttpResponse`] created by [`into_http_response`]
+    /// in a `Result`.
+    ///
+    /// # Errors
+    ///
+    /// Because [`into_http_response`] is infallible, this method is,
+    /// too.
+    /// So calling this method never fails and never returns an `Err`.
+    ///
+    /// [`HttpResponse`]: HttpResponse
+    /// [`into_http_response`]: Self::into_http_response
+    ///
+    fn into_wrapped_http_response<E>(self) -> Result<HttpResponse, E>
+    where
+        Self: Sized,
+    {
+        Ok(self.into_http_response())
+    }
+}
+```
+
+This is usually referred to as an extension trait and it is a common patter used
+in Rust when you want to extend types that you don't own, they are very useful
+especially when you want to extend types in the `std` library:
+
+. Define a public local trait
+. Make an implementation of the trait for the external type
+
+With that in place, I can now implement it for any external type that
+I desire - in this case it's going to be `ClientResponse`.
+
+```rust
+impl IntoHttpResponse for ClientResponse<dev::Decompress<dev::Payload>> {
+    fn into_http_response(self) -> HttpResponse {
+        let mut response = HttpResponse::build(self.status());
+        for header in self.headers() {
+            // Copy every header into the new response
+            response.append_header(header);
+        }
+        // Stream the rest of the data
+        response.streaming(self)
+    }
+}
+```
+
+This looks a lot more like _proxying_ requests: the same response that VM
+returns to the service is then sent back to the user as is - same headers, same
+status, same payload.
+
+If you paid close attention you might have noticed that `reqwest` does not have
+a type `ClientResponse` and that's because I'm no longer using `reqwest`. While
+I was looking for a way to perform proxy requests I also discovered that
+`actix_web` used to have its own built-in client for making external HTTP
+requests which later was places in its own crate:
+https://crates.io/crates/awc[`awc`]. I've read multiple discussions where
+@rojtende (a major `actix_web` maintainer) talked about the better performances
+of `awc` compared to `reqwest`, so I sticked with it and included it in the
+project dependencies.
+
+```toml
+// Cargo.toml
+awc = { version = "3.1.1", features = ["openssl"] }
+openssl = "0.10.57"
+```
+
+`openssl` is required since I'm making secure & authenticated requests to VM.
+
+I've also refactored the VM client interface so that it's clean and simpler to
+use
+
+```rust
+impl ProxyRequestBuilder {
+    pub fn new() -> Self {
+        let params = Vec::with_capacity(4);
+        Self { params }
+    }
+    
+    pub fn query(mut self, query: impl Into<String>) -> Self {
+        self.params.push(("query".into(), query.into()));
+        self
+    }
+    
+    pub fn label(mut self, label: &str, fingerprint: Option<String>) -> Self {
+        let q = match fingerprint {
+            Some(f) => format!("{}{{fingerprint='{}'}}", label, f),
+            None => label.to_string()
+        };
+        self.params.push(("query".into(), q));
+        self
+    }
+    
+    pub fn start(mut self, start: impl Into<String>) -> Self {
+        self.params.push(("start".into(), start.into()));
+        self
+    }
+    
+    pub fn end(mut self, end: impl Into<String>) -> Self {
+        self.params.push(("end".into(), end.into()));
+        self
+    }
+}
+```
+
+With this overhaul of the previous client I can query VM directly from any
+handler with a very minimal amount of code
+
+```rust
+pub async fn get_weights(
+    vm: web::Data<Arc<VictoriaMetricsProxy>>,
+    params: VmProxyQueryFilters
+) -> Result<HttpResponse, Error> {
+    if params.r#type == Some(ParametersType::Bridge) {
+        return Ok(HttpResponse::BadRequest().body("metric not available for bridge type"));
+    }
+    
+    let req = ProxyRequestBuilder::new()
+        .label(MetricsLabel::NetworkExitFraction.as_str(), params.lookup.map(|x| x.into()))
+        .start(params.start.unwrap_or("-30d".into()))
+        .end(params.end.unwrap_or("-1d".into()));
+        
+    let res = vm.send(req).await;
+    if res.status() != http::StatusCode::OK {
+        return Ok(HttpResponse::InternalServerError().into());
+    }
+    
+    Ok(res)
+}
+```
+
+This new client was the major re-design that I've worked on during this month, I
+have only taken the interesting pieces in this article so if you want to see the
+full implementation you can take a look at the
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/tree/dev/src/victoriametrics?ref_type=heads[victoriametrics]
+module in the service.
+
+Last but not least, I've started to write some integration tests for the APIs
+with the help of a great book that I recommend: *Zero to Production in Rust*
+written by a fellow italian software engineer. The concept is pretty simple -
+you have a method that spawns your application with mocked data and a database
+connection
+
+```rust
+pub struct TestApp {
+    pub addr: String,
+}
+
+pub async fn spawn_app() -> TestApp {
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .expect("failed to bind to random port");
+    let port = listener.local_addr().unwrap().port();
+    let addr = format!("http://127.0.0.1:{}", port);
+    let conn_pool = configure_database().await;
+    
+    let mut path = std::env::current_dir().unwrap();
+    path.push("tests");
+    path.push("resources");
+    path.push("valid_config_factory.json");
+    
+    let path_str = path.to_str().unwrap();
+    let factory = ResponseFactory::with_config(path_str.to_string())
+        .expect("error creating factory");
+    
+    let vm_config = VictoriaMetricsProxyConfig::with("testurl".into(), "testusername".into(), "testpasswdn".into());
+    
+    let server = run(listener, conn_pool, factory, vm_config)
+        .expect("error running server");
+    let _ = tokio::spawn(server);
+    TestApp { addr }
+}
+
+async fn configure_database() -> SqlitePool {
+    let conn = SqlitePool::connect(":memory:")
+        .await
+        .expect("could not connect to sqlite in-mem database");
+        
+    // run other migrations and data insertions here
+    
+    conn
+}
+```
+
+You can then test each of your endpoints with an HTTP client, just as you would
+if you were querying each and every single endpoint by typing out `curl`
+commands. Here's a simple example
+
+```rust
+async fn make_weights_req(
+    params: Vec<(&str, &str)>
+) -> ClientResponse<dev::Decompress<dev::Payload>> {
+    let app = spawn_app().await;
+    let client = awc::Client::new();
+    client.get(&format!("{}/weights", app.addr))
+        .query(&params)
+        .unwrap()
+        .send()
+        .await
+        .unwrap()
+}
+
+#[actix_web::test]
+async fn weights_test_invalid_lookup() {
+    let req = make_weights_req(vec![("lookup", "invalid")]).await;
+    assert_eq!(req.status().as_str(), "400");
+}
+
+#[actix_web::test]
+async fn weights_test_invalid_type() {
+    let req = make_weights_req(vec![("type", "non_existent_type")]).await;
+    assert_eq!(req.status().as_str(), "400");
+}
+
+// and so on ...
+```
+
+Luca in his book sets up a much more complex pipeline and uses a Postgres
+database to test the app but I wanted to make things simpler and I did not want
+to spin up a Pg instance every time I need to run tests, so I am using an
+in-memory sqlite connection which is great and works like a charm.
+
+Documentation is another aspect that I curated during this last month, you can
+consult it directly from the
+https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi/-/wikis/API-Documentation[Wiki]
+of the project and it's a swagger-like description of the APIs in markdown
+format so that future clients have a spec to look at when they will want to
+adopt this new service.
+
+That sums up the work that I've done on the Network Status APIs for the last
+couple of months and I am really satisfied with the result. We now have deployed
+internally this initial version of the APIs for us to use and we are making sure
+that the service behaves as expected and performs at its best as well.
+
+My final thoughts on this GSoC experience are super positive. Contributing to
+open-source software not only is rewarding on its own, especially if you are
+developing software for a well known project that is used by thousands of people
+around the world, but it's especially a great opportunity to meet other software
+engineers that will review your code, you can read their code and with which you
+can come up with solutions to engineering problems that will eventually enrich
+your knowledge in the field. If you have the opportunity I would definitely
+recommend it.
+
+It's been a great journey, so good indeed that I've already told my mentors that
+I'll be sticking around and continue to maintain my project even after GSoC, and
+maybe help them out with some other projects, who knows :)
+
+Until next time, happy coding!
