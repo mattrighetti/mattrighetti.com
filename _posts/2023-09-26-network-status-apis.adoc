@@ -1,0 +1,63 @@
+---
+title: "GSoC 2023: Network Status APIs"
+hidden: true
+---
+:page-liquid:
+
+:project-proposal: https://mattrighetti.com/assets/docs/gsoc2023.pdf
+:intro: https://mattrighetti.com/2023/05/05/i-am-officially-a-gsoc-2023-contributor.html
+:week-1: https://mattrighetti.com/2023/05/11/gsoc-week-1.html
+:week-2: https://mattrighetti.com/2023/05/18/gsoc-week-2.html
+:week-3: https://mattrighetti.com/2023/05/25/gsoc-week-3.html
+:week-4: https://mattrighetti.com/2023/06/02/gsoc-week-4.html
+:week-5: https://mattrighetti.com/2023/06/02/gsoc-week-5.html
+:week-6-7: https://mattrighetti.com/2023/06/25/gsoc-week-6-7.html
+:wrap-up: https://mattrighetti.com/2023/09/25/gsoc-wrap-up.html
+
+### PROJECT GOAL
+
+In an effort to improve current resource utilisation and optimisation, the Tor
+team is developing a new version of their pipeline (v2.0). This update involves
+transferring much of the data related to Tor nodes and bridges from files stored
+on a single server's disk to two separate databases: Postgres and Victoria
+Metrics.
+
+The main objective of this project is to design a RESTful API service using the
+`actix_web` framework that is going to be integrated in the new pipeline v2.0 to
+support data retrival from the two databases. In particular, the focus will be
+on designing the new APIs, its requests, and response formats. The project will
+also involve defining appropriate endpoints and data models, ensuring
+scalability, performance, and security. The final goal is to achieve a web
+service that is going to extend/replace the current onionoo protocol used by
+stakeholders interested in the status of the Tor network and its individual
+nodes.
+
+### PROJECT STATUS
+. Setup CI pipeline for automatic testing
+. Developed `/summary` endpoint
+. Developed `/bandwidth` endpoint
+. Developed `/weights` ednpoint
+. Developed `/clients` endpoint
+. Developed `/details` endpoint
+. Setup initial integration testing for all endpoints
+
+### DEPLOYMENT AND TESTING
+The greates achievement of our project thus far is the successful internal
+deployment of the API service. It is currently undergoing rigorous testing and
+performance testing to validate its functionality and reliability. This testing
+phase is crucial to ironing out any remaining issues and ensuring a seamless
+transition to the new pipeline v2.0.
+
+### WHAT'S NEXT
+. Add _meta_ endpoints to check service health and other useful info
+. Add benchmarking tests
+. Add more integration tests
+. Work on the project's Wiki
+. Document Network Status APIs code
+
+### LINKS
+. https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi[Network
+        Status APIs Repository]
+. {project-proposal}[Project Proposal]
+. Project's articles: {intro}[Intro], {week-1}[Week 1], {week-2}[Week 2], {week-3}[Week 3], {week-4}[Week 4], {week-5}[Week 5], {week-6-7}[Week 6-7], {wrap-up}[Wrap-up]
+

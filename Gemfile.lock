@@ -67,8 +67,7 @@ GEM
     webrick (1.8.1)
 
 PLATFORMS
-  universal-darwin-21
-  x86_64-darwin-22
+  universal-darwin-23
 
 DEPENDENCIES
   jekyll (~> 4.2.1)
