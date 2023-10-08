@@ -1,0 +1,8 @@
+---
+name: envelope
+started: Sept 2023
+github: https://github.com/mattrighetti/envelope
+---
+
+After battling with .env files for a long time I've created this CLI utility
+tool to better manage .env files

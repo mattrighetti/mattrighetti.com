@@ -19,6 +19,7 @@ collections:
       - tor-project-gsoc2023.adoc
   projects:
     order:
+      - envelope.adoc
       - ulry.adoc
       - libgen-telegram-bot.adoc
       - hn-reader-macos.adoc
@@ -30,8 +31,6 @@ plugins:
   - jekyll-asciidoc
   - jekyll-redirect-from
   - jekyll-feed
-
-highlighter: rouge
 
 asciidoctor:
   attributes:
