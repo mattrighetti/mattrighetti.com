@@ -1,0 +1,270 @@
+---
+title: "I Rewrote my CV in Typst and I'll Never Look Back"
+---
+
+:typst-reference: https://typst.app/docs/reference/syntax/
+:typst: https://typst.app
+:linksBarExample: https://typst.app/project/rhCQsMr64hPuS8ttVjKWOm
+
+One of the things I've been doing for quite a while, other than tracking my
+expenses, has been keeping my CV up-to-date as much as I could. Every three to
+four months I try to sit down and give a little refresher to my curriculum so
+that I don't have to do it in a single take when the time comes.
+
+It goes without saying that this has been quite helpful, I remember a few years
+ago when this was none of my concern and I ended up spending nights staring at
+the monitor thinking about what I could write down that was remarkable and that
+made me stand out. I can't even remember what I did last week, imagine thinking
+about something original that I had done in previous months or even years.
+
+I never quite liked my previous CV, maybe because I always get bored with stuff
+after a while, maybe because I sent mine out to friends and they all copied the
+design of it, maybe because I copied the design itself from a template that was
+public on Github under those "awesome-X" repos with thousands of starts.
+
+The other day I fixated on the fact that I wanted to change the design of my CV,
+remove useless stuff and flatten it just the right amount to make me like it
+again.
+
+I was dedicated to do it on my own, but there was a thing standing in my way: LaTex.
+
+As many others do, I wrote my first CV and all the other iterations of it on
+Overleaf using LaTex. I'm no LaTex expert, and I don't feel like learning the
+language can be of any use for what I do day to day.
+
+Up until now I was _ok_ with it. I grabbed that template and filled it with some
+text, the rest has been a combination of magic, luck and mostly
+_try-jacking-stuff-around-until-it-looks-good_. This is what it feels like even
+to this day to me when I think about writing LaTex for such a simple task as
+updating a CV.
+
+Not knowing LaTex and creating a template from scratch to make it look exactly
+as I wanted doesn't sound like a good idea, does it?
+
+While I was thinkering about a possible escape from all of this, I had a
+flashback of a time when I heard about a _good-enough_ alternative to LaTex and
+I immediately started to look for it.
+
+It took a couple of tries on Google, and the solution to my problems was lying there: {typst}[Typst].
+
+Typst sells itself with this line
+
+[quote]
+--
+Typst is a new markup-based typesetting system that is designed to be as
+powerful as LaTeX while being much easier to learn and use
+--
+
+Sounds pretty cool, right? I immediately started digging in their web based
+editor and tried writing something out to see if it really was easier and as
+powerful as LaTex and boy I was not disappointed.
+
+Let me start by saying that I'm in no way trying to say that LaTex is bad,
+especially because I don't know how to properly use it, at all. I'm sure
+LaTex gained its reputation for a reason and it's there to stay.
+
+But I also don't know Typst, so I guess I can give at least a fair comparison
+of the two from the point of view of a guy who doesn't want to learn a new language
+to get an average CV in PDF format out of it.
+
+A thing I've noticed from the get-go is how fast the PDF is rendered on typst
+compared to its Overleaf counterpart. As of now, my project takes a whopping
+four seconds on Overleaf to compile and render on screen. On typst, on the other
+hand, the same CV renders immediately with no noticable delay. I want to play
+the devil's advocate and I think this might be related to Overleaf's free plan,
+which I am using, so I don't want to jump to conclusions on this. Also, on
+typst everything is layed out in a single file that is 180 lines long, on Overleaf I
+have a more *complex* project structure:
+
+```Shell session
+$ cd overleaf-cv
+$ tree
+.
+├── awesome-cv.cls
+├── fonts
+│  ├── FontAwesome.ttf
+│  ├── Roboto-Bold.ttf
+│  ├── Roboto-BoldItalic.ttf
+│  ├── Roboto-Italic.ttf
+│  ├── Roboto-Light.ttf
+│  ├── Roboto-LightItalic.ttf
+│  ├── Roboto-Medium.ttf
+│  ├── Roboto-MediumItalic.ttf
+│  ├── Roboto-Regular.ttf
+│  ├── Roboto-Thin.ttf
+│  └── Roboto-ThinItalic.ttf
+├── resume
+│  ├── competencies.tex
+│  ├── education.tex
+│  ├── experience.tex
+│  ├── open-source-contributions.tex
+│  ├── projects.tex
+│  ├── skills.tex
+│  └── summary.tex
+└── resume.tex
+
+$ tokei .
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ TeX                     8          213          133           50           30
+ VB6                     1          607          548            0           59
+===============================================================================
+ Total                   9          820          681           50           89
+===============================================================================
+```
+
+That's a pretty big difference I have to say, and that is the second thing that
+I immediately noticed. We have a LaTex project that is almost 820
+lines long, that I mostly did not write luckily, and a 180 lines long project. Again,
+to play the devil's advocate I have to point out that my 180 lines long
+typst CV does not look exactly like the Overleaf one, so there may be
+someone else out there that can replicate the design of my typst CV in less
+than 180 lines in LaTex, so I'll give you the benefits of the doubt here.
+
+Let's get down to business and let me talk about what I really care and like
+about typst that you won't find in LaTex in my opinion, and that is simplicity
+and a friendly syntax that you might be already familiar with. By reading some
+articles online, I agree with the fact that typst syntax looks a lot like
+markdown. Indeed, if you don't need anything fancy you may as well just write
+markdown syntax and the end result is going to be almost exactly to what you
+would expect from a README.md file on Github. That is because typst is a markup
+language as they explain on their {typst-reference}[reference page]. This is a
+huge plus to start-off as you don't need to fill the document with `\textbf{}`,
+`\emph{}`, `\textit{}` etc. and if you're used to markdown files as I am
+you have one less thing to worry about here, you can get to a pretty good
+result with just that.
+
+CVs have a lot of repetitiveness in themselves, think about it. You usually have
+an **experiences** section that has to layout the company you worked for, when
+you started working there, when you finished and a list of things you did there.
+It's easier to reason with variables in this case, indeed you may want to define
+how you want one experience to look like and just make a for loop over your
+array of experiences and repeatedly render those one after another. This is
+possible both in LaTex and typst and it's called templating. You can see
+templating as a function that takes in arguments and returns text in this case.
+
+I have a section under my name and surname where I list all the important links
+that I want to be on my CV. I would like to define a template for a single link that
+take in:
+
+. a URL
+. a title
+. an icons
+
+This how you would do it in typst (follow {linksBarExample}[here] for better syntax highlight)
+```Typ
+
+// This is an array of links
+#let links = (
+    (icon: "email", link: "mailto:mattiarighetti@outlook.com"),
+    (icon: "website", link: "https://mattrighetti.com/", display: "mattrighetti.com"),
+    (icon: "github", link: "https://github.com/mattrighetti", display: "mattrighetti"),
+    (icon: "linkedin", link: "https://linkedin.com/in/mattia-righetti", display: "mattia-righetti")
+)
+```
+
+[chat, matt]
+--
+Sorry for the broken syntax highlight, it's yet not available with highlight.js.
+
+By the way, doesn't that look simple? Very tuple-like
+--
+
+Let's go through the template now which will take in that array and render it
+
+```typ
+// 1. The icon template will render each link's icon
+// The template takes 2 arguments, the latter is 1.5pt by default
+
+#let icon(name, shift: 1.5pt) = {
+  // box is an inline-container that sizes content I want the icon to be 10pt
+  // high and the icon itself is under "icons/name.svg"
+
+  box(
+    baseline: shift,
+    height: 10pt,
+    image("icons/" + name + ".svg")
+  )
+
+  // I want the icon to have some horizontal padding so that the text of the
+  // link is not going to be immediately sticked to the its side
+
+  h(3pt)
+}
+
+
+#let linksBar(linkarray) = {
+  // set the text after this statement to be 8pt in size
+  set text(8pt)
+
+  // override the icon shift arg to 2.5pt
+  let icon = icon.with(shift: 2.5pt)
+
+  // iterate over the array
+  // this is the equivalent of a for loop
+  linkarray.map(l => {
+
+    // render the icon using the previous template
+    icon(l.icon)
+
+    // render the link text
+    if "display" in l.keys() {
+      // this is the equivalent of [$l.display](l.link) in markdown
+      // you'll see square brackets a lot in typst, they are used as text
+      // containers
+      link(l.link)[#{l.display}]
+    } else {
+      // my email is the only field that does not have a display field
+      // but the link function will automatically display what's after `mailto:`
+      link(l.link)
+    }
+  })
+  // we want to render these links horizontally
+  // so we join all of them together and pad them horizontally
+  .join(h(10pt))
+}
+
+// actually use what we wrote above to render content
+#linksBar(links)
+```
+
+If you want to check out the result you can open {linksBarExample}[this] on typst.
+
+This will render an horizontal list of links with their respective icons. I
+don't know if you feel the same, but I learned all of this in three minutes by
+looking at the typst's tutorial which only covers essentials. When I tried to do
+the same in LaTex I had to Google a lot before finding what worked for me.
+
+I don't want to transform this article in a tutorial on typst so I'm gonna stop
+here with the examples but I hope I've conveyed the idea of how simple this is
+compared to LaTex for this specific scenario.
+
+The last and final selling point for me is how simple it is to get from a typst
+document to a final PDF file. Since typst is written in Rust you can download it
+from source and compile it into a binary file that you can use to create your
+PDF file. If you are as lazy as me you can just
+
+```Shell
+$ brew install typst
+$ typst compile cv.typ
+$ tree
+.
+├── cv.pdf
+├── cv.typ
+└── icons
+```
+
+This is how trivial it is to get a PDF out of typst! Last time I tried to setup
+LaTex on my mac I just gave up because it was too much work, this seems to be
+agreed upon a lot of other users too so I don't feel alone on this, am I?
+
+I am in the process of integrating the generation and publishing of my CV
+through the same github action that I trigger every time I post an article on my
+website. That would save me some extra time because I could just add my `.typ`
+file in my webiste's github repo, edit the document there in the future and
+everything will be published automatically.
+
+I hope I conviced you that you definitely don't need to write your CV in LaTex,
+this is a better, simpler and faster solution that just works and that's
+gaining popularity even for much more complex documents.
