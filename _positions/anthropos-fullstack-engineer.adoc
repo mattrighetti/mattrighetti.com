@@ -1,22 +1,23 @@
 ---
-name: Software Engineer
+name: Backend Engineer
 company: Anthropos
 location: Lugano, Switzerland
 start: May 2023
 end: Present
 ---
 
-- Contributed to the improvement and development of backend APIs that supported
-  various Anthropos services. I've worked on enhancing existing APIs and built
-  new ones, enabling faster communication and functionality across different
-  components of our system.
-- Integrated Stripe's payment processing capabilities with our backend
-  infrastructure. I developed a robust and secure system for managing premium
-  subscriptions and billing. This implementation ensured a reliable premium
-  experience for our customers, contributing to revenue growth and customer
-  satisfaction.
-- Redesigned and enhanced data parsing and autofill capabilities of the
-  company's Chrome extension using React and Google Chrome APIs. Through my
-  contributions, the chrome extension delivered a seamless user experience,
-  empowering individuals to efficiently manage and automate job applications'
-  form filling and tracking.
+- Worked with GraphQL mutations, queries and schema resolvers. Helped with the
+  migration from REST APIs to GraphQL for our backend system. Implemented both
+  REST APIs and GraphQL APIs in conjuction with a ORM framework.
+- Improved and worked on Anthropos microservices that were responsible for job
+  simulations orchestrated with AI, implemented GraphQL servers for each
+  microservice and bridged their features with the pre-existing RPC APIs
+- Integrated Stripe’s payment processing capabilities with our backend
+  infrastructure
+- Setup Apollo Router using graph federation, established a standardized way to
+  version and deploy the supergraph service as microservices changed their GraphQL
+  schema
+- Lead development of the Anthropos iOS application
+- Redesigned and enhanced data parsing and autofill capabilities of Anthropos
+  chrome extension using React. Improved user experience and made it easier for
+  customers to efficiently manage and automate job applications
