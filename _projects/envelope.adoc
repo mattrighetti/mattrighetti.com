@@ -3,6 +3,7 @@ name: envelope
 started: Sept 2023
 github: https://github.com/mattrighetti/envelope
 ---
+envelope is a modern environment variables manager.
 
-After battling with .env files for a long time I've created this CLI utility
-tool to better manage .env files
+I had some trouble with .env files so I've created this CLI utility
+tool to better manage my environment variables.
