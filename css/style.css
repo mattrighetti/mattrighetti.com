@@ -1,3 +1,10 @@
+@font-face {
+    font-family: "Monaspace Neon";
+    src: url(../assets/fonts/MonaspaceNeon-Regular.woff);
+    font-weight: normal;
+    font-style: normal;
+}
+
 :root {
     --bg-color: #ffffff;
 
@@ -282,7 +289,7 @@ svg {
 /* Code Blocks */
 
 code {
-    font-family: 'Fira Code', monospace;
+    font-family: 'Monaspace Neon', monospace;
 }
 
 pre {
@@ -293,8 +300,7 @@ pre {
 }
 
 pre code {
-    font-weight: 100;
-    font-size: 13px;
+    font-size: .84rem;
     line-height: 1.5;
     display: block;
     padding: 0.5em;
