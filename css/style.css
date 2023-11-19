@@ -81,8 +81,8 @@
 body {
     background-color: var(--bg-color);
     font-weight: 400;
-    font-size: 1.2em;
-    font-family: 'Zilla Slab', serif;
+    font-size: 1.1em;
+    font-family: 'Aleo', serif;
     line-height: 1.6;
     max-width: 800px;
     margin-left: auto;
@@ -208,7 +208,9 @@ footer .fa {
 }
 
 article h1 {
-    font-family: 'Podkova';
+    font-family: 'Aleo';
+    font-size: 2rem;
+    font-weight: 800;
     line-height: 1.1;
     color: var(--post-text-color);
     margin: 25px 0 5px 0;
@@ -243,8 +245,10 @@ article h1 {
 }
 
 .post-list a {
-    font-family: 'Podkova';
+    font-family: 'Aleo';
+    font-size: 30px;
     line-height: 1.1;
+    font-weight: 900;
     display: block;
     text-decoration: none;
     color: var(--post-text-color);
@@ -256,7 +260,7 @@ article h1 {
 
 .post-meta {
     color: var(--secondary-text-color);
-    font-size: 0.8em;
+    font-size: .8em;
 }
 
 .avatar>img {
@@ -497,8 +501,9 @@ main {
 }
 
 #year {
+    font-family: 'Aleo';
     font-size: 3rem;
-    font-weight: 700;
+    font-weight: 900;
     margin-top: 0.7em;
 }
 
