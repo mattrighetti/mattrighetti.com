@@ -5,6 +5,13 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: "Monaspace Neon";
+    src: url(../assets/fonts/MonaspaceNeon-Bold.woff);
+    font-weight: bold;
+    font-style: normal;
+}
+
 :root {
     --bg-color: #ffffff;
 
@@ -301,6 +308,7 @@ pre {
 
 pre code {
     font-size: .84rem;
+    font-weight: 400;
     line-height: 1.5;
     display: block;
     padding: 0.5em;
@@ -327,8 +335,8 @@ p {
 
 p code {
     padding: 0.2em;
-    font-weight: 100;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 400;
     border-radius: 0.2em;
     color: var(--inline-code-text-color);
     background-color: var(--inline-code-bg-color);
