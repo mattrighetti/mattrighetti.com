@@ -28,11 +28,11 @@
     {% endif %}
 
     <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
-    <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
-    <link rel="stylesheet" href="{{ " /css/style.css" | prepend: site.baseurl }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | prepend: site.baseurl | prepend: site.url }}">
+    <link rel="stylesheet" href="{{ '/css/style.css' | prepend: site.baseurl }}">
     {% if page.render_graphs %}
-    <link rel="stylesheet" href="{{ " /css/chartist.min.css" | prepend: site.baseurl }}">
-    <script src="{{ "/js/chartist.min.js" | prepend: site.baseurl }}"></script>
+    <link rel="stylesheet" href="{{ '/css/chartist.min.css' | prepend: site.baseurl }}">
+    <script src="{{ '/js/chartist.min.js' | prepend: site.baseurl }}"></script>
     {% endif %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
