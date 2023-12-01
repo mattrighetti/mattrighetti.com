@@ -1,0 +1,272 @@
+---
+title: Advent of Code 2023 - Day 1
+---
+
+It's December and a new https://adventofcode.com[Advent of Code] is ready to be
+solved.
+
+This year I'm picking Rust, again. Let's go ahead and solve https://adventofcode.com/2023/day/1[Day 1]!
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day1[advent-of-code/2023/day1]
+
+Our input is a multi-line text file, each line has variable length and consists
+of a sequence of chars and digits, here's the example that is given to us
+
+```input
+1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet
+```
+
+The problem goes on by saying that each line contains a _calibration value_ that
+we need to get. In order to obtain that value, we have to combine the first digit and the
+last digit that we find on each line.
+
+Let's take the second line for example: if we walk every char we encounter `3` as
+the first digit and `8` as last digit, therefore, the _calibration value_ is
+`38`.
+
+What about the last line? Well, we only have a single digit, which is `7`, and
+that is both our first and last digit. The _calibration value_ for the last line
+is `77`.
+
+This problem is pretty trivial, just what we wanted to warm ourselves for the 24 days ahead.
+
+We have to start by reading the entire input file. It could be a useful exercise
+to code an input reader directly in the program but I like to handle this part
+by just piping the input into `stdin` with `cat`.
+
+In Rust we can just create a mutable `String` and inject the content of `stdin` into it.
+
+```rust
+use std::io::{self, Read};
+
+fn main() -> io::Result<()> {
+    let mut input = String::new();
+    io::stdin().read_to_string(&mut input);
+    println!("{}", input);
+    Ok(())
+}
+```
+
+We need to import `std::io::Read` to use `read_to_string`, otherwise the
+compiler will complain that that method is not implemented by `stdin`.
+
+You can now run this command to see that everything is working as expected:
+
+```shell session
+$ cat input | cargo run -
+```
+
+Now that we have our input, I want to create a function that takes an input and that is returns all the logic for part 1.
+
+```rust
+fn main() -> io::Result<()> {
+    let mut input = String::new();
+    let _ = io::stdin().read_to_string(&mut input);
+
+    writeln!(io::stdout(), "{}", part1(&input)?)?;
+    Ok(())
+}
+
+fn part1(input: &str) -> io::Result<u32> {
+    todo!()
+}
+```
+
+Everything is setup, now we need to work on the solution.
+
+What I would do in this case is:
+
+. Iterate over each line
+. Map each line to a the corresponding _calibration value_
+. Sum all the values
+
+```rust
+fn part1(input: &str) -> io::Result<()> {
+    let sum: u32 = input
+        .lines()
+        .map(|line| {
+            // From the line we get an array of `char` and we try to parse each
+            // one into a digit with `to_digit`.
+            let digits: Vec<u32> = line
+                .chars()
+                // `to_digit` returns an `Option<u32>` and sice we only need valid
+                // digits we can get rid of all the `None` values by using
+                // `flat_map`.
+                .flat_map(|x| x.to_digit(10))
+                .collect();
+
+            // We parse the calibration value by taking the first and last digit
+            (digits[0] * 10) + digits[digits.len() - 1]
+        })
+        .sum();
+
+    writeln!(io::stdout(), "{}", sum)?;
+    Ok(())
+}
+```
+
+To make sure that we did everything correctly I usually do a quick and dirty test
+
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(part1("ad1f3").unwrap(), 13);
+        assert_eq!(part1("ad1\na3\n11\n0").unwrap(), 11 + 33 + 11 + 0);
+    }
+}
+```
+
+By running `cargo test` everything seems to pass, and if we paste the output
+solution returned by `cat input | cargo run -`, the AoC portal tells us that the
+solution is indeed correct.
+
+We now have access to the second part of the problem: we are told that *some* of
+the digits are actually spelled with letters. For example, `7pqrstsixteen` has a
+_calibration value_ of `76` because the first digit is 7 and the last one is
+`six`.
+
+We could reuse our `part1` function if we could somehow replace spelled digits
+with its digit char, but a simple replace function is not going to do it in this
+case. Take a look at `eightwothree` for example, you can have different outcomes
+depending on the order of replacement that you apply:
+
+. You may end up with `8wo3` if you replace `eight` before `two`
+. You may end up with `eigh23` if you replace `two` before `eight`
+
+The problem description tells us that in this case the correct solution would be
+`8wo3`, so I guess that we need to replace spelled digits in order of
+occurrence.
+
+In this case, we can't easily reuse the `part1` function, but don't worry, we
+can create a brand new function to solve this second part of the problem. I
+would solve this second part by doing the following: 
+
+. For each line find the indices of each digit or spelled digit
+. Keep track of max digit and min digit
+. Map line with found digit at min and max position
+. Sum all the values
+
+Rust has a nice function that returns all the indices of a certain
+substring in a string: `match_indices`, we can make use of that.
+
+Here's a quick sketch of the solution
+
+```rust
+fn repl_digits(x: &str) -> u32 {
+    let digits = vec![
+        ("1", "1"),
+        ("2", "2"),
+        ("3", "3"),
+        ("4", "4"),
+        ("5", "5"),
+        ("6", "6"),
+        ("7", "7"),
+        ("8", "8"),
+        ("9", "9"),
+        ("0", "0"),
+        ("one", "1"),
+        ("two", "2"),
+        ("three", "3"),
+        ("four", "4"),
+        ("five", "5"),
+        ("six", "6"),
+        ("seven", "7"),
+        ("eight", "8"),
+        ("nine", "9"),
+        ("zero", "0"),
+    ];
+
+    // Initialize the first and last occurrences
+    let mut first: (&str, usize) = ("", x.len());
+    let mut last: (&str, usize) = ("", 0);
+
+    for (substr, digit) in &digits {
+        // Get the array of indices for the current substring
+        let occ: Vec<_> = x.match_indices(substr).map(|x| x.0).collect();
+        // If there's no occurrence, move to the next substr
+        if occ.len() == 0 {
+            continue;
+        }
+
+        // The indices array is ordered and we only need the first and last
+        // occurrences
+        let (min, max) = (occ[0], occ[occ.len() - 1]);
+
+        // If the min index found is lte the current min index
+        // keep track of the new first digit and its index
+        if min <= first.1 {
+            first = (digit, min);
+        }
+
+        // If the max index found is gte the current max index
+        // keep track of the new last digit and its index
+        if max >= last.1 {
+            last = (digit, max);
+        }
+    }
+
+    // Parse value resulting by concatenating the two
+    // digits
+    format!("{}{}", first.0, last.0)
+        .parse::<u32>()
+        .unwrap()
+}
+
+fn part2(input: &str) -> io::Result<u32> {
+    let sum: u32 = input.lines().map(repl_digits).sum();
+
+    Ok(sum)
+}
+```
+
+Quick test to make sure that everything is working properly
+
+```
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_repl_digits() {
+        assert_eq!(repl_digits("eightwothree"), 83);
+        assert_eq!(repl_digits("13eightwothree"), 13);
+        assert_eq!(repl_digits("13oneight"), 18);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(part2("ad1f3").unwrap(), 13);
+        assert_eq!(part2("ad1\na3\n11\n0").unwrap(), 11 + 33 + 11 + 0);
+        assert_eq!(part2("zero").unwrap(), 0);
+        assert_eq!(part2("three").unwrap(), 33);
+        assert_eq!(part2("1\nthree\nonetwothree2three").unwrap(), 11 + 33 + 13);
+        assert_eq!(
+            part2(
+                r"two1nine
+                eightwothree
+                abcone2threexyz
+                xtwone3four
+                4nineeightseven2
+                zoneight234
+                7pqrstsixteen"
+            )
+            .unwrap(),
+            281
+        );
+    }
+}
+```
+
+`cargo test` gives us a green light, and indeed the solution is correct according to the AoC portal.
+
+Yay, day 1 is done!
+
