@@ -1,0 +1,245 @@
+---
+title: Advent of Code 2023 - Day 2
+---
+
+Ready for https://adventofcode.com/2023/day2[Day 2]? Let's jump right into it.
+
+We have an input that represents a game, each game has an id and a set of
+_hands_. Each hand has the number of cubes grabbed by the bag and its color.
+
+Here's the input example:
+
+```
+Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
+```
+
+The first line represents game #1 that has 3 different hands.
+
+We are given the number of cubes that are present in the bag and we have to
+determine which game is possible with that information. I'm going to quote the
+problem description to make things clearer
+
+[quote]
+--
+Which games would have been possible if the bag contained only 12 red cubes, 13
+green cubes, and 14 blue cubes?
+
+In the example above, games 1, 2, and 5 would have been possible if the bag had
+been loaded with that configuration. However, game 3 would have been impossible
+because at one point the Elf showed you 20 red cubes at once; similarly, game 4
+would also have been impossible because the Elf showed you 15 blue cubes at
+once. If you add up the IDs of the games that would have been possible, you get
+8.
+--
+
+In this case it could be very useful to create a struct that encapsulates all the
+game information that we find on each line. Each game has an id and its sets representation.
+Each set can be represented as a matrix of RGB values.
+
+
+```rust
+type RGB = (u32, u32, u32);
+
+#[derive(Debug)]
+struct Game {
+    id: u32,
+    sets: Vec<RGB>,
+}
+
+```
+
+Now we can implement a `From<&str>` trait for the `Game` type so that we can use
+it later to parse the game information from a single line. The parsing logic is
+going to be a bit verbose but I will basically split by `:`, `;` and `,` until I
+only have RGB values that are going to be stored in the matrix.
+
+```rust
+impl From<&str> for Game {
+    fn from(value: &str) -> Self {
+        let (game_str, sets_str) = value.split_once(":").unwrap();
+        let id = game_str.split_once(" ").unwrap().1.parse().unwrap();
+
+        let mut sets = Vec::new();
+
+        for set in sets_str.split(";") {
+            let mut rgb = (0, 0, 0);
+            for hand in set.split(",") {
+                match hand.trim().split_once(" ").unwrap() {
+                    (id, "red") => {
+                        rgb.0 = id.parse().unwrap();
+                    }
+                    (id, "green") => {
+                        rgb.1 = id.parse().unwrap();
+                    }
+                    (id, "blue") => {
+                        rgb.2 = id.parse().unwrap();
+                    }
+                    _ => {}
+                }
+            }
+            sets.push(rgb);
+        }
+
+        Game { id, sets }
+    }
+}
+```
+
+Quick test to validate our parsing implementation
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_game_parse() {
+        let g = Game::from("Game 123: 2 green, 1 red; 3 red, 4 blue");
+        assert_eq!(g.id, 123);
+        assert_eq!(g.sets, vec![(1, 2, 0), (3, 0, 4)]);
+    }
+}
+```
+
+Everything looks good so far, with that let's move on to the solution of the first part of the problem.
+
+We have to determine if a game is possible given an initial cube configuration.
+A game is possible if the max number of cubes of a specific color grabbed in a game is
+less than or equal to the value in the configration.
+
+To make things easier I would like to implement a method that returns the max
+value of a particular cube color grabbed in a game, so that we can make an
+immediate comparison when we iterate through all the games in the input.
+
+```rust
+impl Game {
+    fn get_max_rgb_value(&self) -> RGB {
+        let mut max_rgb = (0, 0, 0);
+        for (r, g, b) in &self.sets {
+            if max_rgb.0 < *r {
+                max_rgb.0 = *r;
+            }
+            if max_rgb.1 < *g {
+                max_rgb.1 = *g;
+            }
+            if max_rgb.2 < *b {
+                max_rgb.2 = *b;
+            }
+        }
+
+        max_rgb
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_max_rgb_value() {
+        let g1 = Game::from("Game 123: 2 green, 1 red; 3 red, 4 blue");
+        assert_eq!(g1.get_max_rgb_value(), (3, 2, 4));
+        let g2 = Game::from("Game 123: 1 red; 3 red, 4 blue");
+        assert_eq!(g2.get_max_rgb_value(), (3, 0, 4));
+        let g3 = Game::from("Game 123: 2 green");
+        assert_eq!(g3.get_max_rgb_value(), (0, 2, 0));
+    }
+}
+```
+
+At this point we just have to iterate through all the games, once they've all
+been parsed, and sum the id of those that satisfy the configuration condition.
+
+```rust
+fn main() -> io::Result<()> {
+    let mut input = String::new();
+    io::stdin().read_to_string(&mut input)?;
+
+    writeln!(io::stdout(), "{}", part1(&input)?)?;
+    Ok(())
+}
+
+fn part1(input: &str) -> io::Result<u32> {
+    let config: RGB = (12, 13, 14);
+
+    let sum = input
+        .lines()
+        .map(Game::from)
+        .filter(|x| {
+            let rgb = x.get_max_rgb_value();
+            rgb.0 <= config.0 && rgb.1 <= config.1 && rgb.2 <= config.2
+        })
+        .map(|x| x.id)
+        .sum();
+
+    Ok(sum)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(0, part1("Game 3: 13 red").unwrap());
+        assert_eq!(0, part1("Game 3: 14 green").unwrap());
+        assert_eq!(0, part1("Game 3: 15 blue").unwrap());
+        assert_eq!(1, part1("Game 1: 10 green; 5 blue").unwrap());
+        assert_eq!(1, part1("Game 1: 10 green; 5 blue").unwrap());
+        assert_eq!(1, part1("Game 1: 10 green; 5 blue").unwrap());
+        assert_eq!(2, part1("Game 2: 12 red").unwrap());
+        assert_eq!(2, part1("Game 2: 13 green").unwrap());
+        assert_eq!(2, part1("Game 2: 14 blue").unwrap());
+    }
+}
+```
+
+`cat input | cargo run -` returns the correct answer, let's move to part 2 now.
+
+The problem is now asking to calculate which is the minimum number of cubes and
+their colors that could have made the game possible. If you followed along, you
+may have noticed that we don't need to code anymore logic for this. Indeed,
+`get_max_rgb_value` is all we need to answer that question since that
+already returns what the problem is asking. Once we have the minimum number
+of cubes that could have made the game possible, we have to multiply those
+RGB values and sum all of them to get the final result.
+
+```rust
+fn part2(input: &str) -> io::Result<u32> {
+    let sum = input
+        .lines()
+        .map(Game::from)
+        .map(|x| x.get_max_rgb_value())
+        .map(|(r, g, b)| r * g * b)
+        .sum();
+
+    Ok(sum)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(
+            2286,
+            part2(
+                r"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
+            )
+            .unwrap()
+        );
+    }
+}
+```
+
+I've been lucky this time around, day 2 is off the map and we can call it a day,
+yay!
