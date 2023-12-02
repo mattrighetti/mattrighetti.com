@@ -4,6 +4,8 @@ title: Advent of Code 2023 - Day 2
 
 Ready for https://adventofcode.com/2023/day2[Day 2]? Let's jump right into it.
 
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day2[advent-of-code/2023/day2]
+
 We have an input that represents a game, each game has an id and a set of
 _hands_. Each hand has the number of cubes grabbed by the bag and its color.
 
