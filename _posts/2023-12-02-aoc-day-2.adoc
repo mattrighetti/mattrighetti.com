@@ -243,5 +243,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 }
 ```
 
+Again, `cat input | cargo run -` returns the correct solution.
+
 I've been lucky this time around, day 2 is off the map and we can call it a day,
 yay!
