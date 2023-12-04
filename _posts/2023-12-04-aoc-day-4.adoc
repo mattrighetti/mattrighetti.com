@@ -4,7 +4,7 @@ title: Advent of Code 2023 - Day 4
 
 You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day4[advent-of-code/2023/day4]
 
-In [Day 4] we have the following input
+In https://adventofcode.com/2023/day/4[Day 4] we have the following input
 
 ```input
 Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
