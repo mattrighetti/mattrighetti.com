@@ -1,0 +1,213 @@
+---
+title: Advent of Code 2023 - Day 4
+---
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day4[advent-of-code/2023/day4]
+
+In [Day 4] we have the following input
+
+```input
+Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
+Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
+Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
+Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
+Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
+```
+
+[quote]
+--
+In the above example, card 1 has five winning numbers (41, 48, 83, 86, and 17)
+and eight numbers you have (83, 86, 6, 31, 17, 9, 48, and 53). Of the
+numbers you have, four of them (48, 83, 17, and 86) are winning numbers!
+That means card 1 is worth 8 points (1 for the first match, then doubled
+three times for each of the three matches after the first).
+--
+
+The parsing logic is very similar to day 2, let's create a struct that contains
+the winning numbers and the contained numbers of a card. This time I'm using a
+`HashSet` since it's faster to check if a value is contained into another set.
+
+```rust
+#[derive(Debug)]
+struct Card {
+    winning: HashSet<u32>,
+    numbers: HashSet<u32>,
+}
+
+impl From<&str> for Card {
+    fn from(value: &str) -> Self {
+        let (_, all_nums) = value.split_once(":").unwrap();
+        let (winning_str, numbers_str) = all_nums.split_once("|").unwrap();
+
+        let winning: HashSet<u32> = winning_str
+            .trim()
+            .replace("  ", " ")
+            .split(' ')
+            .map(|x| x.parse().unwrap())
+            .collect();
+
+        let numbers: HashSet<u32> = numbers_str
+            .trim()
+            .replace("  ", " ")
+            .split(' ')
+            .map(|x| x.parse().unwrap())
+            .collect();
+
+        Card { winning, numbers }
+    }
+}
+```
+
+I want to create a function that counts the matching numbers for a certain card
+
+```rust
+impl Card {
+    fn matching(&self) -> u32 {
+        let mut matching = 0;
+        for w in &self.winning {
+            if self.numbers.contains(w) {
+                matching += 1;
+            }
+        }
+
+        matching
+    }
+}
+```
+
+After that I need a function to actually calculate the points of each card,
+which depends on the number of matching winning numbers. The first match
+gives the card 1 point, after that we have to multiply the card's points
+by 2, which is equivalent to pow the card points by 2. Looks like a good
+case where bit shifting can be used
+
+```rust
+impl Card {
+    fn points(&self) -> u32 {
+        let matching = self.matching();
+        if matching == 0 {
+            return 0;
+        }
+        1 << (matching - 1)
+    }
+}
+```
+
+That is all we need for part1, let's run some tests
+
+```rust
+fn part1(input: &str) -> io::Result<u32> {
+    let points = input.lines().map(Card::from).map(|x| x.points()).sum();
+
+    Ok(points)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(
+            13,
+            part1(
+                "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
+Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
+Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
+Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
+Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
+            )
+            .unwrap()
+        );
+    }
+}
+```
+
+Aaand part1 solution is correct! Let's move on with part 2
+
+The problem states
+[quote]
+--
+There's no such thing as "points". Instead, scratchcards only cause you to win
+more scratchcards equal to the number of winning numbers you have.
+
+Specifically, you win copies of the scratchcards below the winning card equal to
+the number of matches. So, if card 10 were to have 5 matching numbers, you would
+win one copy each of cards 11, 12, 13, 14, and 15.
+
+Copies of scratchcards are scored like normal scratchcards and have the same
+card number as the card they copied. So, if you win a copy of card 10 and it has
+5 matching numbers, it would then win a copy of the same cards that the original
+card 10 won: cards 11, 12, 13, 14, and 15. This process repeats until none of
+the copies cause you to win any more cards. (Cards will never make you copy a
+card past the end of the table.)
+--
+
+We can reuse at least the `matching` function of `Card`. We now need to calculate
+how may cards we end up.
+
+```rust
+fn part2(input: &str) -> io::Result<u32> {
+    let matches: Vec<u32> = input
+        .lines()
+        .map(Card::from)
+        .map(|x| x.matching())
+        .collect();
+
+    let mut cards: Vec<u32> = vec![1; matches.len()];
+
+    for (i, matching) in matches.iter().enumerate() {
+        let index = i as u32 + 1;
+        let incr = cards[i];
+
+        // increment the number of cards that are in the window
+        // (i+1) until ((i+1) + matching) by the number of cards
+        // at position i
+        for l in index..index + matching {
+            if let Some(v) = cards.get_mut(l as usize) {
+                *v += incr;
+            }
+        }
+    }
+
+    Ok(cards.into_iter().sum())
+}
+```
+
+I am using a vector that keeps track of how many cards I have in my deck, i.e if
+cards[10] = 5 I have 5 Card 11, the index mismatch is not important in this case
+since we need to sum all the number of cards that we have in the deck at the
+end.
+
+Note that I am using `cards.get_mut` because I can only add cards that are
+actually present in the deck. So, if the last card in the deck is Card 6 and
+Card 6 has 2 matching values I cannot add Card 7 and Card 8, because they're not
+present in the deck, in that case `cards.get_mut` will return `None` and no
+operation is going to be performed.
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(
+            30,
+            part2(
+                "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
+Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
+Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
+Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
+Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
+            )
+            .unwrap()
+        );
+    }
+}
+```
+
+Test passes and the solution is correct!
