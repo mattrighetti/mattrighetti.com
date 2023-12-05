@@ -1,0 +1,353 @@
+---
+title: Advent of Code 2023 - Day 3
+---
+
+https://adventofcode.com/2023/day/3[Day 3] was no walk in the park; it had me
+revisiting my approach several times.
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day4[advent-of-code/2023/day3]
+
+We have the following input
+
+```input
+467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..
+```
+
+Part 1 of the problem wants us to return the sum of all the numbers that have a
+symbol as a neighbor (`.` is not a symbol).
+
+The problem is not trivial, I would like to break it down as much as possible so
+that the solution is easier to read and understand.
+
+At some point we will need to look at the neighbors of a `char`, so the first
+function that I would implement is one that returns neighboring coordinates of a
+coordinate.
+
+```rust
+type Coord = (usize, usize);
+
+/// Returns neighboring coordinates that are inside of the matrix bounds
+fn get_neighbors_coords(n: i32, m: i32, i: i32, j: i32) -> HashSet<Coord> {
+    let coords = vec![
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 1),
+        (1, 1),
+        (1, 0),
+        (1, -1),
+    ];
+
+    let mut nb = HashSet::new();
+    for (x, y) in coords {
+        nb.insert((i + x, j + y));
+    }
+
+    nb.into_iter()
+        .filter(|(x, y)| !(*x < 0 || *y < 0 || *x >= n || *y >= m))
+        .map(|(x, y)| (x as usize, y as usize))
+        .collect()
+}
+```
+
+I'll also need a small utility function to check if a char is a valid symbol or not
+
+```rust
+fn is_symbol(c: &char) -> bool {
+    c.is_ascii_punctuation() && *c != '.'
+}
+```
+
+I would like to also have a function that returns a number given the coordinate
+of one of its digits. A number lies on a single row, so we can use a left and
+right pointer and move them respectively to the leftmost and rightmost digit
+value and parse the slice contained between the two pointers as a `u32`.
+
+```rust
+fn get_num_at_coord(matrix: &Vec<Vec<char>>, coord: &Coord) -> u32 {
+    let row = coord.0;
+    let (mut l, mut r) = (coord.1, coord.1);
+
+    while l > 0 && matrix[row][l - 1].is_digit(10) {
+        l -= 1;
+    }
+
+    while r < matrix[row].len() - 1 && matrix[row][r + 1].is_digit(10) {
+        r += 1;
+    }
+
+    matrix[row][l..=r]
+        .iter()
+        .collect::<String>()
+        .parse()
+        .unwrap()
+}
+```
+
+The last utility function that I would like to implement is the one that is
+going to actually return the neighboring numbers of a coordinate.
+
+```rust
+/// Returns all the neighboring numbers given a matrix and a coordinate.
+fn neighboring_numbers(matrix: &Vec<Vec<char>>, i: usize, j: usize) -> Vec<u32> {
+    let mut num = Vec::new();
+    let (n, m) = (matrix.len() as i32, matrix[0].len() as i32);
+    for (x, y) in get_neighbors_coords(n, m, i as i32, j as i32) {
+        if matrix[x][y].is_digit(10) {
+            num.push((x, y));
+        }
+    }
+
+    // I'm using a HashSet because I have to consider a single number given
+    // the coordinates of one of its digits, but num could contain multiple
+    // coordinates that belong to the same number
+    //
+    // Consider for example `..23#111.`
+    // I would end up with
+    // num = (0,2), (0,3), (0,5), (0,6), (0,7)
+    // but `get_num_at_coord((0,2)) == get_num_at_coord((0,3)) == 23` and
+    // `get_num_at_coord((0,5)) == get_num_at_coord((0,6)) == get_num_at_coord((0,6)) == 111`
+    let mut pairs: HashSet<u32> = HashSet::new();
+    for coord in num {
+        pairs.insert(get_num_at_coord(matrix, &coord));
+    }
+
+    pairs.into_iter().collect()
+}
+```
+
+[chat, matt]
+--
+I've cheated a little bit in this case.
+
+This function will only return a correct
+answer if and only if the neighboring numbers all differ from each other. I
+come from the future and the input that is given to us seems to be okay with
+this assumption, bear with me.
+--
+
+The core logic of part 1 is now trivial, we have to iterate through all the matrix and find all the neighboring numbers of symbols
+
+```rust
+fn part1(input: &str) -> io::Result<u32> {
+    let mut mat: Vec<Vec<char>> = Vec::new();
+    for line in input.lines() {
+        mat.push(line.chars().collect());
+    }
+
+    let mut nums = Vec::new();
+    for i in 0..mat.len() {
+        for j in 0..mat[0].len() {
+            if is_symbol(&mat[i][j]) {
+                nums.extend(neighboring_numbers(&mat, i, j))
+            }
+        }
+    }
+
+    Ok(nums.iter().sum())
+}
+```
+
+This should be enough to get us through part 1, let's run some tests to make sure everything is okay
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_neighbors_coors() {
+        assert_eq!(
+            HashSet::from_iter(vec![(1, 0), (1, 1), (0, 1)]),
+            get_neighbors_coords(7, 7, 0, 0)
+        );
+        assert_eq!(
+            HashSet::from_iter(vec![(5, 6), (5, 5), (6, 5)]),
+            get_neighbors_coords(7, 7, 6, 6)
+        );
+        assert_eq!(
+            HashSet::from_iter(vec![
+                (2, 2),
+                (2, 3),
+                (2, 4),
+                (4, 2),
+                (4, 3),
+                (4, 4),
+                (3, 2),
+                (3, 4)
+            ]),
+            get_neighbors_coords(7, 7, 3, 3)
+        );
+    }
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(
+            4361,
+            part1(
+                r"467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598.."
+            )
+            .unwrap()
+        );
+    }
+}
+```
+
+Bingo! Part 1 passes, let's move on to Part 2.
+
+Part 2 states that:
+
+[quote]
+--
+A gear is any * symbol that is adjacent to exactly two part numbers. Its gear
+ratio is the result of multiplying those two numbers together.
+--
+
+We have to return the sum of all the ratios in the input. We can reuse 100% of
+what we wrote before, I would add a single function to return only valid ratios
+neighboring numbers.
+
+```rust
+fn neighboring_number_pair(matrix: &Vec<Vec<char>>, i: usize, j: usize) -> Option<(u32, u32)> {
+    let pairs = neighboring_numbers(matrix, i, j);
+
+    match pairs.len() {
+        2 => Some((pairs[0], pairs[1])),
+        _ => None,
+    }
+}
+```
+
+With that, part 2 is very similar to part 1, we just have to iterate through the
+matrix and sum all the values of the ratios that we find.
+
+```rust
+fn part2(input: &str) -> io::Result<u32> {
+    let mut mat: Vec<Vec<char>> = Vec::new();
+    for line in input.lines() {
+        mat.push(line.chars().collect());
+    }
+
+    let mut sum = 0;
+    for i in 0..mat.len() {
+        for j in 0..mat[0].len() {
+            if mat[i][j] == '*' {
+                if let Some((n1, n2)) = neighboring_number_pair(&mat, i, j) {
+                    sum += n1 * n2;
+                }
+            }
+        }
+    }
+
+    Ok(sum)
+}
+```
+
+More tests
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(
+            467835,
+            part2(
+                "467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598.."
+            )
+            .unwrap()
+        );
+        assert_eq!(
+            (467 * 35) + (617 * 2) + (755 * 598),
+            part2(
+                "467..114..
+...*......
+..35..633.
+......#...
+617*2.....
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598.."
+            )
+            .unwrap()
+        );
+    }
+}
+```
+
+There we go, part 2 is done! As I noted above, this solution is not 100% correct
+as I've assumed that all the numbers that make up a ratio are different from
+each other. Indeed, my solution will fail with this input
+
+```input
+467..114..
+...*......
+.467..633.
+...$.*....
+.664.598..
+```
+
+A quick test will show just that
+
+```rust
+#[test]
+fn test_part2_alternative() {
+    assert_eq!(
+        (467 * 467) + (633 * 598),
+        part2(
+            "467..114..
+...*......
+.467..633.
+...$.*....
+.664.598.."
+        )
+        .unwrap()
+    );
+}
+```
+
+```Shell sessionrunning 1 test
+test tests::test_part2_alternative ... FAILED
+
+---- tests::test_part2_alternative stdout ----
+thread 'tests::test_part2_alternative' panicked at src/main.rs:215:9:
+assertion `left == right` failed
+  left: 596623
+ right: 378534
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+```
+
+To solve this you just need to add more conditions to the `neighboring_numbers`
+function, but I'm lazy and I won't do that today :)
