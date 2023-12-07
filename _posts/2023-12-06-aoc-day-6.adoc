@@ -1,0 +1,204 @@
+---
+title: Advent of Code 2023 - Day 6
+---
+
+I am happy to tell that https://adventofcode.com/2023/day/6[Day 6] was indeed
+easier than Day 5, let's make this quick.
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day6[advent-of-code/2023/day6]
+
+We have the following input
+
+```input
+Time:      7  15   30
+Distance:  9  40  200
+```
+
+The first line lists the total time that is allowed for a race and the second
+line contains the record distance that has been recorded for that race.
+
+[quote]
+--
+Your toy boat has a starting speed of zero millimeters per millisecond. For each
+whole millisecond you spend at the beginning of the race holding down the
+button, the boat's speed increases by one millimeter per millisecond.
+--
+
+We can easily solve this with a bit of calculus and math! Let's take the second
+race for example, there has been a max recorded distance of 40mm and the allowed
+time for that race is 15ms.
+
+We can model this problem with a second grade inequality function of this type:
+
+```Eq
+x * (15 - x) > 40
+```
+
+which equates to
+
+```Eq
+x^2 -15x + 40 < 0
+```
+
+This inequality indicates all the different values possible to end up with a
+greater distance of 40mm for that race, in our case we only have to consider
+discrete values. If we draw that function we'll see a parabola facing upward and
+intersecting `y = 0` in two different points, those are the min and max values
+of all the different values that will take us further than 40mm.
+
+Take a look at the function in https://www.wolframalpha.com/input?i=x%5E2+-15x+%2B+40+%3C+0[WolframAlpha]
+
+As usual, I'd like to create a struct to represent an equation of type `ax^2 + bx + c`:
+
+```rust
+struct Eq {
+    a: f64,
+    b: f64,
+    c: f64,
+}
+```
+
+We have our equation, we need a function that calculates the intersection points
+with `y = 0` and return that as our range of possible values.
+
+```rust
+impl Eq {
+    fn new(a: f64, b: f64, c: f64) -> Self {
+        Self { a, b, c }
+    }
+
+    fn range(&self) -> (i32, i32) {
+        let discriminant = self.b * self.b - 4.0 * self.a * self.c;
+
+        if discriminant >= 0.0 {
+            let mut root1 = (-self.b + discriminant.sqrt()) / (2.0 * self.a);
+            let mut root2 = (-self.b - discriminant.sqrt()) / (2.0 * self.a);
+
+            // need to be strictly greater, so we have to remove this
+            // value in case root1 coincides with a discrete value
+            if root1.fract() == 0.0 {
+                root1 -= 1.0;
+            }
+
+            // same here
+            if root2.fract() == 0.0 {
+                root2 += 1.0;
+            }
+
+            return (root2.ceil() as i32, root1.floor() as i32);
+        }
+
+        (0, 0)
+    }
+}
+```
+
+We have everything we need at this point, we just need to parse our input,
+calculate every range of possible values for each race and multiply all the
+final values together to get our result.
+
+```rust
+fn part1(input: &str) -> io::Result<u32> {
+    let lines: Vec<&str> = input.lines().collect::<Vec<&str>>();
+    let ms: Vec<f64> = lines[0]
+        .split(" ")
+        .skip(1)
+        .filter(|x| !x.is_empty())
+        .flat_map(|x| x.parse())
+        .collect();
+
+    let records: Vec<f64> = lines[1]
+        .split(" ")
+        .skip(1)
+        .filter(|x| !x.is_empty())
+        .flat_map(|x| x.parse())
+        .collect();
+
+    let mut eqs = Vec::new();
+    for i in 0..ms.len() {
+        eqs.push(Eq::new(1.0, -ms[i], records[i]));
+    }
+
+    let res = eqs
+        .into_iter()
+        .map(|x| x.range())
+        .map(|(lower, upper)| upper - lower + 1)
+        .reduce(|acc, e| acc * e)
+        .unwrap();
+
+    Ok(res as u32)
+}
+```
+
+Quick test
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(
+            (4 * 8 * 9),
+            part1("Time:      7  15   30\nDistance:  9  40  200").unwrap()
+        )
+    }
+}
+```
+
+Solution is correct, nice and easy, let's move on.
+
+[quote]
+--
+There's really only one race - ignore the spaces between the numbers on each line.
+--
+
+Lucky me, we don't have to change any logic but the parting one in this case.
+Our input now has to be considered as a single time number and a single distance
+number, that's it!
+
+```rust
+fn part2(input: &str) -> io::Result<u32> {
+    let lines: Vec<&str> = input.lines().collect::<Vec<&str>>();
+    let ms: f64 = lines[0]
+        .split(" ")
+        .skip(1)
+        .filter(|x| !x.is_empty())
+        .collect::<String>()
+        .parse()
+        .unwrap();
+
+    let record: f64 = lines[1]
+        .split(" ")
+        .skip(1)
+        .filter(|x| !x.is_empty())
+        .collect::<String>()
+        .parse()
+        .unwrap();
+
+    let eq = Eq::new(1.0, -ms, record);
+    let (lower, upper) = eq.range();
+
+    Ok(upper as u32 - lower as u32 + 1)
+}
+```
+
+Testing testing testing
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(
+            71503,
+            part2("Time:      7  15   30\nDistance:  9  40  200").unwrap()
+        )
+    }
+}
+```
+
+Easy done, calculus makes everything fun, right?
