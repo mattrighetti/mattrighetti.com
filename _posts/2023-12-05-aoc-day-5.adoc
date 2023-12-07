@@ -1,0 +1,347 @@
+---
+title: Advent of Code 2023 - Day 5
+---
+
+We're on a rollercoaster, one day we can get away with an easy solution and the
+next it's a lot more complext than that. Day 4 was pretty easy, so
+https://adventofcode.com/2023/day/5[Day 5] won't be :) Let's take a look at the
+problem.
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day5[advent-of-code/2023/day5]
+
+We're given this input sample
+
+```input
+seeds: 79 14 55 13
+
+seed-to-soil map:
+50 98 2
+52 50 48
+
+soil-to-fertilizer map:
+0 15 37
+37 52 2
+39 0 15
+
+fertilizer-to-water map:
+49 53 8
+0 11 42
+42 0 7
+57 7 4
+
+water-to-light map:
+88 18 7
+18 25 70
+
+light-to-temperature map:
+45 77 23
+81 45 19
+68 64 13
+
+temperature-to-humidity map:
+0 69 1
+1 0 69
+
+humidity-to-location map:
+60 56 37
+56 93 4
+```
+
+The initial row has 4 different seed values, each seed value has to be mapped to
+the corresponding value in each block. Each block (i.e `seed-to-soil`) has
+different rows that contain the ranges to which each initial value has to be
+mapped to, the first block has two different mappings: source range (98, 100),
+destination range (50, 52), left range is always excluded.
+
+Let's take seed `79`, if we map it with `seed-to-soil` we get `81`, this is
+because 79 lies in the range represented by the line `52 50 48` which is has
+source range `(50, 50 + 48) = (50, 98)` and maps those values to `(52, 52 + 48) = (52, 100)`.
+
+We have to get the location of each seed, which we can get by performing the
+mappings of each block from top to bottom.
+
+As in many other cases, I would start off by creating a struct which contains
+mapping values that we later could use.
+
+```rust
+#[derive(Debug, PartialEq, Eq)]
+struct Map {
+    src: u64,
+    dst: u64,
+    rng: u64,
+}
+
+impl Map {
+    fn new(src: u64, dst: u64, rng: u64) -> Self {
+        Map { src, dst, rng }
+    }
+}
+
+impl From<&str> for Map {
+    fn from(value: &str) -> Self {
+        let vals: Vec<&str> = value.split(' ').collect();
+        let dst = vals[0].parse().unwrap();
+        let src = vals[1].parse().unwrap();
+        let rng = vals[2].parse().unwrap();
+        Map { src, dst, rng }
+    }
+}
+```
+
+I can now represent each map in the input file with a `Vec<Map>`, I would like
+to implement the mapping logic on that data structure, let's define a local
+trait for that.
+
+```rust
+trait IntoRangeMapping {
+    fn get_mapped_value(&self, v: &u64) -> u64;
+}
+
+// iterates over all the map ranges
+// and returns the corresponding mapped value
+impl IntoRangeMapping for Vec<Map> {
+    fn get_mapped_value(&self, v: &u64) -> u64 {
+        for map in self {
+            if (map.src..map.src + map.rng).contains(v) {
+                return map.dst + (v - map.src);
+            }
+        }
+
+        *v
+    }
+}
+```
+
+This is all we need to get past part 1
+
+```rust
+fn part1(input: &str) -> io::Result<u64> {
+    let parts: Vec<&str> = input.split("\n\n").collect();
+
+    let seeds: Vec<u64> = parts[0]
+        .split(' ')
+        .skip(1)
+        .filter_map(|x| x.parse().ok())
+        .collect();
+
+    let mut mappings: Vec<Vec<Map>> = Vec::new();
+    for i in 1..parts.len() {
+        let maps: Vec<Map> = parts[i]
+            .split('\n')
+            .skip(1)
+            .filter(|x| !x.is_empty())
+            .map(Map::from)
+            .collect();
+        mappings.push(maps);
+    }
+
+    let mut locations: Vec<u64> = Vec::with_capacity(seeds.len());
+    for seed in seeds {
+        let mut value_map = seed;
+        for i in 0..mappings.len() {
+            value_map = mappings[i].get_mapped_value(&value_map);
+        }
+        locations.push(value_map);
+    }
+
+    Ok(locations.into_iter().min().unwrap())
+}
+```
+
+As usual, a quick test
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const INPUT: &str = r"seeds: 79 14 55 13
+
+...
+
+humidity-to-location map:
+60 56 37
+56 93 4";
+
+    #[test]
+    fn test_map_parse() {
+        assert_eq!(Map::new(20, 30, 40), Map::from("30 20 40"));
+    }
+
+    #[test]
+    fn test_range_mapping() {
+        let rng_map = vec![Map::new(0, 5, 2), Map::new(6, 9, 3)];
+        assert_eq!(5, rng_map.get_mapped_value(&0));
+        assert_eq!(6, rng_map.get_mapped_value(&1));
+        assert_eq!(3, rng_map.get_mapped_value(&3));
+        assert_eq!(4, rng_map.get_mapped_value(&4));
+        assert_eq!(5, rng_map.get_mapped_value(&5));
+        assert_eq!(9, rng_map.get_mapped_value(&6));
+        assert_eq!(10, rng_map.get_mapped_value(&7));
+        assert_eq!(11, rng_map.get_mapped_value(&8));
+        assert_eq!(9, rng_map.get_mapped_value(&9));
+        assert_eq!(10, rng_map.get_mapped_value(&10));
+    }
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(35, part1(INPUT).unwrap());
+    }
+}
+```
+
+Solution is correct! Let's move on to the troubling part 2.
+
+We now are told that the first seed line does not represent single seeds, but a
+range of seeds. Also, we now have to return the min value of all the new
+locations found.
+
+We could brute force the solution by keeping the same logic as above and find
+the new location for each seed in the range, but it's going to take a lot of
+time.
+
+What we could do instead is do some operations on ranges, particularly we could
+find where ranges end up in the final location, once we have all the location
+ranges we have to take the min one.
+
+Since we have to find overlapping ranges, let's add a method that does just that to the `Map` type.
+
+```rust
+impl Map {
+    fn overlaps_with(&self, r_start: u64, r_end: u64) -> Option<(u64, u64)> {
+        let left_overlap = cmp::max(r_start, self.src);
+        let right_overlap = cmp::min(r_end, self.src + self.rng);
+
+        match left_overlap < right_overlap {
+            true => Some((left_overlap, right_overlap)),
+            false => None,
+        }
+    }
+}
+```
+
+I want to work with `Vec<Map>` here too, so let's add another method to our trait that will return the new mapped ranges given an initial range.
+
+```rust
+trait IntoRangeMapping {
+    fn get_mapped_value(&self, v: &u64) -> u64;
+    fn get_overlapping_ranges(
+        &self,
+        start_range: u64,
+        end_range: u64,
+    ) -> (Option<(u64, u64)>, Option<(u64, u64)>, Option<(u64, u64)>);
+}
+
+impl IntoRangeMapping for Vec<Map> {
+    fn get_overlapping_ranges(
+        &self,
+        start_range: u64,
+        end_range: u64,
+    ) -> (Option<(u64, u64)>, Option<(u64, u64)>, Option<(u64, u64)>) {
+        let mut overlapping = None;
+        let mut left_range = None;
+        let mut right_range = None;
+
+        for map in self {
+            if let Some((ol, or)) = map.overlaps_with(start_range, end_range) {
+                overlapping = Some((ol - map.src + map.dst, or - map.src + map.dst));
+
+                if ol > start_range {
+                    left_range = Some((start_range, ol));
+                }
+
+                if or < end_range {
+                    right_range = Some((or, end_range));
+                }
+
+                return (overlapping, left_range, right_range);
+            }
+        }
+
+        (overlapping, left_range, right_range)
+    }
+}
+```
+
+`get_overlapping_ranges` will return `overlapping` which is the new mapped
+range, if present, left_range and right_range in case the range map is contained
+by the original range.
+
+Let's make use of these newly created methods in the final solution
+
+```rust
+fn part2(input: &str) -> io::Result<u64> {
+    let parts: Vec<&str> = input.split("\n\n").collect();
+
+    // tuple indicating start and end values of range
+    let mut seed_ranges: Vec<(u64, u64)> = parts[0]
+        .split(' ')
+        .skip(1)
+        .filter_map(|x| x.parse().ok())
+        .collect::<Vec<u64>>()
+        .chunks(2)
+        .map(|w| (w[0], w[0] + w[1]))
+        .collect();
+
+    // same as before
+    let mut mappings: Vec<Vec<Map>> = Vec::new();
+    for i in 1..parts.len() {
+        let mapping: Vec<Map> = parts[i]
+            .split('\n')
+            .skip(1)
+            .filter(|x| !x.is_empty())
+            .map(Map::from)
+            .collect();
+
+        mappings.push(mapping);
+    }
+
+    // repeat step for each map until we end up
+    // with final seed range locations
+    for range_map in mappings {
+        // keep track of new mapped ranges
+        let mut next_ranges: Vec<(u64, u64)> = Vec::new();
+
+        while let Some((start, end)) = seed_ranges.pop() {
+            match range_map.get_overlapping_ranges(start, end) {
+                (None, _, _) => {
+                    // keep same mapping if there is no overlap
+                    next_ranges.push((start, end));
+                }
+                (Some(overlapping), lr, rr) => {
+                    next_ranges.push(overlapping);
+
+                    // these need to be checked in case there is another
+                    // overlap with other ranges maps
+                    if let Some(lr) = lr {
+                        seed_ranges.push(lr);
+                    }
+
+                    if let Some(rr) = rr {
+                        seed_ranges.push(rr);
+                    }
+                }
+            }
+        }
+
+        seed_ranges = next_ranges.clone();
+    }
+
+    Ok(seed_ranges.into_iter().map(|x| x.0).min().unwrap())
+}
+```
+
+Let's test this
+
+```rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_part2() {
+        assert_eq!(46, part2(INPUT).unwrap());
+    }
+}
+```
+
+Phew, I have to admit that this took me quite a bit! Part 2 solution is correct,
+let's hope for an easier Day 6 :)
