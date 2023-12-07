@@ -1,0 +1,394 @@
+---
+title: Advent of Code 2023 - Day 7
+---
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day7[advent-of-code/2023/day7]
+
+https://adventofcode.com/2023/day/7[Day 7] was pretty cool, not hard, but
+a bit verbose.
+
+We have the following input
+
+```rust
+32T3K 765
+T55J5 684
+KK677 28
+KTJJT 220
+QQQJA 483
+```
+
+[quote]
+--
+You get a list of hands, and your goal is to order them based on the strength of
+each hand. A hand consists of five cards labeled one of A, K, Q, J, T, 9, 8, 7,
+6, 5, 4, 3, or 2. The relative strength of each card follows this order,
+where A is the highest and 2 is the lowest.
+
+Every hand is exactly one type: Five of a kind, Four of a kind, Full house, Two pairs, One pair, High card
+--
+
+What we have to do in this case is reorder the cards that are listed in the
+input with the logic explained above, once the deck is reordered we have to
+multiply its index with the hand bid.
+
+Let's start with a struct that encapsulates a hand
+
+```rust
+#[derive(Debug)]
+struct Hand {
+    typ: HandType,
+    cards: Vec<Card>,
+    bid: u32,
+}
+
+#[derive(Debug)]
+enum HandType {
+    HighCard,
+    OnePair,
+    TwoPair,
+    ThreeOfAKind,
+    FullHouse,
+    FourOfAKind,
+    FiveOfAKind,
+}
+
+impl From<&Vec<char>> for HandType {
+    fn from(value: &Vec<char>) -> Self {
+        let mut occurrencies: HashMap<char, u32> = HashMap::new();
+        for card in value {
+            match occurrencies.get_mut(&card) {
+                Some(v) => {
+                    *v += 1;
+                }
+                None => {
+                    occurrencies.insert(*card, 1);
+                }
+            }
+        }
+
+        let values: Vec<u32> = occurrencies.into_values().collect();
+        let r#type = match values.len() {
+            1 => HandType::FiveOfAKind,
+            4 => HandType::OnePair,
+            5 => HandType::HighCard,
+            3 => match values.contains(&3) {
+                true => HandType::ThreeOfAKind,
+                false => HandType::TwoPair,
+            },
+            2 => match values.contains(&4) {
+                true => HandType::FourOfAKind,
+                false => HandType::FullHouse,
+            },
+            _ => panic!("hand with too many cards"),
+        };
+
+        r#type
+    }
+}
+
+impl From<&str> for Hand {
+    fn from(value: &str) -> Self {
+        let (cards, bid) = value.split_once(" ").unwrap();
+
+        let cards = cards.chars().collect();
+        let typ = HandType::from(&cards);
+        let cards = cards.iter().map(Card::from).collect();
+
+        Self {
+            cards,
+            bid: bid.parse().unwrap(),
+            typ,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Card {
+    N2,
+    N3,
+    N4,
+    N5,
+    N6,
+    N7,
+    N8,
+    N9,
+    T,
+    Jack,
+    Qeen,
+    King,
+    Ace,
+}
+
+impl From<&char> for Card {
+    fn from(value: &char) -> Self {
+        match value {
+            'A' => Card::Ace,
+            'Q' => Card::Qeen,
+            'K' => Card::King,
+            'J' => Card::Jack,
+            'T' => Card::T,
+            '9' => Card::N9,
+            '8' => Card::N8,
+            '7' => Card::N7,
+            '6' => Card::N6,
+            '5' => Card::N5,
+            '4' => Card::N4,
+            '3' => Card::N3,
+            '2' => Card::N2,
+            _ => panic!("invalid card"),
+        }
+    }
+}
+```
+
+Each time we parse our `Hand` from an input line, we immediately get its type,
+we should have all the basic logic setup and we can proceed with the
+reordering, but first: TESTS.
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_handtype_from() {
+        assert_eq!(
+            HandType::FiveOfAKind,
+            HandType::from(&vec!['A', 'A', 'A', 'A', 'A'])
+        );
+        assert_eq!(
+            HandType::FourOfAKind,
+            HandType::from(&vec!['A', 'Q', 'Q', 'Q', 'Q'])
+        );
+        assert_eq!(
+            HandType::FullHouse,
+            HandType::from(&vec!['A', 'A', 'J', 'J', 'J'])
+        );
+        assert_eq!(
+            HandType::TwoPair,
+            HandType::from(&vec!['A', 'A', 'K', 'K', 'Q'])
+        );
+        assert_eq!(
+            HandType::OnePair,
+            HandType::from(&vec!['A', 'T', 'A', 'K', 'Q'])
+        );
+        assert_eq!(
+            HandType::HighCard,
+            HandType::from(&vec!['A', 'T', 'Q', 'J', 'K'])
+        );
+    }
+
+    #[test]
+    fn test_hand_from() {
+        assert_eq!(
+            Hand::new(vec!['A', 'Q', 'J', 'K', 'T'], 10, HandType::HighCard),
+            Hand::from("AQJKT 10")
+        );
+        assert_eq!(
+            Hand::new(vec!['A', 'A', 'K', 'K', 'T'], 35, HandType::TwoPair),
+            Hand::from("AAKKT 35")
+        );
+    }
+}
+```
+
+Everything seems to be fine, let's move on with the ordering logic. You may
+argue that all those enums are useless, or that you could have solved this
+problem without them. I've used enums for a cool feature that Rust gives us for
+free in this case: ordering!
+
+Turns out that we can `#[derive]` ordering without writing a single line of
+code, but how exactly does Rust decide which value comes first and which value
+comes next? That is on us! Values are ordered exactly the way they are defined.
+
+If you take a look at the `Card` enum type, Rust will give automatically derive
+that `N2 < N3 < N4` and so on, how cool is that? Let's derive more stuff in our enums.
+
+```rust
+// ordering is also derived for this struct, it will sort first by
+// `typ` and then by `cards` and then by `bid`
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct Hand {
+    typ: HandType,
+    cards: Vec<Card>,
+    bid: u32,
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum HandType {
+    ...
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum Card {
+    ...
+}
+```
+
+Quick proof
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_card_ord() {
+        let mut rnd = vec![
+            Card::Ace,
+            Card::Qeen,
+            Card::King,
+            Card::Jack,
+            Card::T,
+            Card::N6,
+            Card::N9,
+        ];
+
+        rnd.sort();
+
+        assert_eq!(
+            vec![
+                Card::N6,
+                Card::N9,
+                Card::T,
+                Card::Jack,
+                Card::Qeen,
+                Card::King,
+                Card::Ace,
+            ],
+            rnd
+        );
+    }
+}
+```
+
+I just discovered this to be honest, that's super cool, imagine writing all the
+ordering logic for all those types and cards?! No thanks.
+
+Let's sketch part 1 solution, which is trivial at this point
+
+```rust
+fn part1(input: &str) -> io::Result<u32> {
+    let mut hands: Vec<Hand> = input.lines().map(Hand::from).collect();
+    hands.sort();
+
+    let sum = hands
+        .into_iter()
+        .enumerate()
+        .map(|(i, card)| card.bid * (i as u32 + 1))
+        .sum();
+
+    Ok(sum)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(
+            6440,
+            part1("32T3K 765\nT55J5 684\nKK677 28\nKTJJT 220\nQQQJA 483").unwrap()
+        )
+    }
+}
+```
+
+Success! Curious about part 2?
+
+Part 2 tells us that we can now use the `Jack` card as a jolly and change it to
+whichever card is needed to make the hand the strogest possible. When we need to
+order by cards though we should consider `J` as the weakest card, so `J < N2 <
+N3` etc.
+
+Since we relied on `#[derive]` for ordering, I'll need to edit the position of
+`J` in `Card` and break `part1` solution. I'll also need to edit the logic with
+which I calculate which hand `typ` we have.
+
+```rust
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum Card {
+    Jack,
+    N2,
+    N3,
+    N4,
+    N5,
+    N6,
+    N7,
+    N8,
+    N9,
+    T,
+    Qeen,
+    King,
+    Ace,
+}
+
+impl From<&Vec<char>> for HandType {
+    fn from(value: &Vec<char>) -> Self {
+        let mut occurrencies: HashMap<char, u32> = HashMap::new();
+        for card in value {
+            match occurrencies.get_mut(&card) {
+                Some(v) => {
+                    *v += 1;
+                }
+                None => {
+                    occurrencies.insert(*card, 1);
+                }
+            }
+        }
+
+        // remove all ocurrencies of J
+        if let Some(js) = occurrencies.remove(&'J') {
+            if js == 5 {
+                occurrencies.insert('A', 5);
+            } else {
+                // Find the key with the max value, that is going the one to
+                // increase so that we'll have a more powerful hand
+                let (max_key, max_value) =
+                    occurrencies.iter().max_by_key(|&(_, value)| value).unwrap();
+                occurrencies.insert(*max_key, max_value + js);
+            }
+        }
+
+        // same as before
+        let values: Vec<u32> = occurrencies.into_values().collect();
+        let r#type = match values.len() {
+            1 => HandType::FiveOfAKind,
+            4 => HandType::OnePair,
+            5 => HandType::HighCard,
+            3 => match values.contains(&3) {
+                true => HandType::ThreeOfAKind,
+                false => HandType::TwoPair,
+            },
+            2 => match values.contains(&4) {
+                true => HandType::FourOfAKind,
+                false => HandType::FullHouse,
+            },
+            _ => panic!("hand with too many cards"),
+        };
+
+        r#type
+    }
+}
+```
+
+That's all we need to do to get the correct answer for part 2, which is indeed identical to `fn part1()`.
+
+```rust
+fn part2(input: &str) -> io::Result<u32> {
+    let mut hands: Vec<Hand> = input.lines().map(Hand::from).collect();
+    hands.sort();
+    let sum = hands
+        .into_iter()
+        .enumerate()
+        .map(|(i, card)| card.bid * (i as u32 + 1))
+        .sum();
+
+    Ok(sum)
+}
+```
+
+There we go, we have the correct solution for the last part of day 7. The
+`#[derive(PartialOrd, Ord)]` was quite nice to learn, still, today's problem was
+quite verbose! As we move on I might skip some solutions here as they take just
+too much space, but you'll find all the solution on my GitHub :)
