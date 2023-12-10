@@ -4,7 +4,7 @@ title: Advent of Code 2023 - Day 8
 
 First day of week #2, let's take a look at https://adventofcode.com/2023/day/8[day 8]
 
-You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day6[advent-of-code/2023/day6]
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day8[advent-of-code/2023/day8]
 
 We are given the following input
 
