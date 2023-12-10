@@ -1,0 +1,227 @@
+---
+title: Advent of Code 2023 - Day 8
+---
+
+First day of week #2, let's take a look at https://adventofcode.com/2023/day/8[day 8]
+
+You can find the final code @ https://github.com/mattrighetti/advent-of-code/tree/master/2023/day6[advent-of-code/2023/day6]
+
+We are given the following input
+
+```input
+RL
+
+AAA = (BBB, CCC)
+BBB = (DDD, EEE)
+CCC = (ZZZ, GGG)
+DDD = (DDD, DDD)
+EEE = (EEE, EEE)
+GGG = (GGG, GGG)
+ZZZ = (ZZZ, ZZZ)
+```
+
+[quote]
+--
+Starting with AAA, you need to look up the next element based on the next
+left/right instruction in your input.
+
+If you run out of left/right instructions, repeat the whole sequence of
+instructions as necessary
+--
+
+The input could be seen as a graph that we have to navigate, starting from
+`AAA`, following the first line instructions until we end up at `ZZZ`.
+
+I would like to implement some kind of state machine that keeps track of the
+current position and the graph model in a `HashMap`.
+
+```rust
+#[derive(Debug)]
+struct MapModel {
+    pos: String,
+    map: HashMap<String, (String, String)>,
+}
+```
+
+To parse the input we could make use of a regex, let's add the crate to our
+program with `cargo add regex once_cell`. We can now define our regex and
+parsing logic of our `MapModel` type.
+
+```rust
+static RE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"([A-Z]{3}) = \(([A-Z]{3}), ([A-Z]{3})\)").unwrap());
+
+impl From<&str> for MapModel {
+    fn from(value: &str) -> Self {
+        let mut map = HashMap::new();
+        for line in value.lines() {
+            let captures = match RE.captures(&line) {
+                None => panic!("cannot parse line"),
+                Some(captures) => captures,
+            };
+
+            let key = captures[1].to_string();
+            let left = captures[2].to_string();
+            let right = captures[3].to_string();
+
+            map.insert(key, (left, right));
+        }
+
+        MapModel {
+            pos: String::from("AAA"),
+            map,
+        }
+    }
+}
+```
+
+We have the base layer of the implementation, let's now define two methods that
+are going to change the `pos` of the state machine by taking the left or right
+path of the graph at the current position.
+
+```rust
+impl MapModel {
+    fn left(&mut self) {
+        let (l, _) = self.map.get(&self.pos).unwrap();
+        self.pos = l.to_owned();
+    }
+
+    fn right(&mut self) {
+        let (_, r) = self.map.get(&self.pos).unwrap();
+        self.pos = r.to_owned();
+    }
+}
+```
+
+We now just have to iterate over the first line instructions until we reach `ZZZ`, here's part 1 solution
+
+```rust
+fn part1(input: &str) -> io::Result<u32> {
+    let (track, map) = input.split_once("\n\n").unwrap();
+    let track: Vec<char> = track.chars().collect();
+    let mut map = MapModel::from(map);
+
+    let mut i = 0;
+    loop {
+        match track[i % track.len()] {
+            'R' => map.right(),
+            'L' => map.left(),
+            _ => panic!("invalid move"),
+        };
+
+        if map.pos == "ZZZ" {
+            return Ok(i as u32 + 1);
+        }
+
+        i += 1;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(
+            2,
+            part1(
+                r"RL
+
+AAA = (BBB, CCC)
+BBB = (DDD, EEE)
+CCC = (ZZZ, GGG)
+DDD = (DDD, DDD)
+EEE = (EEE, EEE)
+GGG = (GGG, GGG)
+ZZZ = (ZZZ, ZZZ)",
+            )
+            .unwrap()
+        )
+    }
+}
+```
+
+And that's it for part 1, pretty straightforward. Let's jump on part 2!
+
+Part 2 states that we now should start simultaneously to every node that ends
+with `A` and we should advance every node following the first line instructions,
+the program should stop when every node that we end up on ends with `Z`.
+
+There's little logic to change from part 1, we can reuse most of it. To find the
+solution to this problem it is obvious that every node has to cycle back at some
+point after reaching the nodes ending with `Z` (you can test this and you'll
+notice if it's not), we therefore have to find the length of each cycle
+and at that point we know that each node is going to end up on nodes ending with
+`Z` at the least common multiple of all those values that we've found.
+
+Let's run 'cargo add lcmx' so that we don't have to code the least common
+multiple function. With that, we can calculate the length of the cycle by
+calculating the total steps moving from the intial node ending with `A` to the
+final node ending with `Z`.
+
+```rust
+fn part2(input: &str) -> io::Result<u64> {
+    let (track, map) = input.split_once("\n\n").unwrap();
+    let track: Vec<char> = track.chars().collect();
+    let mut map = MapModel::from(map);
+
+    let mut starting_pos: Vec<String> = Vec::new();
+    for k in map.map.keys().filter(|x| x.ends_with("A")) {
+        starting_pos.push(k.to_owned());
+    }
+
+    let mut steps: Vec<u64> = Vec::new();
+
+    for sp in starting_pos {
+        map.pos = sp;
+        let mut i = 0;
+        loop {
+            match track[i % track.len()] {
+                'R' => map.right(),
+                'L' => map.left(),
+                _ => panic!("invalid move"),
+            };
+
+            if map.pos.ends_with("Z") {
+                steps.push(i as u64 + 1);
+                break;
+            }
+
+            i += 1;
+        }
+    }
+
+    Ok(lcmx(&steps).unwrap())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(
+            6,
+            part2(
+                r"LR
+
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)",
+            )
+            .unwrap()
+        )
+    }
+}
+```
+
+And that gives us the correct answer. I've spend almost half an hour trying to
+understand why the answer to the problem was wrong and always too low, just to
+find out that `lcmx` overflowed `u32` type, so make sure to use `u64` in this
+case!
