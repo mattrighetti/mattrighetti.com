@@ -1,5 +1,5 @@
 ---
-title: I'm Officially a GSoC 2023 Contributor
+title: Taking Part in GSoC 2023
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 ---
 
