@@ -1,5 +1,5 @@
 ---
-name: SDE Intern
+name: Software Engineer
 company: Amazon
 location: Luxembourg, Luxembourg
 start: Jun 2022
