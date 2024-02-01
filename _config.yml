@@ -20,6 +20,7 @@ collections:
       - tor-project-gsoc2023.adoc
   projects:
     order:
+      - hn-widgets.adoc
       - envelope.adoc
       - network-status-api.adoc
       - ulry.adoc

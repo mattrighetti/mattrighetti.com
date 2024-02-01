@@ -1,0 +1,9 @@
+---
+name: HN Widgets
+started: Dec 2023
+github: https://github.com/mattrighetti/HNWidgets
+---
+
+I've developed HN widgets because I was curious about iOS widgets development,
+plus, some friends gave me the hint that it would be cool to have HN top news on
+a widget, so why not build one?
