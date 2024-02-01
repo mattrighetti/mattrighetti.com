@@ -1,0 +1,12 @@
+---
+name: Core Developer
+company: The Tor Project
+location: Remote
+start: May 2023
+end: Present
+---
+- Currently serving as the main maintainer of the Network Status APIs.
+Continuously improving the web service to replace the existing onionoo protocol,
+providing stakeholders with an efficient and secure means to access
+real-time data on the status of the Tor network and its individual nodes.
+- Implemented the Network Status APIs using the actix_web framework in Rust.
