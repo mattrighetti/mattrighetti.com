@@ -3,7 +3,7 @@ name: Backend Engineer
 company: Anthropos
 location: Lugano, Switzerland
 start: May 2023
-end: Present
+end: Jan 2024
 ---
 - Implemented REST APIs for different Anthropos services, later migrated most of
 the user-facing APIs to GraphQL and internal microservices APIs to RPC
