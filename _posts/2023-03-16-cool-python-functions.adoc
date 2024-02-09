@@ -1,5 +1,5 @@
 ---
-title: Notes on Python 
+title: Cool Python Functions
 show_patreon: true
 ---
 
