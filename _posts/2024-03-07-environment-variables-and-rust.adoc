@@ -140,6 +140,7 @@ Let's get rid of `dotenv` and use `.cargo/config.toml`
 ```shell session
 $ rm .env
 $ cat .cargo/config.toml
+[env]
 DATABASE_URL="postgres://postgres:password@localhost"
 ```
 
