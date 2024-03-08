@@ -1,0 +1,273 @@
+---
+title: Environment Variables & Rust
+show_patreon: false
+---
+
+If you've ever worked on some kind of project you definitley have
+encountered the need to declare some environment variables for it.
+
+Environment variables are an easy way to setup essential parameters
+that your program is going to use at runtime, i.e database URL, tracing level,
+production or local environment.
+
+In Rust you have multiple ways to make use of them
+
+```rust
+use axum::{response::Html, routing::get, Router};
+
+#[tokio::main]
+async fn main() {
+    // let's get our database
+    let db_connection_str = std::env::var("DATABASE_URL")
+        .expect("cannot find DATABASE_URL env");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&db_connection_str)
+        .await
+        .expect("can't connect to database");
+
+    let app = Router::new().route("/", get(handler)).with_state(pool);
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
+    println!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn handler() -> Html<&'static str> {
+    Html("<h1>Hello, World!</h1>")
+}
+```
+
+With the example above, the program expects to find `DATABASE_URL` in the process environment variables.
+To make it work you'd have to run
+
+```shell session
+$ export DATABASE_URL="postgres://postgres:password@localhost"
+$ cargo run
+```
+
+Or you could use a simple one liner
+
+```shell session
+DATABASE_URL="postgres://postgres:password@localhost" cargo run
+```
+
+Both of these will run the program okay, but there are some issues you might want to look out for:
+
+1. The command/s above are now stored in your `~/.[zsh|bash|fish]_history` file
+   now, in plaintext, and that's bad, especially when you type out the
+   production database password
+2. You have to type that everytime you are in a new shell session, that's
+   especially bad if you have a terrible shell config without autocompletion and
+   suggestions (please, do yourself a favor and fix that)
+
+[chat, matt]
+--
+Come on... everybody uses .env files nowadays!
+--
+
+I know, I know, you already know all that, it's basic software dev stuff after all.
+
+In order to not leak sensitive data, we can use a
+`.env` file in the project's folder (I'll talk about how I F-up with those
+files one day). There's a pretty common crate in Rust to read environment variables
+at runtime and that's https://github.com/dotenv-rs/dotenv/tree/master[`dotenv`].
+
+
+`dotenv` will check if you have a `.env` file in your project's folder and
+_load_ the env variables in there for you. Here's how the whole thing would look like:
+
+```shell session
+$ cat .env
+DATABASE_URL="postgres://postgres:password@localhost"
+```
+
+```rust
+use dotenv::dotenv;
+use axum::{response::Html, routing::get, Router};
+
+#[tokio::main]
+async fn main() {
+    // load environments from .env
+    dotenv().ok();
+
+    // let's get our database
+    let db_connection_str = std::env::var("DATABASE_URL")
+        .expect("cannot find DATABASE_URL env");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&db_connection_str)
+        .await
+        .expect("can't connect to database");
+
+    let app = Router::new().route("/", get(handler)).with_state(pool);
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
+    println!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn handler() -> Html<&'static str> {
+    Html("<h1>Hello, World!</h1>")
+}
+```
+
+I see `dotenv` used all over the place, but there's another way to achieve the
+same without the `.env` file.
+
+Since Cargo 1.56 you can use https://doc.rust-lang.org/nightly/cargo/reference/config.html#env[configurable-env]
+
+[quote]
+--
+The [env] section allows you to set additional environment variables for build
+scripts, rustc invocations, cargo run and cargo build.
+--
+
+I prefer this method to the `dotenv` one because it does pretty much the same
+and the environment variables are set by `cargo` itself instead of the program
+runtime. Also, most of my deployments don't have a `.env` file to parse, but I
+just set environment variables in the container itself or in the parent process
+and this approach better simulates that kind of setup.
+
+Let's get rid of `dotenv` and use `.cargo/config.toml`
+
+```shell session
+$ rm .env
+$ cat .cargo/config.toml
+DATABASE_URL="postgres://postgres:password@localhost"
+```
+
+```rust
+use axum::{response::Html, routing::get, Router};
+
+#[tokio::main]
+async fn main() {
+    // it's the same as the first iteration, if you don't find
+    // differences it's because there's none :)
+
+    // let's get our database
+    let db_connection_str = std::env::var("DATABASE_URL")
+        .expect("cannot find DATABASE_URL env");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&db_connection_str)
+        .await
+        .expect("can't connect to database");
+
+    let app = Router::new().route("/", get(handler)).with_state(pool);
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
+    println!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn handler() -> Html<&'static str> {
+    Html("<h1>Hello, World!</h1>")
+}
+```
+
+Much neater, and we removed a crate from the project dependencies. But we're not
+done yet, there's another scenario that we've not yet talked about.
+
+Up until now we've only covered environment variables that won't change
+frequently, that is the reason why we can easily create a file and write them
+there and we'd be okay forever. What if we need environment variables that need
+to change very frequently? Or that depend on complex logic? Or some command?
+
+It's common in a lot of open source programs to see their commit hash somewhere
+to indicate that the version that you're currently using is the one that has
+that HEAD commit. How would you do that in Rust?
+
+Well, turns out that it's easily achievable with the `build.rs` file.
+
+[quote]
+--
+Placing a file named build.rs in the root of a package will cause Cargo to
+compile that script and execute it just before building the package.
+--
+
+Within `build.rs` we can provide whatever environment variable we want to
+the `rustc` compiler by using `println!("cargo:rustc-env=...")`, that way we can
+expose that value into our project at compiletime.
+
+```rust
+// [build.rs]
+fn main() {
+    set_revision_hash();
+}
+
+// pass the result of `git rev-parse --short=10 HEAD` to rustc
+fn set_revision_hash() {
+    use std::process::Command;
+
+    let args = &["rev-parse", "--short=10", "HEAD"];
+    let Ok(output) = Command::new("git").args(args).output() else {
+        return;
+    };
+
+    let rev = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if rev.is_empty() {
+        return;
+    }
+
+    println!("cargo:rustc-env=BUILD_GIT_HASH={}", rev);
+}
+```
+
+With that in place we can make use `BUILD_GIT_HASH` in our program
+
+```rust
+use axum::{response::Html, routing::get, Router};
+
+#[tokio::main]
+async fn main() {
+    // let's get our database
+    let db_connection_str = std::env::var("DATABASE_URL")
+        .expect("cannot find DATABASE_URL env");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&db_connection_str)
+        .await
+        .expect("can't connect to database");
+
+    let app = Router::new()
+        .route("/", get(handler))
+        // here we can now take that environment
+        // at compiletime with env!()
+        .route("/_meta", get(|| async { env!("BUILD_GIT_HASH") }))
+        .with_state(pool);
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
+
+    println!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn handler() -> Html<&'static str> {
+    Html("<h1>Welcome!</h1>")
+}
+```
+
+Notice that this time I've used the `env!` macro, which takes environment
+variables at *compiletime* and not at *runtime*, big difference there!
+
+I'm sure there are other infinite ways to do what I've explained above, but
+these are the ones that I've seen used the most.
+
+To be fair, I've been a `dotenv` guy for quite some time when I first started
+with Rust, but I've discovered the `.cargo/config.toml` alternative recently
+even though it's been around for a long time, so I hope it's something new for
+you too.
