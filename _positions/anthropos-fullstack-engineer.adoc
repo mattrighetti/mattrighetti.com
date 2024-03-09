@@ -6,15 +6,15 @@ start: May 2023
 end: Jan 2024
 ---
 - Implemented REST APIs for different Anthropos services, later migrated most of
-the user-facing APIs to GraphQL and internal microservices APIs to RPC
+  the user-facing APIs to GraphQL and internal microservices APIs to RPC
 - Improved and worked on Anthropos microservices that were responsible for job
-simulations orchestrated with AI, implemented GraphQL servers for each
-microservice and bridged their features with the pre-existing RPC APIs
+  simulations orchestrated with AI, implemented GraphQL servers for each
+  microservice and bridged their features with the pre-existing RPC APIs
 - Integrated Stripe’s payment processing capabilities with our backend
-infrastructure
+  infrastructure
 - Setup Apollo Router using graph federation, established a standardized way to
-version and deploy supergraph when microservices changed their GraphQL schema
+  version and deploy supergraph when microservices changed their GraphQL schema
 - Lead development of the Anthropos iOS application
 - Redesigned and enhanced form data parsing and autofill capabilities of the
-Anthropos Chrome Extension using React. Improved user experience and made it
-easier for customers to efficiently manage and automate job applications
+  Anthropos Chrome Extension using React. Improved user experience and made it
+  easier for customers to efficiently manage and automate job applications

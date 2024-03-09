@@ -10,8 +10,7 @@ end: Nov 2022
   interactions that other teams had with our service, making it faster, more
   efficient and available 24/7.
 - Designed and developed a web application to showcase our team's APIs and
-  services which made the onboarding process for stakeholders incredibly smooth
-  and valuable.
+  services to easily onboard new users.
 - Deployed and maintained OSRM service to support team services that needed to
   scale and had internal API limitations.
 - Data pipelines management and data manipulation with Apache Airflow, AWS Glue
