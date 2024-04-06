@@ -11,6 +11,7 @@ host: 0.0.0.0
 collections:
   positions:
     order:
+      - cloudflare-systems-engineer.adoc
       - tor-core-dev.adoc
       - anthropos-fullstack-engineer.adoc
       - amazon-sde-intern.adoc
