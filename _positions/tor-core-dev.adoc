@@ -5,9 +5,6 @@ location: Remote
 start: May 2023
 end: Present
 ---
-- Currently serving as the main maintainer of the Network Status APIs,
-  continuously improving the web service to replace the existing onionoo protocol,
-  providing an efficient and secure way to access real-time data on the status of
-  the Tor network and its individual nodes.
+- Currently I am the main maintainer of the https://gitlab.torproject.org/tpo/network-health/metrics/networkstatusapi[Network Status APIs]
 - Implemented the Network Status APIs using the actix_web framework
   in Rust.
