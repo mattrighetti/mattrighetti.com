@@ -20,7 +20,11 @@ download it in [.pdf](https://mattrighetti.com/resume.pdf)" %}
     <h2 id="professional-experience">Professional Experience</h2>
     <div class="positions-container">
     {% for position in site.positions %}
+        {% if position.end == "Present" %}
+        <div class="position current">
+        {% else %}
         <div class="position">
+        {% endif %}
             <h3>{{ position.name }}</h3>
             <h4>{{ position.company }}</h4>
             <span class="icon"><i class="fa fa-calendar" title="Started"></i>{{ position.start }} - {{ position.end }}</span><br>

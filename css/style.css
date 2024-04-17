@@ -436,10 +436,14 @@ main {
     width: 10px;
     height: 10px;
     left: -1.6px;
-    top: 11px;
+    top: 10px;
     background-color: var(--timeline-color);
     border-radius: 50%;
     z-index: 1;
+}
+
+.position.current::after {
+    background-color: var(--post-text-color);
 }
 
 .position h3 {
@@ -464,6 +468,7 @@ main {
 .position p {
     color: var(--secondary-text-color);
     margin-top: 0;
+    margin-bottom: 12px;
 }
 
 .position ul {
