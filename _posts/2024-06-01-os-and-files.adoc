@@ -1,0 +1,276 @@
+---
+title: "Files and the OS"
+show_patreon: false
+---
+
+The other day I working on a side project of mine and I stumbled upon a bug in
+my code that I couldn't immediately figure out how to solve.
+
+The task is pretty simple:
+1. Create a file with some text in it
+2. Spawn whatever editor you want to work with the file
+3. Read all the file and return its content
+
+This is a very similar process that `git` runs whenever you want to commit
+something
+
+```rust
+pub fn spawn_with(data: &[u8]) -> Result<Vec<u8>> {
+    let editor = editor_cmd();
+    let pb = env::current_dir()?.join(".ENVELOPE_EDITMSG");
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .read(true)
+        .create(true)
+        .truncate(true)
+        .open(&pb)?;
+
+    file.write_all(data)
+	    .map_err(|e| std_err!("error writing data to file: {}", e))?;
+    file.write(b"\n\n# Comment variables to remove them")?;
+
+    let args = &[pb.to_str().unwrap()];
+    let cmd = ChildProcess::new(&editor, args, &[]);
+
+    // this command is blocking, so it's going to wait
+    // for the child process to exit before proceeding
+    cmd.run_shell_command()
+        .map_err(|e| std_err!("error running child process: {}", e))?;
+
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf).unwrap();
+
+    std::fs::remove_file(pb)?;
+    Ok(buf)
+}
+```
+
+[chat,matt]
+--
+Can you spot the issue? Well, I couldn't at first and the lack of tests sure
+didn't help.
+--
+
+Let's print some stuff and see where we end up
+
+```rust
+pub fn spawn_with(data: &[u8]) -> Result<Vec<u8>> {
+    // ...
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .read(true)
+        .create(true)
+        .truncate(true)
+        .open(&pb)?;
+
+	println!("{:?}", file);
+
+    // ...
+
+    Ok(buf)
+}
+```
+
+```output
+File { fd: 7, path: "/home/matt/Developer/envelope/.ENVELOPE_EDITMSG", read: true, write: true }
+```
+
+My editor opens the file correctly and I can see all the data that I wanted in
+it. That part of the process looks okay so far. I am still getting an empty
+buffer out of this function though, why is that?
+
+The answer lies in how Unix systems (in my case) handle files.
+
+Unix systems have a system-wide *open file table* that keeps track of numerous
+info about files opened by processes, like: current offset, underlying inode, if
+the file is either readable, writeable or both etc.
+
+Whenever a process opens a file, the operating system will return a *file
+descriptor* to the process, which is going to later be used to refer to a
+specific file in the *open file table* of the OS. The `fd` (file descriptor)
+field in the https://doc.rust-lang.org/std/fs/struct.File.html[`File`]
+struct above refers to exactly that.
+
+The https://linux.die.net/man/2/open[`open`] syscall is the one responsible
+for creating a new file descriptor in the system-wide OFT and returning its
+values to the process so that operations can be made on it. Here is its
+signature
+
+```c
+int open(const char *pathname, int flags, mode_t mode);
+```
+
+When the process obtains the file descriptor, it can read and write to it
+(granted it has permissions to do so), and guess what, `read` and `write`
+syscalls are made just for that. This are their signatures
+
+```c
+ssize_t read(int fd, void *buf, size_t count);
+
+ssize_t write(int fd, const void *buf, size_t count);
+```
+
+Both of them take a file descriptor as first argument, that's the `int` value
+returned by the `open` syscall. They both take a `size_t count` as last argument
+which tells the size in bytes that the function should read/write. The middle
+argument is in both cases a pointer to a buffer that tells where bytes should be
+taken from/placed in.
+
+We're now missing a piece of the puzzle to completely understand how this all
+comes together: the file's _current offset_.
+
+The _current offset_ is used by the OS to keep track of where the next read or
+write will begin reading from or writing to within the file.
+
+We humans do pretty much the same thing when we are reading or writing
+something. Think about it, when you are reading a 800 pages long book you may
+start reading the first 60 pages in a single day and then you bookmark that page
+so that when you come back to it later you know exactly where you previously
+left off. Something similar happens when you are writing an essay, you continue
+on the same line, word after word, character after character.
+
+Operating Systems work very similarly in this case and they use the file's
+current offset to do just that. Each time a file gets created in the OFT with
+the `open` syscall, its current offset is set to 0. Each `write` and `read`
+operation is going to increment that current offset value by `size_t count`
+implicitly.
+
+We can see this in action by using the `strace` tool to inspect all the syscalls
+invoked by the process:
+
+```shell session
+$ strace -e trace=open,openat,write,read,close,lseek target/debug/run_function
+```
+
+And this is the output that I get
+
+```shell session
+...
+openat(AT_FDCWD, "/tmp/ENVELOPE_EDITMSG", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+write(7, "\n\n# Comment variables to remove "..., 36) = 36
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=28814, si_uid=1000, si_status=0, si_utime=1, si_stime=0} ---
+lseek(7, 0, SEEK_CUR)                   = 36
+read(7, "\n", 8)                        = 1
+read(7, "", 7)                          = 0
+close(7)                                = 0
+...
+```
+
+[chat,matt]
+--
+For simplicity, you can interpret `openat` as `open` in this case, they are very
+similar.
+--
+
+This is exactly what we expected to get, right? The `openat` syscall created the
+file with the directives `O_RDWR` (read and write), `O_CREAT` (create),
+`O_TRUNC` (trucate), `O_CLOEXEC` (close, eventually) and it returns the
+file descriptor value of 7. The function then writes the string (buffer)
+which is 36 bytes in size to the file descriptor 7. Finally, it calls `read`
+twice, initially it tries to read 8 bytes from file descriptor 7 and `"\n"` is
+what's been able read, the second one tries to read up to 7 bytes but
+there's nothing left to read, so the buffer returned is empty.
+
+See that `lseek` function before the `read`? That is the syscall to *explicitly*
+position the current offset of the file descriptor. Here's the signature
+
+```c
+off_t lseek(int fd, off_t offset, int whence);
+```
+
+As usual, the first arg is the file descriptor. The second arg is the file
+offset, which positions the current offset to a particular location within the
+file. The last arg determines how the seek is performed and it has 3 different
+possible values:
+
+. `SEEK_CUR`: the offset is set to its current location + offset bytes.
+. `SEEK_SET`: the offset is set to offset bytes.
+. `SEEK_END`: the offset is set to the file size + offset bytes.
+
+Therefore, `lseek(7, 0, SEEK_CUR) = 36` positions the offset to current location
++ 0 bytes (which was 36 bytes after the first write).
+
+It is clear now why the original function that I wrote returned an empty buffer,
+   here's what happens:
+
+. The file is opened with current offset set to 0
+. I write a bunch of data to the file itself and the current offset is set to
+  the number of bytes that I write to the file
+. Lastly, when I call `read_to_end`, nothing gets read because there is
+  nothing to read since the current offset already is set to the end of the file
+
+I was mislead by the `read_to_end` documentation which tells us that
+
+[quote]
+--
+Read all bytes until EOF in this source, placing them into `buf`.
+--
+
+Now we know that it's going to read all bytes *starting from the current offset*
+until EOF.
+
+Let's move on to the solution, which is trivial at this point. We have two
+different options:
+
+Since `File` implements the
+https://doc.rust-lang.org/std/io/trait.Seek.html[`Seek`] trait, we can
+explicitly reposition the current offset of the file descriptor to the beginning
+of the file just before calling `read_to_end`, the following would be the same
+as calling `lseek(7, 0, SEEK_SET)`.
+
+```rust
+pub fn spawn_with(data: &[u8]) -> Result<Vec<u8>> {
+    // ...
+
+    cmd.run_shell_command()
+        .map_err(|e| std_err!("error running child process: {}", e))?;
+
+    // Reposition the offset at the start of the file
+    file.seek(SeekFrom::Start(0)).unwrap();
+
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf).unwrap();
+
+    // ...
+}
+```
+
+We know that each time a file is opened, its current offset is set to 0 by
+default, so the other option would be to re-open the file before calling
+`read_to_end`
+
+```rust
+pub fn spawn_with(data: &[u8]) -> Result<Vec<u8>> {
+    // ...
+
+    cmd.run_shell_command()
+        .map_err(|e| std_err!("error running child process: {}", e))?;
+
+    let file = OpenOptions::new()
+        .read(true)
+        .open(&pb)?;
+
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf).unwrap();
+
+    // ...
+}
+```
+
+This time, since we just need to read the file, we can just open the file with
+read-only permissions.
+
+These solutions both solve my initial problem.
+
+If I was in a performance critical environment and I'd have to choose between
+the two I would go the first one because `lseek` is a much cheaper syscall than
+`open` for obvious reasons.
+
+[chat, matt]
+--
+EDIT: Repositioning the current offset does not behave as expected on macOS, maybe
+I'll try and investigate why on a later post, but for the moment it seems like I'm stuck
+with re-opening the file if I want this to work as expected across Linux and macOS.
+--
