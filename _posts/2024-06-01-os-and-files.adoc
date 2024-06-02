@@ -248,7 +248,7 @@ pub fn spawn_with(data: &[u8]) -> Result<Vec<u8>> {
     cmd.run_shell_command()
         .map_err(|e| std_err!("error running child process: {}", e))?;
 
-    let file = OpenOptions::new()
+    let mut file = OpenOptions::new()
         .read(true)
         .open(&pb)?;
 
