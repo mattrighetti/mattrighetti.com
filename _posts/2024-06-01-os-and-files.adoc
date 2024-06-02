@@ -7,9 +7,10 @@ The other day I working on a side project of mine and I stumbled upon a bug in
 my code that I couldn't immediately figure out how to solve.
 
 The task is pretty simple:
-1. Create a file with some text in it
-2. Spawn whatever editor you want to work with the file
-3. Read all the file and return its content
+
+. Create a file with some text in it
+. Spawn whatever editor you want to work with the file
+. Read all the file and return its content
 
 This is a very similar process that `git` runs whenever you want to commit
 something
