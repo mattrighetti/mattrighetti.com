@@ -5,3 +5,5 @@ location: London, United Kingdom
 start: Jul 2024
 end: Present
 ---
+
+API Shield - Fighting bots and protecting APIs
