@@ -148,7 +148,7 @@ nav {
 }
 
 nav .-title {
-    flex-grow: 2;
+    flex-grow: 1;
 }
 
 nav .-title #name {
@@ -162,6 +162,7 @@ nav .-title #icon {
 }
 
 nav .-title .logo {
+
     display: flex;
 }
 
@@ -593,4 +594,9 @@ main {
 
 .patreon-block a {
     color: #181818;
+}
+
+.timeline .tweet {
+    border-top: #372f2f 1px solid;
+    padding-top: 5px;
 }
