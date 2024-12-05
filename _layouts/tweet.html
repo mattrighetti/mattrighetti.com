@@ -1,0 +1,44 @@
+---
+layout: default
+---
+
+<h2>{{ page.title }}</h2>
+
+{{ page.content }}
+
+{% capture base_path %}{{ page.path | split: '/' | slice: -2, 1 }}{% endcapture %}
+{% assign thread = site.shorts | where_exp: "tweet", "tweet.path contains base_path" %}
+{% if thread.size > 1 %}
+    <div class="timeline">
+        {% for tweet in thread %}
+            {% if tweet.path != page.path %}
+            <div class="tweet">
+                <span class="post-meta">{{ tweet.date | date: "%b %-d %-Y" }}</span>
+                <p>{{ tweet.content }}</p>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script>
+    function renderCodeTags() {
+        const codeblocks = document.querySelectorAll('.listingblock>.content>.highlight');
+
+        for (let i = 0; i < codeblocks.length; i++) {
+            let cNode = codeblocks[i].firstChild;
+            let lang = cNode.getAttribute("data-lang");
+
+            let newNode = document.createElement("div");
+            newNode.className = "lang-tag";
+            newNode.innerHTML += lang;
+
+            codeblocks[i].insertBefore(newNode, cNode);
+        }
+    }
+
+    renderCodeTags()
+</script>
