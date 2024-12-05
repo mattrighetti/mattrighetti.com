@@ -1,0 +1,13 @@
+---
+layout: default
+title: "Shorts"
+---
+
+{% for tweet in site.shorts %}
+    {% capture base_path %}{{ tweet.path | split: '/' | slice: -2, 1 }}{% endcapture %}
+    {% if base_path == '_shorts' or tweet.op %}
+        <h2>{{ tweet.title }}</h2>
+        {{tweet.content}}
+        {% if base_path != '_shorts' %}<a href="{{tweet.url}}">Read more</a>{% endif %}
+    {% endif %}
+{% endfor %}
