@@ -1,18 +1,27 @@
 ---
 layout: default
 ---
+
 <ul class="post-list">
-    {% for post in site.posts %}
+    {% assign combined = site.posts | concat: site.threads %}
+    {% assign sorted_combined = combined | sort: 'date' | reverse %}
+
+    {% for post in sorted_combined %}
         {% if post.hidden == null or post.hidden == false %}
             {% assign currentdate = post.date | date: "%Y" %}
             {% if currentdate != date %}
                 <li id="year">{{ currentdate }}</li>
-            {% assign date = currentdate %}
+                {% assign date = currentdate %}
             {% endif %}
             <li>
-                <span class="post-meta">{{ post.date | date: "%B %-d" }}</span>
+                <div class="post-meta">
+                    <span class="post-meta-date">{{ post.date | date: "%B %-d" }}</span>
+                    {% if post.path contains "_threads" %}
+                    <span class="post-meta-badge">Thread</span>
+                    {% endif %}
+                </div>
                 <h2>
-                    <a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+                    <a href="{{ post.url | append: '#' | append: post.slug }}">{{ post.title }}</a>
                 </h2>
             </li>
         {% endif %}

@@ -2,7 +2,7 @@ title: mattrighetti
 description: Just another programming blog
 baseurl: ""
 url: "https://mattrighetti.com"
-github_username:  mattrighetti
+github_username: mattrighetti
 
 author: Mattia Righetti
 
@@ -30,6 +30,9 @@ collections:
       - chmod-util.adoc
       - group-activity-telegram-bot.adoc
       - lode.adoc
+  threads:
+    output: true
+    permalink: /threads/:path/
 
 plugins:
   - jekyll-asciidoc

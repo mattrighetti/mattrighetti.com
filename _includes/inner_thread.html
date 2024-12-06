@@ -1,0 +1,10 @@
+{% capture base_path %}{{ page.path | split: '/' | slice: -2, 1 }}{% endcapture %}
+{% assign thread = site.theads | where_exp: "tweet", "tweet.path contains base_path" %}
+{% if thread.size > 1 %}
+    {% for tweet in thread %}
+    <div class="tweet">
+        {% if tweet.path == page.path %}<h2>{{ tweet.title }}</h2>{% endif %}
+        <p>{{ tweet.content }}</p>
+    </div>
+    {% endfor %}
+{% endif %}

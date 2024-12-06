@@ -1,0 +1,40 @@
+---
+layout: default
+---
+
+{% capture base_path %}{{ page.path | split: '/' | slice: -2, 1 }}{% endcapture %}
+{% assign thread = site.threads | where_exp: "thread", "thread.path contains base_path" %}
+{% assign ordered_threads = thread | sort: 'date' %}
+{% if ordered_threads.size > 1 %}
+    <div class="threads">
+        {% for thread in ordered_threads %}
+            <div class="thread" id="{{thread.slug}}">
+                <h3>{{thread.title}}</h3>
+                <span class="date">{{ thread.date | date: "%b %-d %-Y" }}</span>
+                <p>{{ thread.content }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script>
+    function renderCodeTags() {
+        const codeblocks = document.querySelectorAll('.listingblock>.content>.highlight');
+
+        for (let i = 0; i < codeblocks.length; i++) {
+            let cNode = codeblocks[i].firstChild;
+            let lang = cNode.getAttribute("data-lang");
+
+            let newNode = document.createElement("div");
+            newNode.className = "lang-tag";
+            newNode.innerHTML += lang;
+
+            codeblocks[i].insertBefore(newNode, cNode);
+        }
+    }
+
+    renderCodeTags()
+</script>
