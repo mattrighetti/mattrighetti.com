@@ -36,6 +36,9 @@
     --inline-code-bg-color: #f8f8f8;
     --inline-code-border-color: #dbdada;
 
+    --post-meta-badge-text: #ffffff;
+    --post-meta-badge-background: #d7d7d7;
+
     --dialog-professor-bg-color: 102, 204, 153;
     --dialog-cop-bg-color: 255, 205, 2;
     --dialog-matt-bg-color: 227, 227, 227;
@@ -68,6 +71,9 @@
     --inline-code-text-color: #d2c5a5;
     --inline-code-bg-color: #282828;
     --inline-code-border-color: #383838;
+
+    --post-meta-badge-text: #858585;
+    --post-meta-badge-background: #3a3a3a;
 
     --dialog-professor-bg-color: 132, 194, 113;
     --dialog-cop-bg-color: 255, 205, 2;
@@ -260,8 +266,25 @@ article h1 {
 }
 
 .post-meta {
+    display: flex;
+    flex: content;
+    align-items: center;
+    padding: 5px 0px;
+    gap: 7px;
+}
+
+.post-meta-date {
     color: var(--secondary-text-color);
     font-size: .8em;
+}
+
+.post-meta-badge {
+    color: var(--post-meta-badge-text);
+    border-radius: 5px;
+    padding: 0px 4px;
+    background-color: var(--post-meta-badge-background);
+    font-size: .7em;
+    font-weight: 800;
 }
 
 .avatar>img {
@@ -596,7 +619,17 @@ main {
     color: #181818;
 }
 
-.timeline .tweet {
-    border-top: #372f2f 1px solid;
+.threads .thread:nth-child(n+2) {
+    border-top: #372f2f 2px solid;
     padding-top: 5px;
+}
+
+.thread h3 {
+    margin: 0px;
+    padding: 10px 0px 0px 0px;
+}
+
+.thread .date {
+    font-size: .84em;
+    color: gray;
 }

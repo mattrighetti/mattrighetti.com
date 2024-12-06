@@ -1,5 +1,5 @@
 {% capture base_path %}{{ page.path | split: '/' | slice: -2, 1 }}{% endcapture %}
-{% assign thread = site.shorts | where_exp: "tweet", "tweet.path contains base_path" %}
+{% assign thread = site.theads | where_exp: "tweet", "tweet.path contains base_path" %}
 {% if thread.size > 1 %}
     {% for tweet in thread %}
     <div class="tweet">

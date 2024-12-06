@@ -2,21 +2,17 @@
 layout: default
 ---
 
-<h2>{{ page.title }}</h2>
-
-{{ page.content }}
-
 {% capture base_path %}{{ page.path | split: '/' | slice: -2, 1 }}{% endcapture %}
-{% assign thread = site.shorts | where_exp: "tweet", "tweet.path contains base_path" %}
-{% if thread.size > 1 %}
-    <div class="timeline">
-        {% for tweet in thread %}
-            {% if tweet.path != page.path %}
-            <div class="tweet">
-                <span class="post-meta">{{ tweet.date | date: "%b %-d %-Y" }}</span>
-                <p>{{ tweet.content }}</p>
+{% assign thread = site.threads | where_exp: "thread", "thread.path contains base_path" %}
+{% assign ordered_threads = thread | sort: 'date' %}
+{% if ordered_threads.size > 1 %}
+    <div class="threads">
+        {% for thread in ordered_threads %}
+            <div class="thread" id="{{thread.slug}}">
+                <h3>{{thread.title}}</h3>
+                <span class="date">{{ thread.date | date: "%b %-d %-Y" }}</span>
+                <p>{{ thread.content }}</p>
             </div>
-            {% endif %}
         {% endfor %}
     </div>
 {% endif %}

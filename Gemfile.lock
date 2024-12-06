@@ -12,6 +12,7 @@ GEM
     eventmachine (1.2.7)
     ffi (1.16.2)
     forwardable-extended (2.6.0)
+    google-protobuf (3.25.3-aarch64-linux)
     google-protobuf (3.25.3-arm64-darwin)
     http_parser.rb (0.8.0)
     i18n (1.14.1)
@@ -61,6 +62,8 @@ GEM
     rexml (3.2.6)
     rouge (3.30.0)
     safe_yaml (1.0.5)
+    sass-embedded (1.58.3-aarch64-linux-gnu)
+      google-protobuf (~> 3.21)
     sass-embedded (1.58.3-arm64-darwin)
       google-protobuf (~> 3.21)
     terminal-table (3.0.2)
@@ -69,6 +72,7 @@ GEM
     webrick (1.8.1)
 
 PLATFORMS
+  aarch64-linux
   arm64-darwin-23
 
 DEPENDENCIES
