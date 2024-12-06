@@ -2,6 +2,7 @@
 title: "Why Askama?"
 layout: thread
 date: 2024-12-06
+permalink: "/threads/axum-askama-htmx"
 ---
 
 Askama implements a template rendering engine based on Jinja. It generates Rust

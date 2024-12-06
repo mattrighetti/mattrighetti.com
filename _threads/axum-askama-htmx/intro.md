@@ -3,6 +3,7 @@ title: "Axum, Askama, HTMX"
 layout: thread
 date: 2024-12-05
 op: true
+permalink: "/threads/axum-askama-htmx"
 ---
 
 Lately I've been working on [Ulry][0], after tiressly trying to make Next.js
