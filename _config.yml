@@ -37,7 +37,6 @@ collections:
 plugins:
   - jekyll-asciidoc
   - jekyll-redirect-from
-  - jekyll-feed
 
 asciidoctor:
   attributes:
