@@ -1,5 +1,8 @@
 ---
 title: Advent of Code 2023 - Day 6
+serie:
+  name: "AoC 2023"
+  url: advent-of-code-2023
 ---
 
 I am happy to tell that https://adventofcode.com/2023/day/6[Day 6] was indeed

@@ -2,6 +2,9 @@
 title: "GSoC 2023: Wrap-up"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
+serie:
+  name: "GSoC 2023"
+  url: gsoc-2023
 ---
 
 It's been a while since my last GSoC project status update, but after almost 3

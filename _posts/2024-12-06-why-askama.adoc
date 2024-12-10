@@ -1,8 +1,8 @@
 ---
 title: "Why Askama?"
-layout: thread
-date: 2024-12-06
-permalink: "/threads/axum-askama-htmx"
+serie:
+  url: "rust-ssr-stack"
+  name: "Rust SSR Stack"
 ---
 
 Askama implements a template rendering engine based on Jinja. It generates Rust
@@ -12,7 +12,6 @@ the template's context.
 This was very appealing from the very first moment. You can keep all your
 templates in your root folder, for example `templates/home.jinja`.
 
-{% raw %}
 ```jinja
 {% block content %}
     <h1>Hello, {{email}}</h1>
@@ -22,7 +21,6 @@ templates in your root folder, for example `templates/home.jinja`.
     {% endif %} 
 {% endblock %}
 ```
-{% endraw %}
 
 And then you can use your template with a struct in your project
 
@@ -42,7 +40,6 @@ pub struct HomeTemplate {
 What's really cool is that you can even use rust syntax inside of templates
 
 
-{% raw %}
 ```jinja
 {% block content %}
     {% if let Some(name) = name %}
@@ -52,4 +49,3 @@ What's really cool is that you can even use rust syntax inside of templates
     {% endif %}
 {% endblock %}
 ```
-{% endraw %}

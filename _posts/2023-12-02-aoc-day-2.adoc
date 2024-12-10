@@ -1,5 +1,8 @@
 ---
 title: Advent of Code 2023 - Day 2
+serie:
+  name: "AoC 2023"
+  url: advent-of-code-2023
 ---
 
 Ready for https://adventofcode.com/2023/day2[Day 2]? Let's jump right into it.

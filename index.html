@@ -3,10 +3,7 @@ layout: default
 ---
 
 <ul class="post-list">
-    {% assign combined = site.posts | concat: site.threads %}
-    {% assign sorted_combined = combined | sort: 'date' | reverse %}
-
-    {% for post in sorted_combined %}
+    {% for post in site.posts %}
         {% if post.hidden == null or post.hidden == false %}
             {% assign currentdate = post.date | date: "%Y" %}
             {% if currentdate != date %}
@@ -16,12 +13,12 @@ layout: default
             <li>
                 <div class="post-meta">
                     <span class="post-meta-date">{{ post.date | date: "%B %-d" }}</span>
-                    {% if post.path contains "_threads" %}
-                    <span class="post-meta-badge">Thread</span>
+                    {% if post.serie %}
+                    <span class="post-meta-badge">{{ post.serie.name }}</span>
                     {% endif %}
                 </div>
                 <h2>
-                    <a href="{{ post.url | append: '#' | append: post.slug }}">{{ post.title }}</a>
+                    <a href="{{ post.url }}">{{ post.title }}</a>
                 </h2>
             </li>
         {% endif %}

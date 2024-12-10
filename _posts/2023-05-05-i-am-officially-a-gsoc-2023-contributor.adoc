@@ -1,6 +1,9 @@
 ---
 title: Taking Part in GSoC 2023
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
+serie:
+  name: "GSoC 2023"
+  url: gsoc-2023
 ---
 
 I'm super excited to annouce that my proposal for

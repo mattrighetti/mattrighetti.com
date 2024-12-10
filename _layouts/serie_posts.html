@@ -1,0 +1,18 @@
+---
+layout: default
+---
+
+<ul class="post-list">
+    <li id="year">{{page.serie_name}}</li>
+    {% assign serie_posts = site.posts | where_exp: "post", "post.serie.url == page.serie_url" | sort: "date" %}
+    {% for post in serie_posts %}
+      <li>
+          <div class="post-meta">
+              <span class="post-meta-date">{{ post.date | date: "%B %-d" }}</span>
+          </div>
+          <h2>
+              <a href="{{ post.url }}">{{ post.title }}</a>
+          </h2>
+      </li>
+    {% endfor %}
+</ul>
