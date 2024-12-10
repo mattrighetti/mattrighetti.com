@@ -619,17 +619,12 @@ main {
     color: #181818;
 }
 
-.threads .thread:nth-child(n+2) {
-    border-top: #372f2f 2px solid;
-    padding-top: 5px;
-}
-
-.thread h3 {
-    margin: 0px;
-    padding: 10px 0px 0px 0px;
-}
-
-.thread .date {
-    font-size: .84em;
-    color: gray;
+.serie-badge {
+    padding: 10px;
+    border-radius: 8px;
+    display: inline;
+    font-size: medium;
+    font-weight: bold;
+    text-decoration: underline;
+    color: #6c95bd;
 }

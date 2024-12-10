@@ -3,11 +3,11 @@ layout: default
 ---
 <article>
   <h1>{{ page.title }}</h1>
-  {% if page.series %}
-  <h3>Serie: {{page.series.name}}</h3>
-  {% endif %}
   <div class="post-meta sect1">
     {{ page.date | date: "%b %-d, %Y" }}
+    {% if page.serie %}
+      <a class="serie-badge" href="/series/{{page.serie.url}}">Serie: {{page.serie.name}}</a>
+    {% endif %}
   </div>
   {% if page.hn %}<div class="discuss-on-hn"><a href="https://news.ycombinator.com/item?id={{ page.hn }}">Discuss on HN</a></div>{% endif %}
   {{ content }}
