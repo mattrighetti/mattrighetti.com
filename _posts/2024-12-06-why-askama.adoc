@@ -1,8 +1,8 @@
 ---
 title: "Why Askama?"
-layout: thread
-date: 2024-12-06
-permalink: "/threads/axum-askama-htmx"
+serie:
+  url: "rust-ssr-stack"
+  name: "Rust SSR Stack"
 ---
 
 Askama implements a template rendering engine based on Jinja. It generates Rust

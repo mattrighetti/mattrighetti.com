@@ -30,9 +30,6 @@ collections:
       - chmod-util.adoc
       - group-activity-telegram-bot.adoc
       - lode.adoc
-  threads:
-    output: true
-    permalink: /threads/:path/
 
 plugins:
   - jekyll-asciidoc

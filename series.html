@@ -1,0 +1,19 @@
+---
+layout: default
+title: Series
+permalink: /series/
+---
+
+<ul class="post-list">
+    <li id="year">{{page.title}}</li>
+    {% for serie in site.data.series %}
+        <li>
+            <div class="post-meta">
+                <span class="post-meta-date">{{ serie.date | date: "%B %-d" }}</span>
+            </div>
+            <h2>
+                <a href="/series/{{ serie.url }}">{{ serie.name }}</a>
+            </h2>
+        </li>
+    {% endfor %}
+</ul>
