@@ -2,6 +2,9 @@
 title: "GSoC 2023: Week 5 (sqlx)"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
+serie:
+  name: "GSoC 2023"
+  url: gsoc-2023
 ---
 
 Week 5 has come to an end a couple of days ago and more code has been written.

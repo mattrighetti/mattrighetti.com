@@ -1,5 +1,8 @@
 ---
 title: Advent of Code 2023 - Day 5
+serie:
+  name: "AoC 2023"
+  url: advent-of-code-2023
 ---
 
 We're on a rollercoaster, one day we can get away with an easy solution and the

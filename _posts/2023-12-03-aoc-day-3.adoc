@@ -1,5 +1,8 @@
 ---
 title: Advent of Code 2023 - Day 3
+serie:
+  name: "AoC 2023"
+  url: advent-of-code-2023
 ---
 
 https://adventofcode.com/2023/day/3[Day 3] was no walk in the park; it had me

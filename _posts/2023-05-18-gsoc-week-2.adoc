@@ -2,6 +2,9 @@
 title: "GSoC 2023: Week 2"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
+serie:
+  name: "GSoC 2023"
+  url: gsoc-2023
 ---
 
 Week #2 is still supposed to be dedicated to community bonding and other prepping

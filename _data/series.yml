@@ -1,3 +1,7 @@
 ---
+- url: gsoc-2023
+  name: GSoC 2023
+- url: advent-of-code-2023
+  name: AoC 2023
 - url: rust-ssr-stack
   name: Rust SSR Stack

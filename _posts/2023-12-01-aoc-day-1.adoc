@@ -1,5 +1,8 @@
 ---
 title: Advent of Code 2023 - Day 1
+serie:
+  name: "AoC 2023"
+  url: advent-of-code-2023
 ---
 
 It's December and a new https://adventofcode.com[Advent of Code] is ready to be

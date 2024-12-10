@@ -2,6 +2,9 @@
 title: "GSoC 2023: Week 6-7"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
 show_patreon: false
+serie:
+  name: "GSoC 2023"
+  url: gsoc-2023
 ---
 
 Not much going on on week 6 so I decided to take a break and cram down week 6-7
