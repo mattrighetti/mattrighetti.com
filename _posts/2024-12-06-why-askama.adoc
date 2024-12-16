@@ -4,6 +4,7 @@ serie:
   url: "rust-ssr-stack"
   name: "Rust SSR Stack"
 ---
+:askama-book: https://rinja-rs.github.io/askama/template_syntax.html
 
 Askama implements a template rendering engine based on Jinja. It generates Rust
 code from your templates at compile time based on a user-defined struct to hold
@@ -18,7 +19,7 @@ templates in your root folder, for example `templates/home.jinja`.
     {% if let Some(name) = name %}
         <h1>Hello, {{name}}</h1>
     {% else %}
-    {% endif %} 
+    {% endif %}
 {% endblock %}
 ```
 
@@ -49,3 +50,38 @@ What's really cool is that you can even use rust syntax inside of templates
     {% endif %}
 {% endblock %}
 ```
+
+I love rust `match` arms, you can also use those in Askama templates. In Ulry I
+have to render different components depending on the value of a certain enum
+
+```rust
+#[derive(Debug, PartialEq, Eq)]
+pub enum LinkNote {
+    /// note is a valid HN link
+    HN(String),
+    /// note is a valid link
+    Link(String),
+    /// general note
+    General(String),
+}
+```
+
+`LinkNote` models three different kind of notes that you can attach to a link,
+here's how I can use this in my template.
+
+```jinja
+{% if let Some(note) = link.note %}
+    {% match note %}
+        {% when LinkNote::HN with (url) %}
+            <a href="{{url}}"><p>hn</p></a>
+        {% when LinkNote::Link with (url) %}
+            <a href="{{url}}"><p>link</p></a>
+        {% else %}
+            <p>note</p>
+    {% endmatch %}
+{% endif %}
+```
+
+These are just some simple examples of what you can do with Askama templates, if
+you want to find out more they have a pretty good {askama-book}[book] that you can
+take a look at.
