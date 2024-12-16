@@ -1,7 +1,6 @@
 ---
 title: Awk by Examples
 published: false
-show_patreon: true
 ---
 
 In this short article I'm going to write as many examples

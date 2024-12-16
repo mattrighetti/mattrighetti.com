@@ -1,6 +1,5 @@
 ---
 title: Data Caching with NSCache
-show_patreon: true
 ---
 
 image::https://miro.medium.com/max/1400/1*zVw56-JToWySViotHWqtMA.png[align="center"]

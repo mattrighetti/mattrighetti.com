@@ -1,6 +1,5 @@
 ---
 title: "I'm Open-Sourcing Ulry"
-show_patreon: false
 ---
 
 Ulry's first ever commit is dated 23 Dec 2021. The motivation behind its

@@ -1,6 +1,5 @@
 ---
 title: Environment Variables & Rust
-show_patreon: false
 ---
 
 If you've ever worked on some kind of project you definitley have

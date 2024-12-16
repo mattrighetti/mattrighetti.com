@@ -1,6 +1,5 @@
 ---
 title: "Files and the OS"
-show_patreon: false
 ---
 
 The other day I working on a side project of mine and I stumbled upon a bug in

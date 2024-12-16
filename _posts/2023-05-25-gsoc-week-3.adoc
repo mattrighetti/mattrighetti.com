@@ -1,7 +1,6 @@
 ---
 title: "GSoC 2023: Week 3"
 image: "https://mattrighetti.com/assets/images/gsoc-thumb.jpg"
-show_patreon: false
 serie:
   name: "GSoC 2023"
   url: gsoc-2023

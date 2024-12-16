@@ -1,6 +1,5 @@
 ---
 title: Cool Python Functions
-show_patreon: true
 ---
 
 Python is my main language when I'm solving leetcode problems, because I don't

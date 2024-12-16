@@ -1,6 +1,5 @@
 ---
 title: Bypassing Manual Encryption Check for iOS Apps 
-show_patreon: true
 ---
 :page-liquid:
 

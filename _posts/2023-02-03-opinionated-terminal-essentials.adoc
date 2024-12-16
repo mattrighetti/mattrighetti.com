@@ -1,6 +1,5 @@
 ---
 title: Opinionated Terminal Essentials
-show_patreon: true
 ---
 :page-liquid:
 

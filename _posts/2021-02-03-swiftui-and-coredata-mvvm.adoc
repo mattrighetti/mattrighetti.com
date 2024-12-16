@@ -1,6 +1,5 @@
 ---
 title: "SwiftUI and CoreData: The MVVM Way"
-show_patreon: true
 ---
 
 When I first started using SwiftUI for some small projects, I immediately

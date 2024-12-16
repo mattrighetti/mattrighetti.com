@@ -1,7 +1,6 @@
 ---
 title: Cloudflare Tunnel
 published: false
-show_patreon: true
 ---
 
 this is another file

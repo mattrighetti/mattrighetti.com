@@ -1,7 +1,6 @@
 ---
 title: I Need to Find an Apartment
 hn: 30968721
-show_patreon: true
 ---
 
 Long story short: I've taken a new position in Luxembourg and I have to

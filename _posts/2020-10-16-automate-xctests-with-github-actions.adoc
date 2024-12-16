@@ -1,6 +1,5 @@
 ---
 title: Automate XCTests with GitHub Actions
-show_patreon: true
 ---
 
 Ever since GitHub introduced GitHub Actions in 2018, developers now have a
