@@ -1,0 +1,101 @@
+---
+title: "Can't Escape Good Old SQL"
+---
+
+Query builders and ORMs have been around for as long as I can remember, each
+serving different purposes. ORMs, for example, allow you to focus on application
+logic without worrying about SQL or database intricacies. However, this
+convenience comes at a cost—using an ORM almost always means losing control over
+what’s happening in your database. That’s a trade-off I’ve never been willing to
+make in any of my projects.
+
+Query builders on the other hand just... build queries.
+
+At the time it seemed like the best of both worlds because you're still in
+control of the query and you're getting a little hand by the framework to
+generate your query.
+
+During GSoC 2023 I got really interested in `sea-query`, which is a well known
+query builder crate that also integrates well in their `sea-orm` crate. I really
+liked the idea of having strongly typed database queries and having a database
+model representation, so I gave it a shot.
+
+With sea-query you can have all your database tables living alongside your code
+like the following
+
+```rust
+/// This is a strongly typed version of your `environments` database table
+/// with its columns
+#[derive(Debug, sea_query::Iden)]
+pub enum Environments {
+    Table,
+    Env,
+    Key,
+    Value,
+    CreatedAt,
+}
+```
+
+with that you can then create your queries like the following
+
+```rust
+/// inserts `key` and `value` to environment `env`
+pub async fn insert(&self, env: &str, key: &str, var: &str) -> io::Result<()> {
+    let (sql, values) = Query::insert()
+        .into_table(Environments::Table)
+        .columns([Environments::Env, Environments::Key, Environments::Value])
+        .values([env.into(), Func::upper(key).into(), var.into()])
+        .unwrap()
+        .build_sqlx(SqliteQueryBuilder);
+
+    sqlx::query_with(&sql, values)
+        .execute(&self.db)
+        .await
+        .map_err(|e| std_err!("db error: {}", e))?;
+
+    Ok(())
+}
+```
+
+A year later I am now going back writing goold old SQL queries and I'm surprised
+it took me that long. "Why?" you may wonder - well, mostly for the following
+reasons:
+
+- You don't get 100% of the SQL expressiveness
+- It just does not work for complex queries, or looses its purpose
+- Documentation covers basic examples and could be better
+
+Let's say that you need an uncommon sql statement that only Postgres offers,
+like `txid_current_snapshot()` - you simply won't find it in `sea-query`.
+
+Even though mine could seem like a very uncommon SQL statement that you'll
+probably never need (you could argue that that is also the reason why it's not
+being developed), you will for certain end up in a scenario where
+something is not available in the crate.
+
+Not too bad, as `sea-query` provides a solution for this—you can still write raw
+SQL using `Expr::cust("txid_current_snapshot()")` when needed. While this is
+useful for cases where the query builder lacks a specific feature, it comes at
+the cost of losing strong typing—the very reason you chose to use the query
+builder in the first place.
+
+What if you're not sure how to do something with `sea-query`? I’m no genius, but
+I've lost count of the times I've searched for a solution, only to come up
+empty—or worse, discovered that it's simply not possible and had to resort to
+hacks to make it work.
+
+Documentation does not help at all here, it basically covers the simplest
+examples and it won't get you that far when you have to write complicated
+queries and you need to understand how to glue all the piecies together.
+
+Eventually, this starts to feel like learning a new SQL dialect on top of
+the real SQL: you think of the query you need, check the documentation, and
+come up empty-handed. Then you turn to Google, searching Stack Overflow or
+GitHub Issues, hoping someone has asked the same question. If you're lucky,
+you'll find the answer—after wasting countless minutes looking for it.
+
+This is why I've ditched the idea of query builders entirely and started writing
+raw SQL queries again. It's not perfect, but it's probably the best we can do.
+
+I'll remind myself not to fall into that trap again when the next shiny,
+promising SQL alternative comes along.
