@@ -1,0 +1,403 @@
+---
+title: "You Probably Don't Need Query Builders"
+hn: 42778151
+---
+:prev-article: https://mattrighetti.com/2025/01/14/ditching-sea-query.html
+:so-question: https://stackoverflow.com/questions/74956100/how-to-build-safe-dynamic-query-with-sqlx-in-rust
+
+In a previous {prev-article}[[0\]] post I've discussed why I ditched sea-query and why sql is almost
+always the best way to not re-learn something new from the beginning that will
+inevitably end up slowing you down or simply not working at all in the long run.
+
+From time to time, I still stumble upon stackoverflow questions like this one
+{so-question}[[1\]].
+
+OP is basically asking for a way to dynamically build a query based on a
+search filter that is declared like the following
+
+```rust
+struct Search {
+    id: i64,
+    username: Option<String>,
+    min_age: Option<i8>,
+    max_age: Option<i8>,
+}
+```
+
+You may agree that this is a very common scenario in every single API that's out
+there. You have an endpoint that returns some items and you want to expose a way
+to filter those items so that the client can ask only for things it's interested in.
+
+What's even more interesting is that all the answers to OP involve some kind of
+_complex_ way to build the query and `if` and `else` that, at least in that
+case, are most likely unnecessary.
+
+One of the answers suggests the following implementation
+
+```rust
+fn search_query(search: Search) -> String {
+    let mut query = QueryBuilder::new("SELECT * from users where id = ");
+    query.push_bind(search.id);
+
+    if let Some(username) = search.username {
+        query.push(" AND username = ");
+        query.push_bind(username);
+    }
+
+    if let Some(min_age) = search.min_age {
+        query.push(" AND age > ");
+        query.push_bind(min_age);
+    }
+
+    if let Some(max_age) = search.max_age {
+        query.push(" AND age < ");
+        query.push_bind(max_age);
+    }
+
+    query.build().sql().into()
+}
+```
+
+The above solution works just fine, sure - the fact that the field `id` is
+always present in the `Search` filter simplifies stuff a bit. What if `id` was
+an `Option<i64>`? If you want to keep using the query builder you'd need to
+introduce another `if` statement checking if the `id` is present or not
+
+```rust
+fn search_query(search: Search) -> String {
+    let mut query = QueryBuilder::new("SELECT * from users");
+
+    if let Some(id) = search.id {
+        query.push(" AND id = ");
+        query.push_bind(search.id);
+    }
+
+    if let Some(username) = search.username {
+        query.push(" AND username = ");
+        query.push_bind(username);
+    }
+
+    if let Some(min_age) = search.min_age {
+        query.push(" AND age > ");
+        query.push_bind(min_age);
+    }
+
+    if let Some(max_age) = search.max_age {
+        query.push(" AND age < ");
+        query.push_bind(max_age);
+    }
+
+    query.build().sql().into()
+}
+```
+
+[chat,professor]
+--
+Mmmh, the query seems to be broken now!
+--
+
+If each field is `None` the query will work just fine, if one of them is at
+least `Some(_)` the query won't work because that will translate to `SELECT
+* from users AND username = 'testname'`. A quick fix would be adding a `WHERE 1 =
+1` clause at the beginning of the query
+
+```rust
+fn search_query(search: Search) -> String {
+    let mut query = QueryBuilder::new("SELECT * from users WHERE 1 = 1");
+
+    if let Some(id) = search.id {
+        query.push(" AND id = ");
+        query.push_bind(search.id);
+    }
+
+    if let Some(username) = search.username {
+        query.push(" AND username = ");
+        query.push_bind(username);
+    }
+
+    if let Some(min_age) = search.min_age {
+        query.push(" AND age > ");
+        query.push_bind(min_age);
+    }
+
+    if let Some(max_age) = search.max_age {
+        query.push(" AND age < ");
+        query.push_bind(max_age);
+    }
+
+    query.build().sql().into()
+}
+```
+
+[chat,professor]
+--
+Ahhh it's working again now!
+--
+
+[chat,matt]
+--
+Yep, that was an easy fix, but we can do even better
+--
+
+The `sqlx` crate is capable of handling `Option<T>` types easily: if the value
+is `Some(_)` that will be used in the binding, otherwise sqlx will bind `NULL`
+for `None` values. With that in mind we can use SQL to only apply those `WHERE`
+clauses if the value `IS NOT NULL`.
+
+The function above becomes
+
+```rust
+async fn search_query(search: Search) -> String {
+    let query = r"
+    SELECT * from users
+    WHERE id = $1
+        AND ($2 IS NULL OR username = $2)
+        AND ($3 IS NULL or age > $3)
+        AND ($4 IS NULL or age < $4)
+    ".into()
+}
+```
+
+[chat,matt]
+--
+Note that you need to use check for IS NULL to avoid running the filtering when
+the value is None
+--
+
+This approach does not let you push bindings one by one as the previous method,
+but you don't actually need it here, you can bind values all at once later.
+Let's query the data directly
+
+```rust
+async fn search_query(search: Search, pg: &PgPool) {
+    let query = sqlx::query(r"
+    SELECT * FROM users
+    WHERE id = $1
+        AND ($2 IS NULL OR username = $2)
+        AND ($3 IS NULL OR age > $3)
+        AND ($4 IS NULL OR age < $4)
+    ")
+    .bind(search.id)
+    .bind(search.username)
+    .bind(search.min_age)
+    .bind(search.max_age)
+    .fetch_all(pg)
+    .await
+    .expect("failed querying users");
+}
+```
+
+This is what I usually prefer, it looks nicer and I don't have to write more
+Rust logic that I'd have to test later. The dynamically built query shown before
+can end up being 16 different queries, on the other hand you only have one query
+if you exclusively use sql.
+
+Another reason why I prefer to do queries this way is that I can copy and paste
+the statement in Datagrip and test it directly in the database, mimicking what
+`sqlx` will end up doing.
+
+[chat,matt]
+--
+In the following examples I am using Postgres syntax, it may be different for
+other engines like Sqlite or MySql
+--
+
+By now you should have a better idea of how you can work with sql to reduce the
+Rust logic that's involved in your queries, but I'd like to give some other
+common examples and functions you can work with.
+
+A common type that I encounter pretty frequently is a `Vec<T>`. Most of the
+times I do not want to filter at all if `vec.is_empty()`. To make this a bit
+more complicated let's consider the scenario where I have an `Option<Vec<T>>`
+and I only want to apply the filter if `!vec.is_empty()`.
+
+```rust
+async fn filter(nicknames: Option<Vec<i64>>, pg: &PgPool) {
+    sqlx::query(
+        r"SELECT *
+        FROM users
+        WHERE 1 = 1
+            AND ($1 IS NULL
+                 OR CARDINALITY($1::integer[]) = 0
+                 OR nickname = $1
+            )"
+    )
+    .bind(nicknames)
+    .fetch_all(pg)
+    .await
+    .unwrap()
+}
+```
+
+Let's break it down:
+
+- `$1 IS NULL` is satisfied if `nicknames.is_none()` and won't apply the filter
+
+- `CARDINALITY($1::integer[])` stops the filtering if `nickname.is_some() &&
+  nickname.unwrap().len() = 0`
+
+- Finally, if the vector is not `None` and its length is greater than one then
+  `nickname = $1` will filter all the users that have `nickname` as nickname
+
+Let's move on to another similar scenario, this time you have a vector
+represented as string with comma separated values: you may have an endpoint that
+accepts a query parameter with multiple values separated by a comma (e.g
+`?ids=11,22,33,44`). My naive-self in the past used to create a fancy
+custom deserializer function that transformed `11,22,33,44` from a `String` into
+a `Vec<i64>` and that is useless work that could have easily been handled by the
+database.
+
+```rust
+async fn filter(ids: String, pg: &PgPool) {
+    sqlx::query(
+        r"SELECT *
+        FROM users
+        WHERE
+            id IN (ARRAY_REMOVE(STRING_TO_ARRAY($1, ','), ''))"
+    )
+    .bind(ids)
+    .fetch_all(pg)
+    .await
+    .unwrap()
+}
+```
+
+[chat,matt]
+--
+The syntax above works for Postgres but may be different for other database
+servers. I'm sure such a basic feature is available on most of them and you
+can use it.
+--
+
+`(ARRAY_REMOVE(STRING_TO_ARRAY($1, ','), '')` creates an array of
+ids by splitting comma separated values and also removes empty values in
+case someone decides to mess with your backend and tries to pass
+`?ids=11,,,`.
+
+The next feature I'd like to explore is probably the de-facto API must-have:
+pagination. Pagination basically lets your client say "give me page 2 with a
+maximum of 10 items in it". You can model that filter with the following struct
+
+```rust
+struct Filter {
+    /// current page
+    pub page: Option<i64>,
+    /// number of items per page
+    pub limit_per_page: Option<i64>
+}
+```
+
+I've marked them as `Option<i64>` because clients are rude and want you to do
+the guessing. Most of them won't ask for a specific page but they really want
+the fist one. Also, if the client is lazy and does not provide a
+`limit_per_page` you should fallback to a good default value to not overload
+your Postgres instance.
+
+Pagination is tricky because a user could pass a `?page=-100` and negative pages
+do not exist. You could have avoided that by using an `Option<u64>` but then
+you'd have to cast that value to an `i64` whenever you want to bind that to a
+query (in Postgres at least). To make things worse, an hacker could request a
+`limit_per_page=1000000000` to make your server crash and wake you up while
+you're sleeping because your app is dead.
+
+My less sql-centric self would have implemented a filter validation to check for its correctness
+
+```rust
+impl Filter {
+    fn validate(&self) -> Result<(), String> {
+        match self.page {
+            Some(page) if page < 0 => {
+                return Err("page can't be negative")
+            }
+            _ => {}
+        }
+
+        match self.limit_per_page {
+            Some(limit) if limit < 10 && limit > 100 {
+                return Err("limit must be between 10 and 100")
+            }
+            _ => {}
+        }
+
+        Ok(())
+    }
+}
+```
+
+But guess what... SQL has the solution for you
+
+```rust
+async fn filter(filter: Filter, pg: &PgPool) {
+    sqlx::query(
+    r"SELECT *
+    FROM users
+    LIMIT
+        CASE WHEN $2 > 0 THEN $2 END
+    OFFSET
+        CASE
+            WHEN $2 BETWEEN 0 AND 100 AND $1 > 0
+                THEN (($1 - 1) * $2)
+            ELSE
+                50
+        END"
+    )
+    // if page is not provided, fallback to 0
+    .bind(filter.page.unwrap_or(0))
+    // if limit is not provided, fallback to 50
+    .bind(filter.limit_per_page.unwrap_or(50))
+    .fetch_all(pg)
+    .await
+    .unwrap()
+}
+```
+
+The `LIMIT` statement is only applied if the passed value is greater than zero,
+on the other hand the `OFFSET` is applied only if the passed
+`limit_per_page` is between zero and a hundred and the `page` is not
+negative, all other cases are defaulted to `OFFSET 50`.
+
+Lastly, I'd like to cover an `UPDATE` statement which I feel is also quite
+common in APIs out there. Let's say we have an `UpdateForm` struct that models
+our HTML form.
+
+```rust
+struct UpdateForm {
+    id: Uuid
+    name: Option<String>
+    surname: Option<String>
+}
+```
+
+This form takes the user unique id and, optionally, its name and surname. I want
+to provide a way for my client to only update the value that it passes to my
+backend with a `Some(_)` value. Seems like we can do just that with the use of `COALESCE`
+
+```rust
+async fn update_user(UpdateForm { id, name, surname }: UpdateForm, pg: &PgPool) {
+    sqlx::query(
+        r"UPDATE user
+        SET name = COALESCE($2, name),
+            surname = COALESCE($3, surname)
+        WHERE id = $1"
+    )
+    .bind(id)
+    .bind(name)
+    .bind(surname)
+    .fetch_one(pg)
+    .await
+    .unwrap();
+}
+```
+
+The query above uses `COALESCE` to only update those values that are
+`.is_some()`, the others will remain the same and no update will take place.
+
+[chat, matt]
+--
+Neat! be mindful, `COALESCE` will return the first non-null value in its
+statement, so order matters!
+--
+
+As you can see we've got a lot done by employing sql alone, you can get smart
+with it and avoid writing over-complicated Rust logic in your queries, isn't
+that a neater and better solution overall?
