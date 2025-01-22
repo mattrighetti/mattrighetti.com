@@ -269,6 +269,7 @@ article h1 {
     align-items: center;
     padding: 5px 0px;
     gap: 7px;
+    font-weight: 900;
 }
 
 .post-meta-date {
@@ -606,7 +607,7 @@ main {
 }
 
 .serie-badge {
-    padding: 10px;
+    padding: 0px 10px;
     border-radius: 8px;
     display: inline;
     font-size: medium;
