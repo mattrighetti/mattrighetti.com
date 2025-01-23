@@ -1,5 +1,6 @@
 ---
 title: "Can't Escape Good Old SQL"
+hn: 42799076
 ---
 
 Query builders and ORMs have been around for as long as I can remember, each
