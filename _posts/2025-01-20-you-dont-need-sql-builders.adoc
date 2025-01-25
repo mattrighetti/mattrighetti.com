@@ -225,7 +225,7 @@ async fn filter(nicknames: Option<Vec<i64>>, pg: &PgPool) {
     .bind(nicknames)
     .fetch_all(pg)
     .await
-    .unwrap()
+    .unwrap();
 }
 ```
 
@@ -258,7 +258,7 @@ async fn filter(ids: String, pg: &PgPool) {
     .bind(ids)
     .fetch_all(pg)
     .await
-    .unwrap()
+    .unwrap();
 }
 ```
 
@@ -347,7 +347,7 @@ async fn filter(filter: Filter, pg: &PgPool) {
     .bind(filter.limit_per_page.unwrap_or(50))
     .fetch_all(pg)
     .await
-    .unwrap()
+    .unwrap();
 }
 ```
 
