@@ -98,16 +98,6 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Hide Scrollbar */
-
-body::-webkit-scrollbar{
-    display: none;
-}
-
-html {
-    scrollbar-width: none;
-}
-
 .listingblock .content {
     font-size: .9em;
 }
