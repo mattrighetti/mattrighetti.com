@@ -1,14 +1,15 @@
 ---
-title: "Database tests with Rust and sqlx, for lazy people"
+title: "Database Tests for the Lazy"
 ---
 :test-isolation: https://lpalmieri.com/posts/2020-08-31-zero-to-production-3-5-html-forms-databases-integration-tests/#3-7-1-test-isolation
 :sqlx-test: https://docs.rs/sqlx/latest/sqlx/attr.test.html
 
-If you've ever worked with Rust, databases and `sqlx` you definitely had to test
-your logic against that in some way or another.
+Anyone who has developed with Rust using sqlx for database operations has likely
+needed to write tests for their database interactions.
 
-What I tend to do is setup a utility function that is called at the very beginning
-of each test which basically spins up the database connection and returns that to the caller, ready to execute queries.
+What I tend to do is setup a utility function that is called at the very
+beginning of each test which basically spins up the database connection and
+returns that to the caller, ready to execute queries.
 
 ```rust
 #[cfg(test)]
@@ -19,7 +20,9 @@ pub async fn test_db() -> EnvelopeDb {
         .expect("cannot connect to db");
 
     // Run migrations
-    sqlx::migrate!();
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await?;
 
     // Connection wrapper
     EnvelopeDb::with(pool)
@@ -59,6 +62,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+
 ```
 
 It's not much more work, but it definitely is not as convenient as the sqlite in-memory setup.
@@ -71,7 +76,7 @@ mod tests {
 
     use super::model::UserRow;
 
-    pub async fn test_db() -> Result<(PgPool, Uuid), sqlx::Error> {
+    pub async fn test_db() -> Result<(PgPool, i64), sqlx::Error> {
         let db_url = "postgres://postgres:1234@localhost:5432/postgres";
 
         let pool = PgPoolOptions::new()
@@ -180,11 +185,11 @@ There are many solutions to this specific problem, the first one that comes to
 mind is using an `ON CONFLICT` clause when you're trying to insert the user.
 This is not a good solution though, imagine how many "hacks" like this you will
 have to take care of when you have hundreds of different tables with hundreds of
-rows, do you really want to craft an sql statement that is going to make every
+rows. Do you really want to craft an sql statement that is going to make every
 single test of yours run okay (if that is even possible)?
 
 No, you don't of course. Ideally, each test should have a brand new database to
-work with, or at least something that resembles it.  With that said, I'm ready
+work with, or at least something that resembles one.  With that said, I'm ready
 to give you another lazy solution: empty your database at the end of each test
 and run your Rust tests sequentially.
 
@@ -193,8 +198,8 @@ change that by setting the `RUST_TEST_THREADS` environment variable to 1.
 
 [chat,matt]
 --
-What else could anyone desire after waiting for cargo to compile for
-10 minutes other than waiting for the tests to run sequentially, after all?
+After waiting 10 minutes for cargo to compile, who wouldn't want to spend even
+more time watching tests run one after another?
 --
 
 ```rust
@@ -205,7 +210,7 @@ mod tests {
 
     use super::model::UserRow;
 
-    pub async fn test_db() -> Result<(PgPool, Uuid), sqlx::Error> {
+    pub async fn test_db() -> Result<(PgPool, i64), sqlx::Error> {
         let db_url = "postgres://postgres:1234@localhost:5432/postgres";
 
         let pool = PgPoolOptions::new()
@@ -264,7 +269,7 @@ about to explain you more briefly.
 The idea is pretty simple: `test_db()` will create a new _logical_ database with
 a random name (a uuid works fine) and return a connection to it.  This way each
 test will have its own database to work with and no test will be able to access
-and interfere with other tests.
+and interfere with the others.
 
 Here's a simple implementation of `test_db()` that does exactly that (again,
 credits to Luca for this!):
@@ -276,7 +281,7 @@ mod tests {
     use sqlx::{Connection, Executor, PgPool};
     use uuid::Uuid;
 
-    pub async fn test_db() -> Result<(PgPool, Uuid), sqlx::Error> {
+    pub async fn test_db() -> Result<(PgPool, i64), sqlx::Error> {
         // Generate a unique database name
         let db_base = "postgres://postgres:1234@localhost:5432";
         let db_name = Uuid::new_v4().to_string();
@@ -330,13 +335,13 @@ surely started that way, those were not good and valid solutions. But don't
 despair, there is a lazy solution after all!
 
 Lately I've been doing some work in the `sqlx` crate, and I stumbled upon a
-really useful macro that will return an isolate database connection that your
-tests can use: {sqlx-test}[`#[sqlx::test]`].
+really useful macro that will return a connection to an isolated database that
+your tests can use: {sqlx-test}[`#[sqlx::test]`].
 
 [quote]
 --
 #[sqlx::test] can automatically create test databases for you and provide live
-#connections to your test.
+connections to your test.
 
 For every annotated function, a new test database is created so tests can run
 against a live database but are isolated from each other.
@@ -348,11 +353,7 @@ That looks just perfect, the macro will automatically behave as a classic
 ```rust
 #[cfg(test)]
 mod tests {
-    use google;
-
     use super::*;
-    use crate::db::tests::setup_db;
-
     
     // note that the function now takes a PgPool as an argument
     #[sqlx::test] // by default this will also apply the migrations!
@@ -375,3 +376,8 @@ mod tests {
 
 We've got rid of our setup logic, everything is given to us for free by the
 macro and we have our test isolation - is that lazy enough?
+
+[chat,matt]
+--
+This is yet another wake-up call for me to roam around the documentation more
+--
