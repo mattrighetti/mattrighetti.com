@@ -1,0 +1,377 @@
+---
+title: "Database tests with Rust and sqlx, for lazy people"
+---
+:test-isolation: https://lpalmieri.com/posts/2020-08-31-zero-to-production-3-5-html-forms-databases-integration-tests/#3-7-1-test-isolation
+:sqlx-test: https://docs.rs/sqlx/latest/sqlx/attr.test.html
+
+If you've ever worked with Rust, databases and `sqlx` you definitely had to test
+your logic against that in some way or another.
+
+What I tend to do is setup a utility function that is called at the very beginning
+of each test which basically spins up the database connection and returns that to the caller, ready to execute queries.
+
+```rust
+#[cfg(test)]
+pub async fn test_db() -> EnvelopeDb {
+    let pool = sqlx::sqlite::SqlitePoolOptions::new()
+        .connect(":memory:")
+        .await
+        .expect("cannot connect to db");
+
+    // Run migrations
+    sqlx::migrate!();
+
+    // Connection wrapper
+    EnvelopeDb::with(pool)
+}
+```
+
+If you're project uses sqlite then you can consider yourself lucky - sqlite can
+create an in-memory database with the `:memory:` uri.  That turns out to be
+super nice to work with because tests are super fast and you don't have to take
+care of anything, really. Each time you use `test_db()` a brand new connection
+to an in-memory database is established and each connection is isolated to the
+caller.
+
+[chat,matt]
+--
+There's a reason why everyone loves sqlite, right?
+--
+
+Things are a little bit different though in pretty much every other scenario.
+
+Most of the databases out there need their own dedicated server to which you can
+then connect to and communicate over with different network protocols. I mostly use Postgres
+so I'll use that as an example for the rest of this post.
+
+This is the classic docker-compose file that I use to spin up a local postgres instance
+with a very bad password
+
+```yaml
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+```
+
+It's not much more work, but it definitely is not as convenient as the sqlite in-memory setup.
+
+```rust
+#[cfg(test)]
+mod tests {
+    use sqlx::postgres::PgPoolOptions;
+    use sqlx::PgPool;
+
+    use super::model::UserRow;
+
+    pub async fn test_db() -> Result<(PgPool, Uuid), sqlx::Error> {
+        let db_url = "postgres://postgres:1234@localhost:5432/postgres";
+
+        let pool = PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(Duration::from_secs(3))
+            .connect(&db_url)
+            .await?;
+
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await?;
+
+        let id: i64 = sqlx::query_as(
+            r"INSERT INTO users(id, name, lastname, email)
+            VALUES (
+                0,
+                'testname',
+                'testlastname',
+                'test@example.com'
+            )
+            RETURNING id",
+        )
+        .fetch_one(&pool)
+        .await?;
+
+        Ok((pool, id))
+    }
+}
+```
+
+This is another classic function that I always have around in my projects. It
+connects to a local postgres instance and inserts a user that you can use in your tests.
+The macro `#[cfg(test)]` is used to compile this function only when running tests.
+
+You can then use this function in your tests like the following:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_user_exists() {
+        let (pool, _) = test_db().await.unwrap();
+        assert!(
+            user_exists(&pool, "test@example.com").await.unwrap(),
+            "user should exist"
+        );
+        assert!(
+            !user_exists(&pool, "another@example.com").await.unwrap(),
+            "this user should not exist"
+        );
+    }
+}
+```
+
+[chat,matt]
+--
+user_exists is not defined above, I'll let your imagination run free
+--
+
+Great, we now have a very lazy and good enough setup to test our functions
+against our local database.  I say lazy because it's not going to work for long
+as you will see. If you try to add more tests you will soon realize that a good
+chunk of your tests will inevitably fail because, unlike sqlite in-memory,
+the postgres database is shared among all the tests.
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_user_exists() {
+        let (pool, _) = test_db().await.unwrap();
+        assert!(
+            user_exists(&pool, "test@example.com").await.unwrap(),
+            "user should exist"
+        );
+        assert!(
+            !user_exists(&pool, "another@example.com").await.unwrap(),
+            "this user should not exist"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_get_user_id() {
+        let (pool, _) = test_db().await.unwrap();
+        assert_eq!(
+            get_user_id(&pool, "test@example.com").await.unwrap(),
+            0,
+            "test user should have id = 0"
+        );
+    }
+}
+```
+
+If you run the tests above, one of the two will fail. The issue lies in the fact
+that the first `test_db()` will insert the test user just fine, the second call
+to `test_db()` won't because the user already exists in the database and the
+insert will fail, but `fetch_one` expects a row to be returned and your test
+will fail because that `?` ruins the party for everyone by returning the error
+to the caller.
+
+There are many solutions to this specific problem, the first one that comes to
+mind is using an `ON CONFLICT` clause when you're trying to insert the user.
+This is not a good solution though, imagine how many "hacks" like this you will
+have to take care of when you have hundreds of different tables with hundreds of
+rows, do you really want to craft an sql statement that is going to make every
+single test of yours run okay (if that is even possible)?
+
+No, you don't of course. Ideally, each test should have a brand new database to
+work with, or at least something that resembles it.  With that said, I'm ready
+to give you another lazy solution: empty your database at the end of each test
+and run your Rust tests sequentially.
+
+You may already know that Rust tests are run in parallel by default, but you can
+change that by setting the `RUST_TEST_THREADS` environment variable to 1.
+
+[chat,matt]
+--
+What else could anyone desire after waiting for cargo to compile for
+10 minutes other than waiting for the tests to run sequentially, after all?
+--
+
+```rust
+#[cfg(test)]
+mod tests {
+    use sqlx::postgres::PgPoolOptions;
+    use sqlx::PgPool;
+
+    use super::model::UserRow;
+
+    pub async fn test_db() -> Result<(PgPool, Uuid), sqlx::Error> {
+        let db_url = "postgres://postgres:1234@localhost:5432/postgres";
+
+        let pool = PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(Duration::from_secs(3))
+            .connect(&db_url)
+            .await?;
+        
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await?;
+
+        // truncate everything that's left in the database
+        sqlx::query("TRUNCATE TABLE users")
+            .execute(&pool)
+            .await?;
+
+        let id: i64 = sqlx::query_as(
+            r"INSERT INTO users(id, name, lastname, email)
+            VALUES (
+                0,
+                'testname',
+                'testlastname',
+                'test@example.com',
+            )
+            RETURNING id",
+        )
+        .fetch_one(&pool)
+        .await?;
+
+        Ok((pool, id))
+    }
+}
+```
+
+You can then run `RUST_TEST_THREADS=1 cargo test`, wait a couple of minutes and
+your tests will happily pass just fine.
+
+[chat,matt]
+--
+Just make sure to never run your tests on the production database, okay? :)
+--
+
+Enough with the lazy solutions, let's talk about how we could actually have this
+sorted out in a more elegant way.
+
+Previously I've talked about how each test would ideally have its own database,
+and that's exactly what we're going to do. We're going to create a new database
+for each test.
+
+I remember I first learned this while I was reading "Zero to Production in Rust"
+by Luca Palmieri. So I highly suggest you to read the chapter on test isolation
+{test-isolation}[[1\]] where he goes into the nitty gritty details of what I am
+about to explain you more briefly.
+
+The idea is pretty simple: `test_db()` will create a new _logical_ database with
+a random name (a uuid works fine) and return a connection to it.  This way each
+test will have its own database to work with and no test will be able to access
+and interfere with other tests.
+
+Here's a simple implementation of `test_db()` that does exactly that (again,
+credits to Luca for this!):
+
+```rust
+#[cfg(test)]
+mod tests {
+    use sqlx::postgres::{PgPoolOptions, PgConnection};
+    use sqlx::{Connection, Executor, PgPool};
+    use uuid::Uuid;
+
+    pub async fn test_db() -> Result<(PgPool, Uuid), sqlx::Error> {
+        // Generate a unique database name
+        let db_base = "postgres://postgres:1234@localhost:5432";
+        let db_name = Uuid::new_v4().to_string();
+        let connection_string = format!("{db_base}/{db_name}");
+
+        // Connect to the default `postgres` database to create a new database
+        let mut connection = PgConnection::connect(db_base)
+            .await?;
+
+        // create unique logical database
+        connection
+            .execute(format!(r#"CREATE DATABASE "{}";"#, db_name).as_str())
+            .await?;
+
+        // Connect to the new database and run migrations
+        let pool = PgPool::connect(&connection_string).await?;
+
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await?;
+
+        // Insert a test user and return the pool and database name
+        let id: i64 = sqlx::query_as(
+            r"INSERT INTO users(id, name, lastname, email)
+            VALUES (
+                0,
+                'testname',
+                'testlastname',
+                'test@example.com'
+            )
+            RETURNING id",
+        )
+        .fetch_one(&pool)
+        .await?;
+
+        Ok((pool, Uuid::parse_str(&db_name).unwrap()))
+    }
+}
+```
+
+You can now remove the `RUN_TEST_THREADS=1` environment variable and run your
+tests in parallel again.
+
+[chat,professor]
+--
+But the title of the post said "for lazy people", and this is not lazy at all!
+--
+
+I promised in the title that this post would be for lazy people, and although it
+surely started that way, those were not good and valid solutions. But don't
+despair, there is a lazy solution after all!
+
+Lately I've been doing some work in the `sqlx` crate, and I stumbled upon a
+really useful macro that will return an isolate database connection that your
+tests can use: {sqlx-test}[`#[sqlx::test]`].
+
+[quote]
+--
+#[sqlx::test] can automatically create test databases for you and provide live
+#connections to your test.
+
+For every annotated function, a new test database is created so tests can run
+against a live database but are isolated from each other.
+--
+
+That looks just perfect, the macro will automatically behave as a classic
+`#[tokio::test]` but it will also inject a `PgPool` into our test function.
+
+```rust
+#[cfg(test)]
+mod tests {
+    use google;
+
+    use super::*;
+    use crate::db::tests::setup_db;
+
+    
+    // note that the function now takes a PgPool as an argument
+    #[sqlx::test] // by default this will also apply the migrations!
+    async fn test_user_exists(pool: PgPool) {
+        assert!(user_exists(&pool, "test@example.com").await.unwrap());
+        assert!(!user_exists(&pool, "another@example.com").await.unwrap())
+    }
+
+    // if you want you can specify a different migrations directory
+    #[sqlx::test(migrations = "./someothermigrations")]
+    async fn test_get_user_id(pool: PgPool) {
+        assert_eq!(
+            get_user_id(&pool, "test@example.com").await.unwrap(),
+            0,
+            "test user should have id = 0"
+        );
+    }
+}
+```
+
+We've got rid of our setup logic, everything is given to us for free by the
+macro and we have our test isolation - is that lazy enough?
