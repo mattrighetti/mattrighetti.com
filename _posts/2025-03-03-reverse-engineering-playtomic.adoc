@@ -1,0 +1,591 @@
+---
+title: "Reverse Engineering Playtomic"
+hn: 43247839
+---
+:intercept-http-traffic-burp: https://portswigger.net/burp/documentation/desktop/getting-started/intercepting-http-traffic
+
+Playtomic is probably the biggest application for booking tennis/padel courts in
+Europe. Every club that I go to is on Playtomic and that makes it very easy to
+book a court or look for upcoming matches. The app is great, which I guess is
+why it's so popular.
+
+All this popularity comes at a price though: thousands and thousands of users
+competing to get the empty courts as soon they become available. This means that
+if you're not fast enough to book a court for the next sunny Saturday, you're
+out of luck.
+
+Playtomic offers a premium subscription that gives you special powers, like
+getting notifications in advance when courts become available but the price does
+not seem to be worth it. Especially if we can get the same by being a little
+smart, right?
+
+What I wanted to end up with was some script that notifies me in some kind of
+way whenever a specific court becomes available.
+
+That's when I started to get curious about reverse engineering the iOS app that
+Playtomic offers
+
+[chat,matt]
+--
+Don't ask me why but when I was doing this yesterday I was not aware that
+Playtomic also had a website at https://www.playtomic.io, so there could be an
+even easier solution here.
+--
+
+The best solution here is to try and find the APIs necessary to query the
+available courts.  Once you have that, you can just poll the API every few
+minutes and notify yourself when a court becomes available or a schedule
+changes.
+
+Where do you look for those APIs when you only have your iPhone's app? In the
+app itself of course!
+
+We can try and intercept the network requests that the app makes to its servers
+and see if we can find the API that returns us court information.
+
+You can intercept network requests in multiple different ways but the easiest
+one is probably by sitting in the middle of the connection between your phone
+and the internet. This is usually achieved with a proxy server.
+
+I've used Burp Suite Community Edition for this purpose. While many alternative
+tools exist, Burp Suite is widely recognized as a leading penetration testing
+platform with extensive documentation. I won't detail the Burp Suite setup
+process here, but an excellent guide is available in the references
+{intercept-http-traffic-burp}[[0\]]. Once configured with your iPhone using Burp
+as a proxy, all iPhone network traffic will be routed through and intercepted by
+Burp Suite for analysis.
+
+What's left to do at this point is opening the app and navigate to the screen
+where the court information is displayed, that's where the API call to get the
+courts availability is probably made.
+
+The process ended up being a lot easier than I thought, and after fiddling a
+couple of minutes with the app and frenetically popping up courts availability
+pages I was able to find the API call that I was looking for:
+
+```http
+GET /v1/availability?sport_id=PADEL&start_max=2025-03-06T23:59:59&start_min=2025-03-06T00:00:00&tenant_id=2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a
+Host: api.playtomic.io
+Content-Type: application/json
+X-Datadog-Parent-Id: ******** 
+Tracestate: ********
+X-Datadog-Sampling-Priority: 0
+Authorization: Bearer *******
+Accept: */*
+X-Requested-With: com.playtomic.app 6.13.0
+X-Datadog-Trace-Id: ********
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate, br
+User-Agent: iOS 18.3.1
+X-Datadog-Tags: _dd.p.tid=67c4561000000000
+X-Datadog-Origin: rum
+Traceparent: ********
+Connection: keep-alive
+```
+
+This looks like a classic authenticated request to the endpoint
+`/v1/availability` with some query parameters: `sport_id=PADEL`,
+`start_max=2025-03-06T23:59:59`, `start_min=2025-03-06T00:00:00` and `tenant_id`
+which corresponds to the courts that I usually go to.
+
+In this case we've been quite lucky and Burp was able to intercept the traffic
+without a single issue.  Nowadays, a lot of applications will use SSL pinning to
+prevent this kind of interception. This is a topic for another day, but it's
+worth mentioning that there are ways to bypass SSL pinning and still intercept
+the traffic.
+
+Let's go on and play with the API! I bet we don't need most of the request
+headers displayed above. Let's try and get rid of all the analytics and tracking
+stuff and see if we can still get a `200` from the Playtomic APIs.
+
+```http
+GET /v1/availability?sport_id=PADEL&start_max=2025-03-06T23:59:59&start_min=2025-03-06T00:00:00&tenant_id=2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a
+Host: api.playtomic.io
+Content-Type: application/json
+Authorization: Bearer *******
+X-Requested-With: com.playtomic.app 6.13.0
+User-Agent: iOS 18.3.1
+
+>>>
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Transfer-Encoding: chunked
+Connection: close
+Date: Mon, 03 Mar 2025 21:38:46 GMT
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+Expires: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+X-XSS-Protection: 1; mode=block
+Pragma: no-cache
+Timing-Allow-Origin: *
+X-Frame-Options: DENY
+X-Cache: Miss from cloudfront
+Via: 1.1 2eadda0e57cd7e495ec3550f05424d3e.cloudfront.net (CloudFront)
+X-Amz-Cf-Pop: LHR50-P5
+X-Amz-Cf-Id: h5udBjkJjJJyPBavztnnhDXbsS1E-7VesGxqmH7riMWhv225ShTZqg==
+
+[
+  {
+    "resource_id": "021872eb-b49b-47f4-a66e-ad19173a7a75",
+    "start_date": "2025-03-06",
+    "slots": [
+      {
+        "start_time": "09:30:00",
+        "duration": 90,
+        "price": "72 GBP"
+      },
+      {
+        "start_time": "16:30:00",
+        "duration": 60,
+        "price": "52 GBP"
+      }
+    ]
+  },
+  {
+    "resource_id": "b983547f-93c7-489d-9475-52f269b1c39a",
+    "start_date": "2025-03-06",
+    "slots": [
+      {
+        "start_time": "09:30:00",
+        "duration": 90,
+        "price": "72 GBP"
+      },
+      {
+        "start_time": "16:30:00",
+        "duration": 60,
+        "price": "52 GBP"
+      }
+    ]
+  },
+  {
+    "resource_id": "3df036e3-7dba-4c39-b966-ab088edaade4",
+    "start_date": "2025-03-06",
+    "slots": [
+      {
+        "start_time": "09:30:00",
+        "duration": 60,
+        "price": "48 GBP"
+      },
+      {
+        "start_time": "10:30:00",
+        "duration": 60,
+        "price": "48 GBP"
+      },
+      {
+        "start_time": "13:30:00",
+        "duration": 90,
+        "price": "72 GBP"
+      }
+    ]
+  }
+]
+```
+
+Nice! The server seems to be okay if we just provide the bare minimum, but what if
+we also remove the `Authorization` header?
+
+```http
+GET /v1/availability?sport_id=PADEL&start_max=2025-03-06T23:59:59&start_min=2025-03-06T00:00:00&tenant_id=2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a
+Host: api.playtomic.io
+Content-Type: application/json
+X-Requested-With: com.playtomic.app 6.13.0
+User-Agent: iOS 18.3.1
+
+>>>
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+...
+```
+
+Can't get any better than this, we don't even need to be authenticated to call
+the API! This saved us a bunch of time and effort that we would have spent
+trying to reverse engineer the authentication mechanism.
+
+It would be cool if we could ask for an entire month of availability, maybe we can tweak the `start_max` and `start_min` parameters to achieve that:
+
+```http
+GET /v1/availability?sport_id=PADEL&start_max=2025-04-06T23:59:59&start_min=2025-03-06T00:00:00&tenant_id=2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a
+Host: api.playtomic.io
+Content-Type: application/json
+X-Requested-With: com.playtomic.app 6.13.0
+User-Agent: iOS 18.3.1
+
+>>>
+
+HTTP/1.1 400 Bad Request
+...
+{
+  "localized_message": "Not allowed to request more than 25h",
+  "status": "INCORRECT_PARAMETERS"
+}
+```
+
+The server doesn't seem to like that, indeed we can only request a maximum of 25
+hours of availability at a time. That's a bummer, but we can work with that.
+
+Let's start building a script that queries the API and returns us with the
+availability of the courts.  I'm only playing during weekends so it makes sense
+for me to have a lookahead window of 2 weeks, only asking specifically for the
+weekends.
+
+I haven't been posting Go in a while on this blog, I feel like that would be the best language for this task.
+Let's define our structs first:
+
+```go
+// Slot represents a single availability slot
+type Slot struct {
+	StartTime string `json:"start_time"` // Start time of the slot (e.g., "09:30:00")
+	Duration  int    `json:"duration"`   // Duration of the slot in minutes
+	Price     string `json:"price"`      // Price of the slot (e.g., "48 GBP")
+}
+
+// AvailabilityResponse represents the entire JSON response
+type AvailabilityResponse struct {
+	ResourceID string `json:"resource_id"` // Resource ID (e.g., "3df036e3-7dba-4c39-b966-ab088edaade4")
+	StartDate  string `json:"start_date"`  // Start date of the availability (e.g., "2025-03-06")
+	Slots      []Slot `json:"slots"`       // List of available slots
+}
+```
+
+I'd then need a function to conveniently get the days of the weekend for the next 2 weeks:
+
+```go
+// getNextWeekends returns the next two Saturdays and Sundays from today
+func getNextWeekends() []time.Time {
+	today := time.Now()
+	var weekends []time.Time
+
+	// Find the next Saturday and Sunday
+	daysUntilSaturday := (time.Saturday - today.Weekday() + 7) % 7
+	nextSaturday := today.AddDate(0, 0, int(daysUntilSaturday))
+	nextSunday := nextSaturday.AddDate(0, 0, 1)
+
+	// Add the next two weekends
+	weekends = append(weekends, nextSaturday, nextSunday)
+	weekends = append(weekends, nextSaturday.AddDate(0, 0, 7), nextSunday.AddDate(0, 0, 7))
+
+	return weekends
+}
+```
+
+And a function to build the request that is going to be issued for a single date:
+
+```go
+// buildGetRequest builds a GET request for the given target date
+func buildGetRequest(targetDate time.Time) (*http.Request, error) {
+	// Base URL
+	baseURL := "https://api.playtomic.io/v1/availability"
+
+	// Derive start and end times from the target date
+	startDate := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), 0, 0, 0, 0, targetDate.Location())
+	endDate := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), 23, 59, 59, 0, targetDate.Location())
+
+	// Query parameters
+	params := url.Values{}
+	params.Add("sport_id", "PADEL")
+	params.Add("start_min", startDate.Format("2006-01-02T15:04:05"))
+	params.Add("start_max", endDate.Format("2006-01-02T15:04:05"))
+	params.Add("tenant_id", "2ab75436-9bb0-4e9c-9a6f-b12931a9ca4a")
+
+	// Construct the full URL with query parameters
+	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+
+	// Create the GET request
+	req, err := http.NewRequest("GET", fullURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	return req, nil
+}
+```
+
+Finally, we can issue the request and parse the response with this other function:
+
+```go
+// fetchAvailability fetches the availability for the given target date
+func fetchAvailability(targetDate time.Time) ([]AvailabilityResponse, error) {
+	// Build the GET request
+	req, err := buildGetRequest(targetDate)
+	if err != nil {
+		return nil, fmt.Errorf("error building request: %w", err)
+	}
+
+	// Make the HTTP request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %w", err)
+	}
+
+	// Parse the JSON response into a slice of AvailabilityResponse
+	var availability []AvailabilityResponse
+	err = json.Unmarshal(body, &availability)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling JSON: %w", err)
+	}
+
+	return availability, nil
+}
+```
+
+This is a good start, we could now call `fetchAvailability` and with a bit of pretty printing logic we can get a table
+with the available slots for the next two weekends.
+
+```go
+func main() {
+	// Get the next two Saturdays and Sundays
+	weekends := getNextWeekends()
+
+	// Fetch availability for each date
+	availabilityByDate := make(map[string][]Slot)
+	for _, targetDate := range weekends {
+		fmt.Printf("Fetching availability for date: %s\n", targetDate.Format("2006-01-02"))
+
+		// Fetch availability
+		availabilities, err := fetchAvailability(targetDate)
+		if err != nil {
+			fmt.Printf("Error fetching availability: %v\n", err)
+			continue
+		}
+
+		// Process each availability response
+		for _, availability := range availabilities {
+			// Append slots to the date key
+			availabilityByDate[availability.StartDate] = append(availabilityByDate[availability.StartDate], availability.Slots...)
+		}
+	}
+
+    fmt.Println(prettyPrintTable(availabilityByDate))
+}
+```
+
+```console
+$ go run main.go
+DATE         START TIME  DURATION
+2025-03-08   19:00:00       60
+2025-03-09   20:00:00       60
+```
+
+This is just what I wanted, now we need to think of a way to get this delivered
+somewhere to us so that we can rush to the app and book the court whenever our
+favorite slot becomes available.
+
+Running this script in a cron job every 10 minutes would do it, but I don't want to be notified every single time
+a request is made. Ideally, for a first iteration I would like to get notified only when a new slot becomes available or
+another slot is removed. Basically, I want to receive a notification whenever the availability changes in any way.
+
+We can detect a change in availability by comparing the hash of the new and previous table of slots. Whenever the hash changes,
+the script would need to store a file containing the hash of the current table of slots so that it can be compared the next time
+a request is issued.
+
+```go
+// computeHash computes a SHA-256 hash of the availability data
+func computeHash(data map[string][]Slot) string {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	hash := sha256.Sum256(jsonData)
+	return hex.EncodeToString(hash[:])
+}
+```
+
+We have a couple of options when it comes to notifications, the two most common
+ones that I always use are emails and Slack. For this particular case I'm going
+to use email, I can send the notification to all of my friends without actually
+creating a Slack channel just for that, which seems a bit too much work.
+
+```go
+// notify sends an email notification using Gmail using App passwords
+func notify(message string) {
+	// Gmail account credentials
+	from := "my-supersecret-email@youwillneverknow.com"
+	password := os.Getenv("SMTP_PWD")
+
+	// List of recipients
+	subscribers := os.Getenv("SUBSCRIBERS")
+	var to []string
+
+	err := json.Unmarshal([]byte(subscribers), &to)
+	if err != nil {
+		panic("cannot parse emails")
+	}
+
+	// SMTP server configuration
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	// Email content
+	subject := "Playtomic Update"
+	body := fmt.Sprintf("The availability table has changed:\n\n%s", message)
+
+	// Construct the email message
+	msg := fmt.Sprintf("From: %s\nTo: %s\nSubject: %s\n\n%s",
+		from, strings.Join(to, ","), subject, body)
+
+	// Authenticate and send the email
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, []byte(msg))
+	if err != nil {
+		fmt.Printf("Error sending email: %v\n", err)
+	} else {
+		fmt.Println("Email notification sent successfully!")
+	}
+}
+```
+
+We can make use of these two new functions now
+
+```go
+func main() {
+	// Get the next two Saturdays and Sundays
+	weekends := getNextWeekends()
+
+	// Fetch availability for each date
+	availabilityByDate := make(map[string][]Slot)
+	for _, targetDate := range weekends {
+		fmt.Printf("Fetching availability for date: %s\n", targetDate.Format("2006-01-02"))
+
+		// Fetch availability
+		availabilities, err := fetchAvailability(targetDate)
+		if err != nil {
+			fmt.Printf("Error fetching availability: %v\n", err)
+			continue
+		}
+
+		// Process each availability response
+		for _, availability := range availabilities {
+			// Append slots to the date key
+			availabilityByDate[availability.StartDate] = append(availabilityByDate[availability.StartDate], availability.Slots...)
+		}
+	}
+
+	// Compute the hash of the current availability data
+	currentHash := computeHash(availabilityByDate)
+
+	// Read the previous hash from a file (if it exists)
+	var previousHash string
+	hashFile := "availability_hash.txt"
+	if _, err := os.Stat(hashFile); err == nil {
+		hashBytes, err := os.ReadFile(hashFile)
+		if err != nil {
+			fmt.Printf("Error reading hash file: %v\n", err)
+		} else {
+			previousHash = string(hashBytes)
+		}
+	}
+
+	// Compare hashes to detect changes
+	if currentHash != previousHash {
+		// Write the new hash to the file
+		err := os.WriteFile(hashFile, []byte(currentHash), 0644)
+		if err != nil {
+			fmt.Printf("Error writing hash file: %v\n", err)
+		}
+
+		// Write the table to a file
+		outputFile := "availability_table.txt"
+		err = writeTableToFile(outputFile, availabilityByDate)
+		if err != nil {
+			fmt.Printf("Error writing table to file: %v\n", err)
+		} else {
+			fmt.Printf("Table written to %s\n", outputFile)
+		}
+
+		// Send a notification
+		notify(prettyPrintTable(availabilityByDate))
+	} else {
+		fmt.Println("No changes detected in the availability table.")
+	}
+}
+```
+
+If I run this now, I'm going to get an email to my inbox, a self-sent email
+because I'm currently using my own email address to send the notifications.
+
+```console
+$ SUBSCRIBERS="[\"my-supersecret-email@youwillneverknow.com\"]" SMTP_PWD="secret" go run main.go
+```
+
+With that, we have our script that notifies us whenever the availability of the
+courts changes. What's left to do is write a cron job that runs this script periodically.
+
+I could have written my cron job so that it runs every 10 minutes on one of my
+raspis at home, but I have a better and more reliable solution: GitHub Actions.
+
+Did you know you can run cron jobs on GitHub Actions? It's a great way to run
+periodic tasks without having to worry about the infrastructure. Plus, if
+something goes wrong, you can always check the logs on GitHub on the go, which
+is not always super convenient if the cron job is running in your LAN.
+
+[chat,matt]
+--
+Don't trust me on this one, but another advantage here is that Github Actions
+runners will change the IP address every time they run, so you can't be easily
+blocked by the Playtomic servers and those will look like legitimate requests.
+--
+
+Here's the CI/CD pipeline configuration file
+
+```yaml
+name: Run Availability Checker
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  check-availability:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      # We can leverage the runner's cache to store the hash of the availability table
+      - name: Restore hash cache
+        id: cache-hash
+        uses: actions/cache@v3
+        with:
+          path: availability_hash.txt
+          key: availability-hash
+
+      # Run the Go program
+      - name: Run Go program
+        env:
+          SUBSCRIBERS: ${{ secrets.SUBSCRIBERS }}
+          SMTP_PWD: ${{ secrets.SMTP_PWD }}
+        run: |
+          echo ${{ env.SUBSCRIBERS }}
+          go run main.go
+
+      # Save the hash file to cache
+      - name: Save hash cache
+        if: steps.cache-hash.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: availability_hash.txt
+          key: availability-hash
+```
+
+That is it! I can now sit back and relax, knowing that I will be notified
+whenever a court becomes available and I'll be able to book it, or at least have
+a chance to do so.
